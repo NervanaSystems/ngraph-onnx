@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright 2017 Nervana Systems Inc.
+# Copyright 2018 Nervana Systems Inc.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -22,9 +22,10 @@ import numpy as np
 import onnx
 
 
-from ngraph_onnx.tests.utils import convert_and_calculate
+from tests.utils import convert_and_calculate
 
 
+@pytest.mark.skip(reason='Needs refactoring to ngraph++')
 @pytest.mark.parametrize('onnx_op,numpy_func', [
     ('Sum', np.add),
     ('Min', np.minimum),
@@ -39,6 +40,7 @@ def test_variadic(onnx_op, numpy_func):
     assert np.array_equal(ng_results, [expected_output])
 
 
+@pytest.mark.skip(reason='Needs refactoring to ngraph++')
 def test_mean():
     data = [np.array([1, 2, 3]), np.array([4, 5, 6]), np.array([7, 8, 9])]
     node = onnx.helper.make_node('Mean', inputs=['data_0', 'data_1', 'data_2'], outputs=['y'])

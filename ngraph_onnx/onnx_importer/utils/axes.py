@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright 2017 Nervana Systems Inc.
+# Copyright 2018 Nervana Systems Inc.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -24,8 +24,7 @@ from ngraph_onnx.onnx_importer.utils.utils_pos_axes import make_pos_axes
 
 
 @function_deprecated
-def reorder_axes(input_tensor, input_template, output_template):
-    # type: (TensorOp, str, str) -> TensorOp
+def reorder_axes(input_tensor, input_template, output_template):  # type: ignore
     """
     Reorder input_tensor axes based on a template defined by two strings.
 
@@ -55,7 +54,7 @@ def reorder_axes(input_tensor, input_template, output_template):
 
 
 @function_deprecated
-def rename_axes(input_tensor, output_template):  # type: (TensorOp, str) -> TensorOp
+def rename_axes(input_tensor, output_template):  # type: ignore
     """
     Rename tensor axes according to letter names given in `output_template`.
 
@@ -71,7 +70,7 @@ def rename_axes(input_tensor, output_template):  # type: (TensorOp, str) -> Tens
 
 
 @function_deprecated
-def reshape_workaround(data, shape_out):  # type: (TensorOp, Sequence[int]) -> TensorOp
+def reshape_workaround(data, shape_out):  # type: ignore
     """Limited workaround for tensor reshape operation."""
     shape_in = data.shape.lengths
 

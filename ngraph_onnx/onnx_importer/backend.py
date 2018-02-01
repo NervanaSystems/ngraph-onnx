@@ -12,25 +12,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ----------------------------------------------------------------------------
+"""
+ONNX Backend implementation.
+
+See ONNX documentation for details:
+https://github.com/onnx/onnx/blob/master/docs/Implementing%20an%20ONNX%20backend.md
+"""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import numpy as np
 import ngraph_api as ng
 import onnx
 
 from onnx.helper import make_tensor_value_info, make_graph, make_model
 from onnx.backend.base import Backend, BackendRep
+from typing import Dict, List
+
 from ngraph_onnx.onnx_importer.importer import import_onnx_model
-
-"""
-ONNX Backend implementation
-
-See ONNX documentation for details:
-https://github.com/onnx/onnx/blob/master/docs/Implementing%20an%20ONNX%20backend.md
-"""
 
 
 class NgraphBackend(Backend):
@@ -39,26 +41,30 @@ class NgraphBackend(Backend):
     @classmethod
     def prepare(cls, onnx_model, device='CPU', **kwargs):
         # type: (onnx.ModelProto, str, Dict) -> NgraphBackendRep
+        """Prepare backend representation of ONNX model."""
         super(NgraphBackend, cls).prepare(onnx_model, device, **kwargs)
         ng_model = import_onnx_model(onnx_model)[0]
         return NgraphBackendRep(ng_model, device)
 
     @classmethod
     def supports_device(cls, device):  # type: (str) -> bool
+        """Check whether the backend supports a particular device."""
         return device == 'CPU'
 
     @classmethod
     def run_model(cls, onnx_model, inputs, device='CPU', **kwargs):
-        # type: (onnx.ModelProto, List[numpy.ndarray], str, Dict) -> List[numpy.ndarray]
+        # type: (onnx.ModelProto, List[np.ndarray], str, Dict) -> List[np.ndarray]
+        """Prepare and run a computation on an ONNX model."""
         return cls.prepare(onnx_model, device, **kwargs).run(inputs)
 
     @classmethod
     def run_node(cls, onnx_node, inputs, device='CPU'):
-        # type: (onnx.NodeProto, List[numpy.ndarray], str) -> List[numpy.ndarray]
+        # type: (onnx.NodeProto, List[np.ndarray], str) -> List[np.ndarray]
+        """Prepare and run a computation on an ONNX node."""
         input_tensors = [make_tensor_value_info(name, onnx.TensorProto.FLOAT, value.shape)
                          for name, value in zip(onnx_node.input, inputs)]
         output_tensors = [make_tensor_value_info(name, onnx.TensorProto.FLOAT, value.shape)
-                          for name, value in zip(onnx_node.output, ())]
+                          for name, value in zip(onnx_node.output, ())]  # type: ignore
 
         graph = make_graph([onnx_node], 'compute_graph', input_tensors, output_tensors)
         model = make_model(graph, producer_name='NgraphBackend')
@@ -75,6 +81,7 @@ class NgraphBackendRep(BackendRep):
         self.transformer = ng.transformers.make_transformer()
         self.computation = self.transformer.computation(ng_model['output'], *ng_model['inputs'])
 
-    def run(self, inputs, **kwargs):  # type: (List[numpy.ndarray], Dict) -> List[numpy.ndarray]
+    def run(self, inputs, **kwargs):  # type: (List[np.ndarray], Dict) -> List[np.ndarray]
+        """Execute computation on the backend representation of model."""
         outputs = self.computation(*inputs)
         return [outputs]

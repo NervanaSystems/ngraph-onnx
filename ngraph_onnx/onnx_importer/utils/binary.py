@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright 2017 Nervana Systems Inc.
+# Copyright 2018 Nervana Systems Inc.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -26,8 +26,7 @@ logger = logging.getLogger(__name__)
 
 
 @function_deprecated
-def cast_axes_for_binary_broadcast(onnx_node, ng_inputs):
-    # type: (NodeWrapper, List[TensorOp]) -> Tuple[TensorOp, TensorOp]
+def cast_axes_for_binary_broadcast(onnx_node, ng_inputs):  # type: ignore
     """
     Cast axes of the right operand to make ops compatible for an element-wise binary operation.
 
@@ -63,8 +62,7 @@ def cast_axes_for_binary_broadcast(onnx_node, ng_inputs):
 
 
 @function_deprecated
-def cast_axes_for_matmul(ng_input_left, ng_input_right):
-    # type: (TensorOp, TensorOp) -> Tuple[TensorOp, TensorOp]
+def cast_axes_for_matmul(ng_input_left, ng_input_right):  # type: ignore
     """
     Prepare two ngraph tensors for matrix multiplication by casting axes.
 

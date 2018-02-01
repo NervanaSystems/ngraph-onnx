@@ -15,29 +15,44 @@ from ngraph_onnx.onnx_importer.backend import NgraphBackend
 backend_test = onnx.backend.test.BackendTest(NgraphBackend, __name__)
 
 
-# unsupported tests
-backend_test.exclude('test_constant_pad')  # ng.pad does not support padding with arbitrary values
+# Need refactoring to ngraph++
+backend_test.exclude('test_AvgPool')
+backend_test.exclude('test_Bat')
+backend_test.exclude('test_BatchNorm')
 backend_test.exclude('test_ConstantPad2d')
-
-backend_test.exclude('test_edge_pad')  # ng.pad does not np.pad's "edge" or "reflect" mode
-backend_test.exclude('test_reflect_pad')
+backend_test.exclude('test_Conv')
+backend_test.exclude('test_ELU')
+backend_test.exclude('test_Embedding')
+backend_test.exclude('test_GLU')
+backend_test.exclude('test_LeakyReLU')
+backend_test.exclude('test_Linear')
+backend_test.exclude('test_LogSoftmax')
+backend_test.exclude('test_MaxPool')
+backend_test.exclude('test_MaxPool1d')
+backend_test.exclude('test_PReLU')
+backend_test.exclude('test_PixelShuffle')
+backend_test.exclude('test_ReLU')
 backend_test.exclude('test_ReflectionPad2d')
 backend_test.exclude('test_ReplicationPad2d')
-
-backend_test.exclude('test_matmul_3d')  # ng.dot does not support np.matmul-style broadcasting
-backend_test.exclude('test_matmul_4d')
-
-backend_test.exclude('test_MaxPool1d')  # ng.pooling does not support 1D pooling
-
-backend_test.exclude('test_PixelShuffle')  # no ngraph equivalent of np.reshape
-
-backend_test.exclude('test_Embedding')  # no ngraph equivalent of tf.gather
-
-backend_test.exclude('test_PReLU')  # ngraph does not support broadcasting by shape (1,)
-
-# work-in-progress tests
-backend_test.exclude('test_Conv2d')
-backend_test.exclude('test_Conv3d')
+backend_test.exclude('test_Sigmoid')
+backend_test.exclude('test_Softmax')
+backend_test.exclude('test_Softmin')
+backend_test.exclude('test_Softplus')
+backend_test.exclude('test_Softsign')
+backend_test.exclude('test_Tanh')
+backend_test.exclude('test_ZeroPad')
+backend_test.exclude('test_constant_pad')
+backend_test.exclude('test_edge_pad')
+backend_test.exclude('test_log_softmax')
+backend_test.exclude('test_matmul')
+backend_test.exclude('test_reflect_pad')
+backend_test.exclude('test_softmax')
+backend_test.exclude('test_slice')
+backend_test.exclude('test_relu')
+backend_test.exclude('test_default_axes')
+backend_test.exclude('test_constant')
+backend_test.exclude('test_add')
+backend_test.exclude('test_abs')
 
 # big models tests
 backend_test.exclude('test_bvlc_alexnet')

@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright 2017 Nervana Systems Inc.
+# Copyright 2018 Nervana Systems Inc.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -16,10 +16,17 @@
 from __future__ import division
 from __future__ import print_function
 
+from typing import Tuple, Dict, List, TYPE_CHECKING
+
+from pyngraph import Node as NgraphNode
 import ngraph_api as ng
+
 from ngraph_onnx.onnx_importer.utils.axes import reorder_axes
 from ngraph_onnx.onnx_importer.utils.conv import get_pads, get_strides
 from ngraph_onnx.onnx_importer.utils.decorators import function_deprecated
+
+if TYPE_CHECKING:
+    from ngraph_onnx.onnx_importer.model_wrappers import NodeWrapper
 
 
 def get_kernel_shape(onnx_node):  # type:  (NodeWrapper) -> Tuple[int, int, int]
@@ -66,8 +73,7 @@ def get_pool_params(onnx_node):  # type: (NodeWrapper) -> Dict
 
 
 @function_deprecated
-def make_pool_output_axes(input_tensor, pool_params):
-    # type: (TensorOp, Dict) -> Axes
+def make_pool_output_axes(input_tensor, pool_params):  # type: ignore
     """
     Prepare axes for the output of an ng.convolution operation.
 
@@ -97,7 +103,7 @@ def make_pool_output_axes(input_tensor, pool_params):
 
 @function_deprecated
 def make_pooling_op(onnx_node, ng_inputs, custom_pool_params=None):
-    # type: (NodeWrapper, List[TensorOp], Dict) -> Op
+    # type: (NodeWrapper, List[NgraphNode], Dict) -> NgraphNode
     """
     Create an ngraph pooling Op based on an ONNX node.
 
@@ -137,7 +143,7 @@ def make_pooling_op(onnx_node, ng_inputs, custom_pool_params=None):
 
 @function_deprecated
 def make_global_pooling_op(onnx_node, ng_inputs):
-    # type: (NodeWrapper, List[TensorOp]) -> Op
+    # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """
     Create a ngraph global pooling operation.
 

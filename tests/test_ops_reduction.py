@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright 2017 Nervana Systems Inc.
+# Copyright 2018 Nervana Systems Inc.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -17,9 +17,10 @@ from __future__ import print_function, division
 
 import onnx
 import numpy as np
+import pytest
 
 from scipy.misc import logsumexp
-from ngraph_onnx.tests.utils import convert_and_calculate
+from tests.utils import convert_and_calculate
 
 
 def import_and_compute(op_type, input_data, **node_attrs):
@@ -28,6 +29,7 @@ def import_and_compute(op_type, input_data, **node_attrs):
     return convert_and_calculate(node, data_inputs, data_inputs).pop()
 
 
+@pytest.mark.skip(reason='Needs refactoring to ngraph++')
 def test_reduce_max():
     data = np.array([[[5, 1], [20, 2]], [[30, 1], [40, 2]], [[55, 1], [60, 2]]], dtype=np.float32)
 
@@ -51,6 +53,7 @@ def test_reduce_max():
                           np.max(data, keepdims=False, axis=(0, 1, 2)))
 
 
+@pytest.mark.skip(reason='Needs refactoring to ngraph++')
 def test_reduce_max_keepdims():
     data = np.array([[[5, 1], [20, 2]], [[30, 1], [40, 2]], [[55, 1], [60, 2]]], dtype=np.float32)
 
@@ -73,6 +76,7 @@ def test_reduce_max_keepdims():
                           np.max(data, keepdims=True, axis=(0, 1, 2)))
 
 
+@pytest.mark.skip(reason='Needs refactoring to ngraph++')
 def test_reduce_min():
     data = np.array([[[5, 1], [20, 2]], [[30, 1], [40, 2]], [[55, 1], [60, 2]]], dtype=np.float32)
 
@@ -96,6 +100,7 @@ def test_reduce_min():
                           np.min(data, keepdims=False, axis=(0, 1, 2)))
 
 
+@pytest.mark.skip(reason='Needs refactoring to ngraph++')
 def test_reduce_mean():
     data = np.array([[[5, 1], [20, 2]], [[30, 1], [40, 2]], [[55, 1], [60, 2]]], dtype=np.float32)
 
@@ -119,6 +124,7 @@ def test_reduce_mean():
                           np.mean(data, keepdims=False, axis=(0, 1, 2)))
 
 
+@pytest.mark.skip(reason='Needs refactoring to ngraph++')
 def test_reduce_sum():
     data = np.array([[[5, 1], [20, 2]], [[30, 1], [40, 2]], [[55, 1], [60, 2]]], dtype=np.float32)
 
@@ -142,6 +148,7 @@ def test_reduce_sum():
                           np.sum(data, keepdims=False, axis=(0, 1, 2)))
 
 
+@pytest.mark.skip(reason='Needs refactoring to ngraph++')
 def test_reduce_prod():
     data = np.array([[[5, 1], [20, 2]], [[30, 1], [40, 2]], [[55, 1], [60, 2]]], dtype=np.float32)
 
@@ -165,6 +172,7 @@ def test_reduce_prod():
                           np.prod(data, keepdims=False, axis=(0, 1, 2)))
 
 
+@pytest.mark.skip(reason='Needs refactoring to ngraph++')
 def test_reduce_log_sum_exp():
     data = np.array([[[5, 1], [20, 2]], [[30, 1], [40, 2]], [[55, 1], [60, 2]]], dtype=np.float32)
 
@@ -189,6 +197,7 @@ def test_reduce_log_sum_exp():
                           logsumexp(data, keepdims=False, axis=(0, 1, 2)))
 
 
+@pytest.mark.skip(reason='Needs refactoring to ngraph++')
 def test_reduce_argmin():
     def argmin(ndarray, axis, keepdims=False):
         res = np.argmin(ndarray, axis=axis)
@@ -212,6 +221,7 @@ def test_reduce_argmin():
                           argmin(data, keepdims=False, axis=2))
 
 
+@pytest.mark.skip(reason='Needs refactoring to ngraph++')
 def test_reduce_argmax():
     def argmax(ndarray, axis, keepdims=False):
         res = np.argmax(ndarray, axis=axis)

@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright 2017 Nervana Systems Inc.
+# Copyright 2018 Nervana Systems Inc.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -22,7 +22,7 @@ import ngraph_api as ng
 import numpy as np
 from onnx.helper import make_node, make_graph, make_tensor_value_info, make_model
 from ngraph_onnx.onnx_importer.importer import import_onnx_model
-from ngraph_onnx.tests.utils import convert_and_calculate
+from tests.utils import convert_and_calculate
 
 
 @pytest.fixture
@@ -63,6 +63,7 @@ def get_transformer():
     return ng.transformers.make_transformer()
 
 
+@pytest.mark.skip(reason='Needs refactoring to ngraph++')
 def test_2d_conv():
     # x should have shape N(batch) x C x H x W
     input_x = np.array([
@@ -128,6 +129,7 @@ def test_2d_conv():
                                    dtype=np.float32))
 
 
+@pytest.mark.skip(reason='Needs refactoring to ngraph++')
 def test_3d_conv():
     # x should have shape N(batch) x C x H x W x D
     input_x = np.array([
@@ -172,6 +174,7 @@ def test_3d_conv():
                                    dtype=np.float32))
 
 
+@pytest.mark.skip(reason='Needs refactoring to ngraph++')
 def test_2d_conv_transpose():
     # x should have shape N(batch) x C x H x W
     input_x = np.array(
@@ -208,6 +211,7 @@ def test_2d_conv_transpose():
                                    dtype=np.float32))
 
 
+@pytest.mark.skip(reason='Needs refactoring to ngraph++')
 def test_padding():
     node = onnx.helper.make_node('Pad', inputs=['x'], outputs=['y'], pads=[1, 1, 1, 1])
     x = np.ones((2, 2), dtype=np.float32)
@@ -225,6 +229,7 @@ def test_padding():
     assert np.array_equal(ng_results, [y])
 
 
+@pytest.mark.skip(reason='Needs refactoring to ngraph++')
 def test_pool_average(ndarray_1x1x4x4):
     x = ndarray_1x1x4x4
 
@@ -244,6 +249,7 @@ def test_pool_average(ndarray_1x1x4x4):
     assert np.array_equal(ng_results, [y])
 
 
+@pytest.mark.skip(reason='Needs refactoring to ngraph++')
 def test_pool_average_3d(ndarray_1x1x4x4):
     x = np.broadcast_to(ndarray_1x1x4x4, (1, 1, 4, 4, 4))
 
@@ -259,6 +265,7 @@ def test_pool_average_3d(ndarray_1x1x4x4):
     assert np.array_equal(ng_results, [y])
 
 
+@pytest.mark.skip(reason='Needs refactoring to ngraph++')
 def test_pool_max(ndarray_1x1x4x4):
     node = onnx.helper.make_node('MaxPool', inputs=['x'], outputs=['y'],
                                  kernel_shape=(2, 2), strides=(2, 2))
@@ -271,6 +278,7 @@ def test_pool_max(ndarray_1x1x4x4):
     assert np.array_equal(ng_results, [y])
 
 
+@pytest.mark.skip(reason='Needs refactoring to ngraph++')
 def test_pool_global_max(ndarray_1x1x4x4):
     node = onnx.helper.make_node('GlobalMaxPool', inputs=['x'], outputs=['y'])
 
@@ -281,6 +289,7 @@ def test_pool_global_max(ndarray_1x1x4x4):
     assert np.array_equal(ng_results, [y])
 
 
+@pytest.mark.skip(reason='Needs refactoring to ngraph++')
 def test_pool_global_average(ndarray_1x1x4x4):
     node = onnx.helper.make_node('GlobalAveragePool', inputs=['x'], outputs=['y'])
 
@@ -291,6 +300,7 @@ def test_pool_global_average(ndarray_1x1x4x4):
     assert np.array_equal(ng_results, [y])
 
 
+@pytest.mark.skip(reason='Needs refactoring to ngraph++')
 def test_pool_global_average_3d(ndarray_1x1x4x4):
     x = np.broadcast_to(ndarray_1x1x4x4, (1, 1, 4, 4, 4))
 

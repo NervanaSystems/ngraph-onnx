@@ -14,7 +14,7 @@
 # ----------------------------------------------------------------------------
 
 """
-Utilities related to positional axes
+Utilities related to positional axes.
 
 Idea:
     Each tensor is represented using axes name starting with 'POS_' with number
@@ -44,9 +44,9 @@ POS_AXIS_PREFIX = 'POS_'
 
 
 @function_deprecated
-def make_pos_axis(length, pos, prefix=POS_AXIS_PREFIX):
+def make_pos_axis(length, pos, prefix=POS_AXIS_PREFIX):  # type: ignore
     """
-    Make positional Axis of length `length` and of position `pos`
+    Make positional Axis of length `length` and of position `pos`.
 
     Args:
         length: the length of the Axis, can be None
@@ -58,15 +58,16 @@ def make_pos_axis(length, pos, prefix=POS_AXIS_PREFIX):
 
     Returns:
         Axis object
+
     """
-    if not (isinstance(pos, numbers.Integral) and pos >= 0):
-        raise ValueError("pos {} must be integer greater or equal than zero."
+    if not (isinstance(pos, int) and pos >= 0):
+        raise ValueError('pos {} must be integer greater or equal than zero.'
                          .format(pos))
     return ng.make_axis(length, name='%s%s' % (prefix, pos))
 
 
 @function_deprecated
-def make_pos_axes(shape, positions=None, prefix=POS_AXIS_PREFIX):
+def make_pos_axes(shape, positions=None, prefix=POS_AXIS_PREFIX):  # type: ignore
     """
     Convert shape to axes.
 
@@ -78,6 +79,7 @@ def make_pos_axes(shape, positions=None, prefix=POS_AXIS_PREFIX):
 
     Returns:
         Axes: Axes for shape.
+
     """
     if positions is None:
         positions = reversed(list(range(len(shape))))
@@ -85,11 +87,11 @@ def make_pos_axes(shape, positions=None, prefix=POS_AXIS_PREFIX):
         # there should be no duplicates in positions
         if len(set(positions)) != len(positions):
             raise ValueError(
-                "There are duplicated positions in {}".format(positions))
+                'There are duplicated positions in {}'.format(positions))
         # the length of shape and positions should be the same
         if len(shape) != len(positions):
-            raise ValueError("The length of shape {} should be the same as the"
-                             "length of positions {}".format(len(shape),
+            raise ValueError('The length of shape {} should be the same as the'
+                             'length of positions {}'.format(len(shape),
                                                              len(positions)))
     if not shape:
         return ng.make_axes()
@@ -99,7 +101,7 @@ def make_pos_axes(shape, positions=None, prefix=POS_AXIS_PREFIX):
 
 
 @function_deprecated
-def cast_to_pos_axes(x, prefix=POS_AXIS_PREFIX):
+def cast_to_pos_axes(x, prefix=POS_AXIS_PREFIX):  # type: ignore
     """
     Cast an op to positional axes.
 
@@ -112,21 +114,24 @@ def cast_to_pos_axes(x, prefix=POS_AXIS_PREFIX):
 
     Returns:
         x casted to positional axes
+
     """
     return ng.cast_axes(x, make_pos_axes(x.axes.lengths, prefix=prefix))
 
 
 @function_deprecated
-def reorder_pos_axes(x, prefix=POS_AXIS_PREFIX):
+def reorder_pos_axes(x, prefix=POS_AXIS_PREFIX):  # type: ignore
     """
-    Reorder x's axes to descending positional axes. E.g.
-    x's axes: [POS_1, POS_2, POS_0] => [POS_2, POS_1, POS_0]
+    Reorder x's axes to descending positional axes.
+
+    e.g. x's axes: [POS_1, POS_2, POS_0] => [POS_2, POS_1, POS_0]
 
     Args:
         x: ngrpah op
 
     Returns:
         x reordered to descending positional axes.
+
     """
     # get axes names
     axes_names = [axis.name for axis in x.axes]
@@ -135,21 +140,21 @@ def reorder_pos_axes(x, prefix=POS_AXIS_PREFIX):
     # check axes names are valid
     for name in axes_names:
         if name[:len(prefix)] != prefix:
-            raise ValueError("axis {} is not a valid positional axes, "
-                             "to be valid, must have prefix {}"
+            raise ValueError('axis {} is not a valid positional axes, '
+                             'to be valid, must have prefix {}'
                              .format(name, prefix))
 
     axes_positions = [int(name[len(prefix):]) for name in axes_names]
     if sorted(axes_positions) != list(range(num_axes)):
-        raise ValueError("axes positions {} must be continuous integers "
-                         "starting from 0")
+        raise ValueError('axes positions {} must be continuous integers '
+                         'starting from 0')
 
     # special case, x is already in a good order
     if (axes_positions == reversed(list(range(num_axes)))):
         return x
 
     # get a position -> length map
-    map_pos_length = dict()
+    map_pos_length = {}
     for pos, length in zip(axes_positions, x.axes.lengths):
         map_pos_length[pos] = length
 

@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright 2017 Nervana Systems Inc.
+# Copyright 2018 Nervana Systems Inc.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -17,16 +17,21 @@ from __future__ import division
 from __future__ import print_function
 
 from math import floor, ceil
+from typing import Tuple, List, Dict, TYPE_CHECKING
 
+from pyngraph import Node as NgraphNode
 import ngraph_api as ng
+
 from ngraph_onnx.onnx_importer.utils.axes import reorder_axes
 from ngraph_onnx.onnx_importer.utils.decorators import function_deprecated
 from ngraph_onnx.onnx_importer.utils.misc import verify_symmetric_padding
 from ngraph_onnx.onnx_importer.utils.utils_pos_axes import cast_to_pos_axes
 
+if TYPE_CHECKING:
+    from ngraph_onnx.onnx_importer.model_wrappers import NodeWrapper
 
 @function_deprecated
-def get_pads(onnx_node):  # type: (NodeWrapper) -> Tuple[int, int, int]
+def get_pads(onnx_node: 'NodeWrapper') -> Tuple[int, int, int]:  # flake8: noqa
     """
     Get padding values for the operation described by an ONNX node.
 
@@ -131,8 +136,7 @@ def get_conv_params(onnx_node):  # type: (NodeWrapper) -> Dict
 
 
 @function_deprecated
-def make_conv_output_axes(input, filter, conv_params):
-    # type: (TensorOp, TensorOp, Dict) -> Axes
+def make_conv_output_axes(input, filter, conv_params):  # type: ignore
     """
     Prepare axes for the output of an ng.convolution operation.
 
@@ -147,8 +151,8 @@ def make_conv_output_axes(input, filter, conv_params):
     input_d, input_h, input_w = input.axes.lengths[1:4]  # axes order C, D, H, W, N
     filter_d, filter_h, filter_w = filter.axes.lengths[1:4]  # axes order J, T(d), R(h), S(w), K
 
-    def output_dim(input_x, filter_x, pad_x, str_x, dil_x):
-        return floor((input_x + 2 * pad_x - filter_x - (filter_x - 1) * (dil_x - 1)) / str_x) + 1
+    def output_dim(input_x, filter_x, pad_x, str_x, dil_x):  # type: (int, int, int, int, int) -> int
+        return int((input_x + 2 * pad_x - filter_x - (filter_x - 1) * (dil_x - 1)) / str_x) + 1
 
     convp = conv_params
     output_d = output_dim(input_d, filter_d, convp['pad_d'], convp['str_d'], convp['dil_d'])
@@ -167,7 +171,7 @@ def make_conv_output_axes(input, filter, conv_params):
 
 @function_deprecated
 def make_convolution_op(onnx_node, ng_inputs, transpose=False):
-    # type: (NodeWrapper, List[TensorOp], bool) -> Op
+    # type: (NodeWrapper, List[NgraphNode], bool) -> NgraphNode
     """
     Create an ngraph convolution or deconvolution Op based on an ONNX node.
 

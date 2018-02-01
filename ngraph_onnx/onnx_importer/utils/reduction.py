@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright 2017 Nervana Systems Inc.
+# Copyright 2018 Nervana Systems Inc.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -22,7 +22,7 @@ from ngraph_onnx.onnx_importer.utils.decorators import function_deprecated
 
 
 @function_deprecated
-def get_reduction_axes(onnx_node):  # type: (NodeWrapper) -> Axes
+def get_reduction_axes(onnx_node):  # type: ignore
     """Create an ngraph Axes object for a subset of axes to be used in a reduction operation."""
     input_tensor = onnx_node.get_ng_inputs()[0]
     attribute_axes = onnx_node.get_attribute_value('axes')
@@ -39,8 +39,7 @@ def get_reduction_axes(onnx_node):  # type: (NodeWrapper) -> Axes
 
 
 @function_deprecated
-def make_reduction_op(ng_op_type, onnx_node, ng_input):
-    # type: (Callable, NodeWrapper, TensorOp) -> Op
+def make_reduction_op(ng_op_type, onnx_node, ng_input):  # type: ignore
     """
     Create an ngraph Op node for a reduction operation (min, max, sum, etc.).
 
