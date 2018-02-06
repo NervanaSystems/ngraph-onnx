@@ -68,7 +68,7 @@ def Abs(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngrap
 
 def Ceil(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Apply f(x) = ceil(x) to the input tensor elementwise."""
-    return ng.ceil(ng_inputs[0])
+    return ng.ceiling(ng_inputs[0])
 
 
 def Exp(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
