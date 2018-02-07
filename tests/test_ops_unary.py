@@ -22,7 +22,6 @@ import numpy as np
 from tests.utils import convert_and_calculate
 
 
-@pytest.mark.skip(reason='Needs refactoring to ngraph++')
 @pytest.mark.parametrize('input_data', [
     np.array([-4, 0, 5, -10]),
     np.array([[-4, 0, 5, -10], [-4, 0, 5, -10]]),
@@ -35,7 +34,6 @@ def test_abs(input_data):
     assert np.array_equal(ng_results, [expected_output])
 
 
-@pytest.mark.skip(reason='Needs refactoring to ngraph++')
 @pytest.mark.parametrize('input_data', [
     np.array([4, 0, 5, 10]),
     np.array([[4, 0, 5, 10], [4, 0, 5, 10]]),
@@ -48,7 +46,6 @@ def test_sqrt(input_data):
     assert np.allclose(ng_results, [expected_output])
 
 
-@pytest.mark.skip(reason='Needs refactoring to ngraph++')
 @pytest.mark.parametrize('input_data', [
     np.array([4, 0, 5, 10]),
     np.array([[4, 0, 5, 10], [4, 0, 5, 10]]),
@@ -61,7 +58,6 @@ def test_exp(input_data):
     assert np.allclose(ng_results, [expected_output])
 
 
-@pytest.mark.skip(reason='Needs refactoring to ngraph++')
 @pytest.mark.parametrize('input_data', [
     np.array([4, 2, 5, 10]),
     np.array([[4, 1, 5, 10], [4, 2, 5, 10]]),
@@ -74,7 +70,6 @@ def test_log(input_data):
     assert np.allclose(ng_results, [expected_output])
 
 
-@pytest.mark.skip(reason='Needs refactoring to ngraph++')
 @pytest.mark.parametrize('input_data', [
     np.array([-4, 0, 5, -10]),
     np.array([[-4, 0, 5, -10], [-4, 0, 5, -10]]),
@@ -87,7 +82,6 @@ def test_neg(input_data):
     assert np.array_equal(ng_results, [expected_output])
 
 
-@pytest.mark.skip(reason='Needs refactoring to ngraph++')
 @pytest.mark.parametrize('input_data', [
     np.array([-4.2, 0.43, 5.99, -10.01]),
     np.array([[-4.5, 0.99, 5.01, -10.00], [-4.5, 0.5, 5.1, 10.01]]),
@@ -100,7 +94,6 @@ def test_floor(input_data):
     assert np.array_equal(ng_results, [expected_output])
 
 
-@pytest.mark.skip(reason='Needs refactoring to ngraph++')
 @pytest.mark.parametrize('input_data', [
     np.array([-4.2, 0, 5.99, -10.01]),
     np.array([[-4.5, 0.99, 5.01, -10.00], [-4.5, 0.5, 5.1, 10.01]]),

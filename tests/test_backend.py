@@ -52,7 +52,6 @@ backend_test.exclude('test_relu')
 backend_test.exclude('test_default_axes')
 backend_test.exclude('test_constant')
 backend_test.exclude('test_add')
-backend_test.exclude('test_abs')
 
 # big models tests
 backend_test.exclude('test_bvlc_alexnet')

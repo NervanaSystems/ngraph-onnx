@@ -61,37 +61,31 @@ def make_ng_nodes(onnx_node):  # type: (NodeWrapper) -> Tuple[NgraphNode]
 
 
 # Unary Ops
-@refactoring_required
 def Abs(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Apply f(x) = abs(x) to the input tensor elementwise."""
     return ng.absolute(ng_inputs[0])
 
 
-@refactoring_required
 def Ceil(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Apply f(x) = ceil(x) to the input tensor elementwise."""
-    return -ng.floordivide(-ng_inputs[0], 1)
+    return ng.ceiling(ng_inputs[0])
 
 
-@refactoring_required
 def Exp(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Calculate the exponential of the input tensor elementwise."""
     return ng.exp(ng_inputs[0])
 
 
-@refactoring_required
 def Floor(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Apply f(x) = floor(x) to the input tensor elementwise."""
-    return ng.floordivide(ng_inputs[0], 1)
+    return ng.floor(ng_inputs[0])
 
 
-@refactoring_required
 def Log(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Calculate the natural log of the input tensor elementwise."""
     return ng.log(ng_inputs[0])
 
 
-@refactoring_required
 def Neg(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Apply f(x) = -x to the input tensor elementwise (each element has flipped sign)."""
     return ng.negative(ng_inputs[0])
@@ -103,7 +97,6 @@ def Reciprocal(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -
     return ng.reciprocal(ng_inputs[0])
 
 
-@refactoring_required
 def Sqrt(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Apply f(x) = x^0.5 (square root) to the input tensor elementwise."""
     return ng.sqrt(ng_inputs[0])
