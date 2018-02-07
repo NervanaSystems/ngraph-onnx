@@ -79,7 +79,6 @@ def test_add():
         left_operand + right_operand.reshape(2, 1, 1, 1))
 
 
-@pytest.mark.skip(reason='Needs refactoring to ngraph++')
 def test_sub():
     assert np.array_equal(import_and_compute('Sub', 20, 1),
                           np.array(19, dtype=np.float32))
@@ -90,7 +89,7 @@ def test_sub():
     assert np.array_equal(import_and_compute('Sub', [20, 19], [1, 2]),
                           np.array([19, 17], dtype=np.float32))
 
-    assert np.array_equal(import_and_compute('Sub', [[1, 2, 3], [4, 5, 6]], [7, 8, 9]),
+    assert np.array_equal(import_and_compute('Sub', [[1, 2, 3], [4, 5, 6]], [7, 8, 9], broadcast=1),
                           np.array([[-6, -6, -6], [-3, -3, -3]], dtype=np.float32))
 
 

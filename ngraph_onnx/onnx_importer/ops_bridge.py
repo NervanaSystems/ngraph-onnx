@@ -240,7 +240,6 @@ def Add(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngrap
     return left + right
 
 
-@refactoring_required
 def Sub(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Perform element-wise binary subtraction."""
     left, right = cast_axes_for_binary_broadcast(onnx_node, ng_inputs)
