@@ -36,5 +36,5 @@ def function_deprecated(function: Callable) -> Callable:
     @wraps(function)
     def wrapper(*args, **kwds):  # type: ignore
         log.warning('Using deprecated function %s', function.__name__)
-        function(*args, **kwds)
+        return function(*args, **kwds)
     return wrapper

@@ -109,7 +109,6 @@ def test_mul():
                           np.array([[7, 16, 27], [28, 40, 54]], dtype=np.float32))
 
 
-@pytest.mark.skip(reason='Needs refactoring to ngraph++')
 def test_div():
     assert np.array_equal(import_and_compute('Div', 6, 3),
                           np.array(2, dtype=np.float32))
@@ -120,5 +119,5 @@ def test_div():
     assert np.array_equal(import_and_compute('Div', [6, 8], [3, 2]),
                           np.array([2, 4], dtype=np.float32))
 
-    assert np.array_equal(import_and_compute('Div', [[10, 20, 30], [40, 50, 60]], [2, 5, 6]),
+    assert np.array_equal(import_and_compute('Div', [[10, 20, 30], [40, 50, 60]], [2, 5, 6], broadcast=1),
                           np.array([[5, 4, 5], [20, 10, 10]], dtype=np.float32))

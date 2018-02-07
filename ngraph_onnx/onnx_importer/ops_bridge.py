@@ -254,7 +254,6 @@ def Mul(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngrap
     return ng.multiply(left, right)
 
 
-@refactoring_required
 def Div(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Perform element-wise binary division."""
     left, right = cast_axes_for_binary_broadcast(onnx_node, ng_inputs)

@@ -39,7 +39,7 @@ def cast_axes_for_binary_broadcast(onnx_node, ng_inputs):  # type: ignore
     left = ng_inputs[0]
     right = ng_inputs[1]
 
-    dimensions_identical = left.axes.lengths == right.axes.lengths
+    dimensions_identical = left.shape == right.shape
     if dimensions_identical:
         return left, right
 
@@ -53,11 +53,10 @@ def cast_axes_for_binary_broadcast(onnx_node, ng_inputs):  # type: ignore
     if start_axis is not None:
         # Rename axes in the right operand to match corresponding names in the left operand
         renamed_axes = [ng.make_axis(length=axis.length,
-                                     name='POS_' + str(len(left.axes) - 1 - start_axis - i))
-                        for i, axis in enumerate(right.axes)]
+                                     name='POS_' + str(len(left.shape) - 1 - start_axis - i))
+                        for i, axis in enumerate(right.shape)]
         right = ng.cast_axes(right, ng.make_axes(axes=renamed_axes))
-
-    right = ng.broadcast(right, axes=left.axes)
+    right = ng.broadcast(right, left.shape)
     return left, right
 
 
