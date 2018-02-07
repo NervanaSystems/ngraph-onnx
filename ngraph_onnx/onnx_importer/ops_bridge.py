@@ -91,10 +91,14 @@ def Neg(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngrap
     return ng.negative(ng_inputs[0])
 
 
-@refactoring_required
 def Reciprocal(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Apply f(x) = 1/x to the input tensor elementwise."""
-    return ng.reciprocal(ng_inputs[0])
+    # workaround for https://github.com/NervanaSystems/private-ngraph-cpp/issues/445
+    ng_inputs.append(ng_inputs[0])
+    ng_inputs[0] = ng_inputs[0] / ng_inputs[0]
+    left, right = cast_axes_for_binary_broadcast(onnx_node, ng_inputs)
+    return ng.divide(left, right)
+    # return ng.reciprocal(ng_inputs[0])
 
 
 def Sqrt(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode

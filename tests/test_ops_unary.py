@@ -106,7 +106,6 @@ def test_ceil(input_data):
     assert np.array_equal(ng_results, [expected_output])
 
 
-@pytest.mark.skip(reason='Needs refactoring to ngraph++')
 @pytest.mark.parametrize('input_data', [
     np.array([-4.2, 1, 5.99, -10.01]),
     np.array([[-4.5, 0.99, 5.01, -10.00], [-4.5, 0.5, 5.1, 10.01]]),
