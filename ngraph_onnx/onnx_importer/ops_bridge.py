@@ -236,8 +236,8 @@ def ArgMax(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ng
 # Binary Ops
 def Add(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Perform element-wise binary addition."""
-    left, right = ng_inputs
-    return left + right
+    left, right = cast_axes_for_binary_broadcast(onnx_node, ng_inputs)
+    return ng.add(left, right)
 
 
 def Sub(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode

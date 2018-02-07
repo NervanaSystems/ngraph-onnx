@@ -18,7 +18,6 @@ from __future__ import print_function, division
 import onnx
 
 import numpy as np
-import pytest
 
 from tests.utils import convert_and_calculate
 
@@ -30,7 +29,6 @@ def import_and_compute(op_type, input_data_left, input_data_right, **node_attrib
     return convert_and_calculate(node, [input_data_left, input_data_right], [input_data_left])[0]
 
 
-@pytest.mark.skip(reason='Needs refactoring to ngraph++')
 def test_add():
     assert np.array_equal(import_and_compute('Add', 1, 2),
                           np.array(3, dtype=np.float32))
@@ -44,8 +42,7 @@ def test_add():
     assert np.array_equal(import_and_compute('Add', [1, 2, 3], [4, 5, 6]),
                           np.array([5, 7, 9], dtype=np.float32))
 
-    assert np.array_equal(import_and_compute('Add', [[1, 2, 3],
-                                                     [4, 5, 6]], [7, 8, 9], broadcast=1),
+    assert np.array_equal(import_and_compute('Add', [[1, 2, 3], [4, 5, 6]], [7, 8, 9], broadcast=1),
                           np.array([[8, 10, 12], [11, 13, 15]], dtype=np.float32))
 
     # shape(A) = (2, 3, 4, 5), shape(B) = (,), i.e. B is a scalar
