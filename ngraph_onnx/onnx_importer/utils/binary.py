@@ -20,15 +20,20 @@ import logging
 
 import ngraph_api as ng
 
+from typing import List, TYPE_CHECKING
+
 from ngraph_onnx.onnx_importer.utils.decorators import function_deprecated
+from pyngraph import Node as NgraphNode
+
+if TYPE_CHECKING:
+    from ngraph_onnx.onnx_importer.model_wrappers import NodeWrapper
 
 logger = logging.getLogger(__name__)
 
 
-@function_deprecated
-def cast_axes_for_binary_broadcast(onnx_node, ng_inputs):  # type: ignore
+def broadcast_for_binary_operation(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """
-    Cast axes of the right operand to make ops compatible for an element-wise binary operation.
+    Cast shape of the right operand to make ops compatible for an element-wise binary operation.
 
     Casting is based on `broadcast` and `axis` attributes of an ONNX node.
 
