@@ -20,15 +20,20 @@ import logging
 
 import ngraph_api as ng
 
+from typing import List, TYPE_CHECKING
+
 from ngraph_onnx.onnx_importer.utils.decorators import function_deprecated
+from pyngraph import Node as NgraphNode
+
+if TYPE_CHECKING:
+    from ngraph_onnx.onnx_importer.model_wrappers import NodeWrapper
 
 logger = logging.getLogger(__name__)
 
 
-@function_deprecated
-def cast_axes_for_binary_broadcast(onnx_node, ng_inputs):  # type: ignore
+def broadcast_for_binary_operation(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """
-    Cast axes of the right operand to make ops compatible for an element-wise binary operation.
+    Cast shape of the right operand to make ops compatible for an element-wise binary operation.
 
     Casting is based on `broadcast` and `axis` attributes of an ONNX node.
 
@@ -39,7 +44,7 @@ def cast_axes_for_binary_broadcast(onnx_node, ng_inputs):  # type: ignore
     left = ng_inputs[0]
     right = ng_inputs[1]
 
-    dimensions_identical = left.axes.lengths == right.axes.lengths
+    dimensions_identical = left.shape == right.shape
     if dimensions_identical:
         return left, right
 
@@ -50,14 +55,7 @@ def cast_axes_for_binary_broadcast(onnx_node, ng_inputs):  # type: ignore
         return left, right
 
     start_axis = onnx_node.get_attribute_value('axis')  # start of mutually equal shape
-    if start_axis is not None:
-        # Rename axes in the right operand to match corresponding names in the left operand
-        renamed_axes = [ng.make_axis(length=axis.length,
-                                     name='POS_' + str(len(left.axes) - 1 - start_axis - i))
-                        for i, axis in enumerate(right.axes)]
-        right = ng.cast_axes(right, ng.make_axes(axes=renamed_axes))
-
-    right = ng.broadcast(right, axes=left.axes)
+    right = ng.broadcast(right, left.shape, start_axis)
     return left, right
 
 

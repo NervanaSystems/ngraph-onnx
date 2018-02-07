@@ -31,7 +31,7 @@ from ngraph_onnx.onnx_importer.utils.decorators import refactoring_required
 from ngraph_onnx.onnx_importer.utils.misc import split_pads_into_pairs
 from ngraph_onnx.onnx_importer.utils.pool import make_pooling_op, make_global_pooling_op
 from ngraph_onnx.onnx_importer.utils.reduction import make_reduction_op
-from ngraph_onnx.onnx_importer.utils.binary import cast_axes_for_binary_broadcast, \
+from ngraph_onnx.onnx_importer.utils.binary import broadcast_for_binary_operation, \
     cast_axes_for_matmul
 from ngraph_onnx.onnx_importer.utils.conv import make_convolution_op
 from ngraph_onnx.onnx_importer.utils.utils_pos_axes import cast_to_pos_axes
@@ -91,10 +91,13 @@ def Neg(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngrap
     return ng.negative(ng_inputs[0])
 
 
-@refactoring_required
 def Reciprocal(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Apply f(x) = 1/x to the input tensor elementwise."""
-    return ng.reciprocal(ng_inputs[0])
+    # workaround for https://github.com/NervanaSystems/private-ngraph-cpp/issues/445
+    ng_inputs.append(ng_inputs[0])
+    ng_inputs[0] = ng_inputs[0] / ng_inputs[0]
+    left, right = broadcast_for_binary_operation(onnx_node, ng_inputs)
+    return ng.divide(left, right)
 
 
 def Sqrt(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
@@ -236,28 +239,25 @@ def ArgMax(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ng
 # Binary Ops
 def Add(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Perform element-wise binary addition."""
-    left, right = ng_inputs
-    return left + right
+    left, right = broadcast_for_binary_operation(onnx_node, ng_inputs)
+    return ng.add(left, right)
 
 
-@refactoring_required
 def Sub(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Perform element-wise binary subtraction."""
-    left, right = cast_axes_for_binary_broadcast(onnx_node, ng_inputs)
+    left, right = broadcast_for_binary_operation(onnx_node, ng_inputs)
     return ng.subtract(left, right)
 
 
-@refactoring_required
 def Mul(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Perform element-wise binary multiplication."""
-    left, right = cast_axes_for_binary_broadcast(onnx_node, ng_inputs)
+    left, right = broadcast_for_binary_operation(onnx_node, ng_inputs)
     return ng.multiply(left, right)
 
 
-@refactoring_required
 def Div(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Perform element-wise binary division."""
-    left, right = cast_axes_for_binary_broadcast(onnx_node, ng_inputs)
+    left, right = broadcast_for_binary_operation(onnx_node, ng_inputs)
     return ng.divide(left, right)
 
 
@@ -265,28 +265,28 @@ def Div(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngrap
 @refactoring_required
 def Equal(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Perform the `equal` logical operation elementwise on two input tensors."""
-    left, right = cast_axes_for_binary_broadcast(onnx_node, ng_inputs)
+    left, right = broadcast_for_binary_operation(onnx_node, ng_inputs)
     return ng.equal(left, right)
 
 
 @refactoring_required
 def Less(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Perform the `less` logical operation elementwise on two input tensors."""
-    left, right = cast_axes_for_binary_broadcast(onnx_node, ng_inputs)
+    left, right = broadcast_for_binary_operation(onnx_node, ng_inputs)
     return ng.less(left, right)
 
 
 @refactoring_required
 def Greater(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Perform the `greater` logical operation elementwise on two input tensors."""
-    left, right = cast_axes_for_binary_broadcast(onnx_node, ng_inputs)
+    left, right = broadcast_for_binary_operation(onnx_node, ng_inputs)
     return ng.greater(left, right)
 
 
 @refactoring_required
 def And(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Perform the `and` logical operation elementwise on two input tensors."""
-    left, right = cast_axes_for_binary_broadcast(onnx_node, ng_inputs)
+    left, right = broadcast_for_binary_operation(onnx_node, ng_inputs)
     left = ng.not_equal(left, 0)
     right = ng.not_equal(right, 0)
     return left * right
@@ -295,7 +295,7 @@ def And(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngrap
 @refactoring_required
 def Or(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Perform the `or` logical operation elementwise on two input tensors."""
-    left, right = cast_axes_for_binary_broadcast(onnx_node, ng_inputs)
+    left, right = broadcast_for_binary_operation(onnx_node, ng_inputs)
     left = ng.not_equal(left, 0)
     right = ng.not_equal(right, 0)
     return (left + right) > 0
@@ -304,7 +304,7 @@ def Or(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngraph
 @refactoring_required
 def Xor(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Perform the `xor` logical operation elementwise on two input tensors."""
-    left, right = cast_axes_for_binary_broadcast(onnx_node, ng_inputs)
+    left, right = broadcast_for_binary_operation(onnx_node, ng_inputs)
     left = ng.not_equal(left, 0)
     right = ng.not_equal(right, 0)
     return (left + right) % 2

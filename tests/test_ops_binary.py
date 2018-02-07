@@ -18,7 +18,6 @@ from __future__ import print_function, division
 import onnx
 
 import numpy as np
-import pytest
 
 from tests.utils import convert_and_calculate
 
@@ -30,7 +29,6 @@ def import_and_compute(op_type, input_data_left, input_data_right, **node_attrib
     return convert_and_calculate(node, [input_data_left, input_data_right], [input_data_left])[0]
 
 
-@pytest.mark.skip(reason='Needs refactoring to ngraph++')
 def test_add():
     assert np.array_equal(import_and_compute('Add', 1, 2),
                           np.array(3, dtype=np.float32))
@@ -44,8 +42,7 @@ def test_add():
     assert np.array_equal(import_and_compute('Add', [1, 2, 3], [4, 5, 6]),
                           np.array([5, 7, 9], dtype=np.float32))
 
-    assert np.array_equal(import_and_compute('Add', [[1, 2, 3],
-                                                     [4, 5, 6]], [7, 8, 9], broadcast=1),
+    assert np.array_equal(import_and_compute('Add', [[1, 2, 3], [4, 5, 6]], [7, 8, 9], broadcast=1),
                           np.array([[8, 10, 12], [11, 13, 15]], dtype=np.float32))
 
     # shape(A) = (2, 3, 4, 5), shape(B) = (,), i.e. B is a scalar
@@ -79,7 +76,6 @@ def test_add():
         left_operand + right_operand.reshape(2, 1, 1, 1))
 
 
-@pytest.mark.skip(reason='Needs refactoring to ngraph++')
 def test_sub():
     assert np.array_equal(import_and_compute('Sub', 20, 1),
                           np.array(19, dtype=np.float32))
@@ -90,11 +86,10 @@ def test_sub():
     assert np.array_equal(import_and_compute('Sub', [20, 19], [1, 2]),
                           np.array([19, 17], dtype=np.float32))
 
-    assert np.array_equal(import_and_compute('Sub', [[1, 2, 3], [4, 5, 6]], [7, 8, 9]),
+    assert np.array_equal(import_and_compute('Sub', [[1, 2, 3], [4, 5, 6]], [7, 8, 9], broadcast=1),
                           np.array([[-6, -6, -6], [-3, -3, -3]], dtype=np.float32))
 
 
-@pytest.mark.skip(reason='Needs refactoring to ngraph++')
 def test_mul():
     assert np.array_equal(import_and_compute('Mul', 2, 3),
                           np.array(6, dtype=np.float32))
@@ -105,11 +100,10 @@ def test_mul():
     assert np.array_equal(import_and_compute('Mul', [2, 3], [4, 5]),
                           np.array([8, 15], dtype=np.float32))
 
-    assert np.array_equal(import_and_compute('Mul', [[1, 2, 3], [4, 5, 6]], [7, 8, 9]),
+    assert np.array_equal(import_and_compute('Mul', [[1, 2, 3], [4, 5, 6]], [7, 8, 9], broadcast=1),
                           np.array([[7, 16, 27], [28, 40, 54]], dtype=np.float32))
 
 
-@pytest.mark.skip(reason='Needs refactoring to ngraph++')
 def test_div():
     assert np.array_equal(import_and_compute('Div', 6, 3),
                           np.array(2, dtype=np.float32))
@@ -120,5 +114,5 @@ def test_div():
     assert np.array_equal(import_and_compute('Div', [6, 8], [3, 2]),
                           np.array([2, 4], dtype=np.float32))
 
-    assert np.array_equal(import_and_compute('Div', [[10, 20, 30], [40, 50, 60]], [2, 5, 6]),
+    assert np.array_equal(import_and_compute('Div', [[10, 20, 30], [40, 50, 60]], [2, 5, 6], broadcast=1),
                           np.array([[5, 4, 5], [20, 10, 10]], dtype=np.float32))
