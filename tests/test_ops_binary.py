@@ -94,7 +94,6 @@ def test_sub():
                           np.array([[-6, -6, -6], [-3, -3, -3]], dtype=np.float32))
 
 
-@pytest.mark.skip(reason='Needs refactoring to ngraph++')
 def test_mul():
     assert np.array_equal(import_and_compute('Mul', 2, 3),
                           np.array(6, dtype=np.float32))
@@ -105,7 +104,7 @@ def test_mul():
     assert np.array_equal(import_and_compute('Mul', [2, 3], [4, 5]),
                           np.array([8, 15], dtype=np.float32))
 
-    assert np.array_equal(import_and_compute('Mul', [[1, 2, 3], [4, 5, 6]], [7, 8, 9]),
+    assert np.array_equal(import_and_compute('Mul', [[1, 2, 3], [4, 5, 6]], [7, 8, 9], broadcast=1),
                           np.array([[7, 16, 27], [28, 40, 54]], dtype=np.float32))
 
 
