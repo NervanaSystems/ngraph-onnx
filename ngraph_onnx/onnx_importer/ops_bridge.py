@@ -580,11 +580,10 @@ def Split(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Tup
 
 
 # Misc
-@refactoring_required
 def Constant(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Produce a constant tensor."""
     value_tensor = onnx_node.get_attribute_value('value')
-    return cast_to_pos_axes(ng.constant(value_tensor.to_array()))
+    return ng.constant(value_tensor.to_array())
 
 
 @refactoring_required
