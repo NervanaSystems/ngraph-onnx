@@ -20,7 +20,9 @@ import logging
 from string import ascii_letters
 from typing import Tuple, List, TYPE_CHECKING
 
+import numpy as np
 from functools import reduce
+from ngraph_api.utils.types import get_dtype
 
 from pyngraph import Node as NgraphNode
 import ngraph_api as ng
@@ -317,28 +319,27 @@ def Not(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngrap
 
 
 # Variadic Ops
-@refactoring_required
 def Sum(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Calculate element-wise sum of the input tensors."""
     return reduce(ng.add, ng_inputs)
 
 
-@refactoring_required
 def Min(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Calculate element-wise min of the input tensors."""
     return reduce(ng.minimum, ng_inputs)
 
 
-@refactoring_required
 def Max(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Calculate element-wise max of the input tensors."""
     return reduce(ng.maximum, ng_inputs)
 
 
-@refactoring_required
 def Mean(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Calculate element-wise mean of the input tensors."""
-    return reduce(ng.add, ng_inputs) / len(ng_inputs)
+    sum_node = reduce(ng.add, ng_inputs)
+    count_array = np.full(sum_node.shape, len(ng_inputs),
+                          dtype=get_dtype(sum_node.get_element_type()))
+    return sum_node / ng.constant(count_array)
 
 
 # Matrix multiplication
@@ -580,11 +581,10 @@ def Split(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Tup
 
 
 # Misc
-@refactoring_required
 def Constant(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Produce a constant tensor."""
     value_tensor = onnx_node.get_attribute_value('value')
-    return cast_to_pos_axes(ng.constant(value_tensor.to_array()))
+    return ng.constant(value_tensor.to_array())
 
 
 @refactoring_required
