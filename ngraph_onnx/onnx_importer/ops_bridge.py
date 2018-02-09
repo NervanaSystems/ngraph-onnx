@@ -113,7 +113,6 @@ def Sigmoid(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> N
     return ng.sigmoid(ng_inputs[0])
 
 
-@refactoring_required
 def Tanh(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Calculate the hyperbolic tangent of the input tensor elementwise."""
     return ng.tanh(ng_inputs[0])

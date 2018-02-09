@@ -43,7 +43,6 @@ def test_sigmoid():
     assert_onnx_import_equals_callable('Sigmoid', sigmoid, [-2, -1., 0., 1., 2.])
 
 
-@pytest.mark.skip(reason='Needs refactoring to ngraph++')
 def test_tanh():
     assert_onnx_import_equals_callable('Tanh', np.tanh, [-2, -1., 0., 1., 2.])
     assert_onnx_import_equals_callable('Tanh', np.tanh, [0.])
