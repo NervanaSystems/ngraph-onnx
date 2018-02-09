@@ -144,7 +144,6 @@ def PRelu(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngr
     return ng.maximum(slope * x, x)
 
 
-@refactoring_required
 def Selu(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Apply the scaled exponential linear unit function to the input tensor elementwise.
 
@@ -154,7 +153,7 @@ def Selu(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngra
     alpha = onnx_node.get_attribute_value('alpha', 1.6732)
     gamma = onnx_node.get_attribute_value('gamma', 1.0507)
 
-    return gamma * (ng.maximum(x, 0) + alpha * (ng.exp(-ng.maximum(-x, 0)) - 1))
+    return (gamma * (ng.maximum(x, 0) + alpha * (ng.exp(ng.negative(ng.maximum(ng.negative(x), 0))) - 1)))
 
 
 @refactoring_required
