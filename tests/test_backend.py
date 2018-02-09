@@ -49,7 +49,6 @@ backend_test.exclude('test_softmax')
 backend_test.exclude('test_slice')
 backend_test.exclude('test_relu')
 backend_test.exclude('test_default_axes')
-backend_test.exclude('test_add')
 
 # big models tests
 backend_test.exclude('test_bvlc_alexnet')
