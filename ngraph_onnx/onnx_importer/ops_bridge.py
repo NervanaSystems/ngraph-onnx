@@ -122,7 +122,6 @@ def Relu(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngra
     return ng.maximum(ng_inputs[0], 0)
 
 
-@refactoring_required
 def LeakyRelu(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Apply the Leaky Relu function to the input tensor elementwise.
 

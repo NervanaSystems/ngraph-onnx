@@ -59,7 +59,6 @@ def test_relu():
     assert_onnx_import_equals_callable('Relu', relu, [[-3, -2, -1], [1, 2, 3]])
 
 
-@pytest.mark.skip(reason='Needs refactoring to ngraph++')
 def test_leaky_relu():
     def leaky_relu(x, alpha=0.01):
         return np.maximum(alpha * x, x)
