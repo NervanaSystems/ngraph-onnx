@@ -156,7 +156,6 @@ def Selu(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngra
     return (gamma * (ng.maximum(x, 0) + alpha * (ng.exp(ng.negative(ng.maximum(ng.negative(x), 0))) - 1)))
 
 
-@refactoring_required
 def Elu(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Apply the exponential linear unit function to the input tensor elementwise.
 
@@ -169,7 +168,7 @@ def Elu(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngrap
         logger.warning('Elu node (%s): alpha value should be positive, but is: %s',
                        onnx_node.name, alpha)
 
-    return ng.maximum(x, 0) + alpha * (ng.exp(-ng.maximum(-x, 0)) - 1)
+    return (ng.maximum(x, 0) + alpha * (ng.exp(ng.negative(ng.maximum(ng.negative(x), 0))) - 1))
 
 
 @refactoring_required
