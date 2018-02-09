@@ -117,10 +117,9 @@ def Tanh(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngra
     return ng.tanh(ng_inputs[0])
 
 
-@refactoring_required
 def Relu(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Apply the Relu function, f(x) = max(0, x) to the input tensor elementwise."""
-    return ng.maximum(ng_inputs[0], 0.)
+    return ng.maximum(ng_inputs[0], 0)
 
 
 @refactoring_required
