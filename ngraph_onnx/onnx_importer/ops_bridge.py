@@ -134,7 +134,6 @@ def LeakyRelu(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) ->
     return ng.maximum(alpha * ng_inputs[0], ng_inputs[0])
 
 
-@refactoring_required
 def PRelu(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Apply the Parametric Relu function to the input tensor elementwise.
 
@@ -142,8 +141,6 @@ def PRelu(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngr
     The slope parameter is passed to the node as its second input.
     """
     x, slope = ng_inputs
-    x = ng.broadcast(x, x.axes + slope.axes)
-    slope = ng.broadcast(slope, axes=x.axes)
     return ng.maximum(slope * x, x)
 
 

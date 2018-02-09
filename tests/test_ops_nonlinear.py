@@ -71,7 +71,6 @@ def test_leaky_relu():
     assert_onnx_import_equals_callable('LeakyRelu', leaky_relu, [[-3, -2, -1], [1, 2, 3]])
 
 
-@pytest.mark.skip(reason='Needs refactoring to ngraph++')
 @pytest.mark.parametrize('x,slope', [
     ([-2, -1., 0., 1., 2.], 0.5),
     ([0.], 1),
