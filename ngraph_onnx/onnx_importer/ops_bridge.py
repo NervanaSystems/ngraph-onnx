@@ -107,10 +107,9 @@ def Sqrt(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngra
     return ng.sqrt(ng_inputs[0])
 
 
-@refactoring_required
 def Sigmoid(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Apply the sigmoid function, f(x) = 1 / (1 + exp(-x)) to the input tensor elementwise."""
-    return ng.sigmoid(ng_inputs[0])
+    return 1 / (1 + ng.exp(ng.negative(ng_inputs[0])))
 
 
 def Tanh(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode

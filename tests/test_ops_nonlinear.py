@@ -33,7 +33,6 @@ def assert_onnx_import_equals_callable(onnx_op_type, python_function, data, **kw
                        python_function(data, **kwargs))
 
 
-@pytest.mark.skip(reason='Needs refactoring to ngraph++')
 def test_sigmoid():
     def sigmoid(x):
         return 1 / (1 + np.exp(-x))
