@@ -22,7 +22,6 @@ import pytest
 from tests.utils import convert_and_calculate
 
 
-@pytest.mark.skip(reason='Needs refactoring to ngraph++')
 @pytest.mark.parametrize('onnx_op,numpy_func', [
     ('And', np.logical_and),
     ('Or', np.logical_or),
@@ -47,7 +46,6 @@ def test_logical(onnx_op, numpy_func):
     assert np.array_equal(ng_results, [expected_output])
 
 
-@pytest.mark.skip(reason='Needs refactoring to ngraph++')
 def test_logical_not():
     input_data = np.array([[0, 1, -1], [0, 1, -1], [0, 1, -1]])
     expected_output = np.logical_not(input_data)

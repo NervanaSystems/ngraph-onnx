@@ -255,58 +255,55 @@ def Div(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngrap
 
 
 # Logical ops
-@refactoring_required
 def Equal(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Perform the `equal` logical operation elementwise on two input tensors."""
     left, right = broadcast_for_binary_operation(onnx_node, ng_inputs)
     return ng.equal(left, right)
 
 
-@refactoring_required
 def Less(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Perform the `less` logical operation elementwise on two input tensors."""
     left, right = broadcast_for_binary_operation(onnx_node, ng_inputs)
     return ng.less(left, right)
 
 
-@refactoring_required
 def Greater(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Perform the `greater` logical operation elementwise on two input tensors."""
     left, right = broadcast_for_binary_operation(onnx_node, ng_inputs)
     return ng.greater(left, right)
 
 
-@refactoring_required
 def And(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Perform the `and` logical operation elementwise on two input tensors."""
     left, right = broadcast_for_binary_operation(onnx_node, ng_inputs)
-    left = ng.not_equal(left, 0)
-    right = ng.not_equal(right, 0)
-    return left * right
+    left = ng.convert(ng.not_equal(left, 0), int)
+    right = ng.convert(ng.not_equal(right, 0), int)
+    return ng.convert(left * right, bool)
 
 
-@refactoring_required
 def Or(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Perform the `or` logical operation elementwise on two input tensors."""
     left, right = broadcast_for_binary_operation(onnx_node, ng_inputs)
-    left = ng.not_equal(left, 0)
-    right = ng.not_equal(right, 0)
+    left = ng.convert(ng.not_equal(left, 0), int)
+    right = ng.convert(ng.not_equal(right, 0), int)
     return (left + right) > 0
 
 
-@refactoring_required
 def Xor(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Perform the `xor` logical operation elementwise on two input tensors."""
     left, right = broadcast_for_binary_operation(onnx_node, ng_inputs)
-    left = ng.not_equal(left, 0)
-    right = ng.not_equal(right, 0)
-    return (left + right) % 2
+    not_left = ng.convert(ng.equal(left, 0), int)
+    left = ng.convert(ng.not_equal(left, 0), int)
+    right = ng.convert(ng.not_equal(right, 0), int)
+    not_right = ng.convert(ng.equal(right, 0), int)
+
+    return ((not_left * right) + (not_right * left)) > 0
 
 
-@refactoring_required
 def Not(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Return the negation of the input tensor elementwise."""
-    return ng.equal(ng_inputs[0] + 1, 1)
+    data = ng.convert(ng.not_equal(ng_inputs[0], 0), bool)
+    return ng.logical_not(data)
 
 
 # Variadic Ops
