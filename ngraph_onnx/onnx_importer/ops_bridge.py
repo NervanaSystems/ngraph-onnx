@@ -107,25 +107,21 @@ def Sqrt(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngra
     return ng.sqrt(ng_inputs[0])
 
 
-@refactoring_required
 def Sigmoid(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Apply the sigmoid function, f(x) = 1 / (1 + exp(-x)) to the input tensor elementwise."""
-    return ng.sigmoid(ng_inputs[0])
+    return 1 / (1 + ng.exp(ng.negative(ng_inputs[0])))
 
 
-@refactoring_required
 def Tanh(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Calculate the hyperbolic tangent of the input tensor elementwise."""
     return ng.tanh(ng_inputs[0])
 
 
-@refactoring_required
 def Relu(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Apply the Relu function, f(x) = max(0, x) to the input tensor elementwise."""
-    return ng.maximum(ng_inputs[0], 0.)
+    return ng.maximum(ng_inputs[0], 0)
 
 
-@refactoring_required
 def LeakyRelu(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Apply the Leaky Relu function to the input tensor elementwise.
 
@@ -138,7 +134,6 @@ def LeakyRelu(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) ->
     return ng.maximum(alpha * ng_inputs[0], ng_inputs[0])
 
 
-@refactoring_required
 def PRelu(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Apply the Parametric Relu function to the input tensor elementwise.
 
@@ -146,12 +141,9 @@ def PRelu(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngr
     The slope parameter is passed to the node as its second input.
     """
     x, slope = ng_inputs
-    x = ng.broadcast(x, x.axes + slope.axes)
-    slope = ng.broadcast(slope, axes=x.axes)
     return ng.maximum(slope * x, x)
 
 
-@refactoring_required
 def Selu(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Apply the scaled exponential linear unit function to the input tensor elementwise.
 
@@ -161,10 +153,9 @@ def Selu(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngra
     alpha = onnx_node.get_attribute_value('alpha', 1.6732)
     gamma = onnx_node.get_attribute_value('gamma', 1.0507)
 
-    return gamma * (ng.maximum(x, 0) + alpha * (ng.exp(-ng.maximum(-x, 0)) - 1))
+    return (gamma * (ng.maximum(x, 0) + alpha * (ng.exp(ng.negative(ng.maximum(ng.negative(x), 0))) - 1)))
 
 
-@refactoring_required
 def Elu(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Apply the exponential linear unit function to the input tensor elementwise.
 
@@ -177,7 +168,7 @@ def Elu(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngrap
         logger.warning('Elu node (%s): alpha value should be positive, but is: %s',
                        onnx_node.name, alpha)
 
-    return ng.maximum(x, 0) + alpha * (ng.exp(-ng.maximum(-x, 0)) - 1)
+    return (ng.maximum(x, 0) + alpha * (ng.exp(ng.negative(ng.maximum(ng.negative(x), 0))) - 1))
 
 
 @refactoring_required

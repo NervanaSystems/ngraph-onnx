@@ -33,7 +33,6 @@ def assert_onnx_import_equals_callable(onnx_op_type, python_function, data, **kw
                        python_function(data, **kwargs))
 
 
-@pytest.mark.skip(reason='Needs refactoring to ngraph++')
 def test_sigmoid():
     def sigmoid(x):
         return 1 / (1 + np.exp(-x))
@@ -43,14 +42,12 @@ def test_sigmoid():
     assert_onnx_import_equals_callable('Sigmoid', sigmoid, [-2, -1., 0., 1., 2.])
 
 
-@pytest.mark.skip(reason='Needs refactoring to ngraph++')
 def test_tanh():
     assert_onnx_import_equals_callable('Tanh', np.tanh, [-2, -1., 0., 1., 2.])
     assert_onnx_import_equals_callable('Tanh', np.tanh, [0.])
     assert_onnx_import_equals_callable('Tanh', np.tanh, [-2, -1., 0., 1., 2.])
 
 
-@pytest.mark.skip(reason='Needs refactoring to ngraph++')
 def test_relu():
     def relu(x):
         return np.maximum(x, 0)
@@ -62,7 +59,6 @@ def test_relu():
     assert_onnx_import_equals_callable('Relu', relu, [[-3, -2, -1], [1, 2, 3]])
 
 
-@pytest.mark.skip(reason='Needs refactoring to ngraph++')
 def test_leaky_relu():
     def leaky_relu(x, alpha=0.01):
         return np.maximum(alpha * x, x)
@@ -75,7 +71,6 @@ def test_leaky_relu():
     assert_onnx_import_equals_callable('LeakyRelu', leaky_relu, [[-3, -2, -1], [1, 2, 3]])
 
 
-@pytest.mark.skip(reason='Needs refactoring to ngraph++')
 @pytest.mark.parametrize('x,slope', [
     ([-2, -1., 0., 1., 2.], 0.5),
     ([0.], 1),
@@ -94,7 +89,6 @@ def test_parametric_relu(x, slope):
     assert np.allclose(output, expected_output)
 
 
-@pytest.mark.skip(reason='Needs refactoring to ngraph++')
 def test_selu():
     # f(x) = gamma * (alpha * exp(x) - alpha) for x <= 0, y = gamma * x for x > 0
     def selu(x, alpha=1.6732, gamma=1.0507):
@@ -107,7 +101,6 @@ def test_selu():
     assert_onnx_import_equals_callable('Selu', selu, [-2, -1., 0., 1., 2.], gamma=0.5, alpha=0.5)
 
 
-@pytest.mark.skip(reason='Needs refactoring to ngraph++')
 def test_elu():
     # f(x) = alpha * (exp(x) - 1) for x < 0, f(x) = x for x >= 0
     def elu(x, alpha=1):
