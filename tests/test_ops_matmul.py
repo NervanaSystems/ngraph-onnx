@@ -28,7 +28,7 @@ from ngraph_onnx.onnx_importer.importer import import_onnx_model
 
 @lru_cache(maxsize=1)
 def get_transformer():
-    return ng.transformers.make_transformer()
+    return ng.runtime()
 
 
 def make_onnx_model_for_matmul_op(input_left, input_right):
@@ -92,7 +92,6 @@ def import_and_compute_gemm(input_a, input_b, input_c, **kwargs):
     return computation(input_a, input_b, input_c)
 
 
-@pytest.mark.skip(reason='Needs refactoring to ngraph++')
 def test_op_matmul():
     # vector @ vector
     data = ([1, 2], [1, 3])
