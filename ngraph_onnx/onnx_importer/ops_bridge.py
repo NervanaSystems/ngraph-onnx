@@ -580,7 +580,6 @@ def Softmax(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> N
     return ng.softmax(input_, normalization_axes=input_.axes[axis])
 
 
-@refactoring_required
 def BatchNormalization(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Carry out batch normalization."""
     x, scale, bias, mean, var = ng_inputs
@@ -588,6 +587,7 @@ def BatchNormalization(onnx_node, ng_inputs):  # type: (NodeWrapper, List[Ngraph
     is_test = onnx_node.get_attribute_value('is_test', 1)
     spatial = onnx_node.get_attribute_value('spatial', 1)
     epsilon = onnx_node.get_attribute_value('epsilon', 1e-3)
+
     # @TODO: Implement learning mode support
     # momentum = onnx_node.get_attribute_value('momentum', 0.99)
 
@@ -598,16 +598,9 @@ def BatchNormalization(onnx_node, ng_inputs):  # type: (NodeWrapper, List[Ngraph
         raise NotImplementedError('BatchNormalization node (%s): only `spatial` mode is currently '
                                   'supported.', onnx_node.name)
 
-    if len(x.axes) == 5:
-        x = rename_axes(x, 'NCHWD')
-    else:
-        x = rename_axes(x, 'NCHW')
-
-    mean = rename_axes(mean, 'C')
-    scale = rename_axes(scale, 'C')
-    bias = rename_axes(bias, 'C')
-    var = rename_axes(var, 'C')
-
-    ng_op = ng.unflatten(scale * ((x - mean) * ng.reciprocal(ng.sqrt(var + epsilon))) + bias)
-
-    return cast_to_pos_axes(ng_op)
+    mean = ng.broadcast(mean, x.shape, axis=1)
+    scale = ng.broadcast(scale, x.shape, axis=1)
+    var = ng.broadcast(var, x.shape, axis=1)
+    bias = ng.broadcast(bias, x.shape, axis=1)
+    epsilon = ng.broadcast(ng.constant(epsilon, dtype=float), x.shape, axis=1)
+    return (scale * ((x - mean) * (1 / (ng.sqrt(var + epsilon)))) + bias)

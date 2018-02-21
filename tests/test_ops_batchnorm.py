@@ -18,7 +18,6 @@ from __future__ import print_function, division
 import onnx
 
 import numpy as np
-import pytest
 
 from tests.utils import convert_and_calculate
 
@@ -28,7 +27,6 @@ def make_batch_norm_node(**node_attributes):
                                  outputs=['Y'], **node_attributes)
 
 
-@pytest.mark.skip(reason='Needs refactoring to ngraph++')
 def test_batch_norm_test_mode():
     data = np.arange(48).reshape(1, 3, 4, 4)
     scale = np.ones((3,)).astype(np.float32)  # Gamma
