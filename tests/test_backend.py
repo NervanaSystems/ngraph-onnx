@@ -17,8 +17,6 @@ backend_test = onnx.backend.test.BackendTest(NgraphBackend, __name__)
 
 # Need refactoring to ngraph++
 backend_test.exclude('test_AvgPool')
-backend_test.exclude('test_Bat')
-backend_test.exclude('test_BatchNorm')
 backend_test.exclude('test_ConstantPad2d')
 backend_test.exclude('test_Conv')
 backend_test.exclude('test_Embedding')
