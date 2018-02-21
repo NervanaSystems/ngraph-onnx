@@ -16,6 +16,10 @@
 from __future__ import division
 from __future__ import print_function
 
+import logging
+
+log = logging.getLogger(__file__)
+
 from math import floor, ceil
 from typing import Tuple, List, Dict, TYPE_CHECKING
 
@@ -135,49 +139,13 @@ def get_conv_params(onnx_node):  # type: (NodeWrapper) -> Dict
             'dil_d': dil_d, 'dil_h': dil_h, 'dil_w': dil_w}
 
 
-@function_deprecated
-def make_conv_output_axes(input, filter, conv_params):  # type: ignore
-    """
-    Prepare axes for the output of an ng.convolution operation.
-
-    :param input: ngraph tensor with convolution input data
-    :param filter: ngraph tensor with convolution filter data
-    :param conv_params: dict of conv_params for ng.convolution
-    :return: ngraph Axes compatible with convolution operation
-    """
-    number_output_features = filter.axes[-1].length
-    mini_batch_size = input.axes[-1].length
-
-    input_d, input_h, input_w = input.axes.lengths[1:4]  # axes order C, D, H, W, N
-    filter_d, filter_h, filter_w = filter.axes.lengths[1:4]  # axes order J, T(d), R(h), S(w), K
-
-    def output_dim(input_x, filter_x, pad_x, str_x, dil_x):  # type: (int, int, int, int, int) -> int
-        return int((input_x + 2 * pad_x - filter_x - (filter_x - 1) * (dil_x - 1)) / str_x) + 1
-
-    convp = conv_params
-    output_d = output_dim(input_d, filter_d, convp['pad_d'], convp['str_d'], convp['dil_d'])
-    output_h = output_dim(input_h, filter_h, convp['pad_h'], convp['str_h'], convp['dil_h'])
-    output_w = output_dim(input_w, filter_w, convp['pad_w'], convp['str_w'], convp['dil_w'])
-
-    output_axes = ng.make_axes(axes=(
-        ng.make_axis(name='C', docstring='output features', length=int(number_output_features)),
-        ng.make_axis(name='D', docstring='depth', length=int(output_d)),
-        ng.make_axis(name='H', docstring='height', length=int(output_h)),
-        ng.make_axis(name='W', docstring='width', length=int(output_w)),
-        ng.make_axis(name='N', docstring='mini-batch size', length=int(mini_batch_size)),
-    ))
-    return output_axes
-
-
-@function_deprecated
 def make_convolution_op(onnx_node, ng_inputs, transpose=False):
     # type: (NodeWrapper, List[NgraphNode], bool) -> NgraphNode
     """
-    Create an ngraph convolution or deconvolution Op based on an ONNX node.
+    Create an ngraph convolution Op based on an ONNX node.
 
     :param onnx_node: wrapped ONNX node for Conv of ConvTranspose op
     :param ng_inputs: ngraph TensorOp input tensors
-    :param transpose: should this be a transposed convolution?
     :return: ngraph Op for convolution or deconvolution
     """
     if len(ng_inputs) == 3:
@@ -189,40 +157,17 @@ def make_convolution_op(onnx_node, ng_inputs, transpose=False):
         raise ValueError('Conv node (%s): unexpected number of input values: %d.',
                          onnx_node.name, len(ng_inputs))
 
-    # Reorder x axes from ONNX convention (N, C, H, W, D) to ngraph (C, D, H, W, N)
-    # Reorder weights axes from ONNX (K, J, R, S, T) to ngraph (J, T, R, S, K)
-    # Axis names follow https://ngraph.nervanasys.com/index.html/axes.html
-    if len(x.axes) == 4:  # 2D convolution
-        x = reorder_axes(x, 'NCHW', 'CDHWN')
-        weights = reorder_axes(weights, 'KJRS', 'JTRSK')
-    elif len(x.axes) == 5:  # 3D convolution
-        x = reorder_axes(x, 'NCHWD', 'CDHWN')
-        weights = reorder_axes(weights, 'KJRST', 'JTRSK')
-    else:
-        raise NotImplementedError('Conv node (%s): only 2D and 3D convolutions are supported.',
-                                  onnx_node.name)
-
-    # groups = onnx_node.get_attribute_value('group', 1)
-    # if groups != 1:
-    #     raise NotImplementedError('Conv node (%s): `group` attribute value %d not supported.',
-    #                               onnx_node.name, groups)
+    groups = onnx_node.get_attribute_value('group', 1)
+    if groups != 1:
+        log.warning('Conv node (%s): `group` attribute value %d is not supported.',
+                    onnx_node.name, groups)
 
     # Prepare ngraph convolution operation
     conv_params = get_conv_params(onnx_node)
-    output_axes = make_conv_output_axes(x, weights, conv_params)
 
-    if transpose:
-        conv = ng.deconvolution(conv_params, x, weights, axes=output_axes)
-
-    else:
-        conv = ng.convolution(conv_params, x, weights, axes=output_axes)
-
-    conv = cast_to_pos_axes(conv) + bias
-
-    # ONNX output should have axes in the order N, C, H, W, D
-    conv = reorder_axes(conv, 'CDHWN', 'NCHWD')
-
-    if len(ng_inputs[0].axes) == 4:  # 2D convolution, slice away the D axis from output
-        conv = ng.tensor_slice(conv, [slice(None), slice(None), slice(None), slice(None), 0])
+    strides = [conv_params['str_h'], conv_params['str_w']]
+    dilation = [conv_params['dil_h'], conv_params['dil_w']]
+    padding_above = [conv_params['pad_h'], conv_params['pad_w']]
+    conv = ng.convolution(x, weights, strides, dilation, padding_above, padding_above)
 
     return conv

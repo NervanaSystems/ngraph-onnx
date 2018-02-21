@@ -60,10 +60,9 @@ def import_and_compute_conv(x, weights, transpose=False, **attributes):
 
 
 def get_transformer():
-    return ng.transformers.make_transformer()
+    return ng.runtime()
 
 
-@pytest.mark.skip(reason='Needs refactoring to ngraph++')
 def test_2d_conv():
     # x should have shape N(batch) x C x H x W
     input_x = np.array([
