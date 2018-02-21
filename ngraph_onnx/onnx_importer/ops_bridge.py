@@ -584,7 +584,19 @@ def BatchNormalization(onnx_node, ng_inputs):  # type: (NodeWrapper, List[Ngraph
     """Carry out batch normalization."""
     x, scale, bias, mean, var = ng_inputs
 
+    is_test = onnx_node.get_attribute_value('is_test', 1)
+    spatial = onnx_node.get_attribute_value('spatial', 1)
     epsilon = onnx_node.get_attribute_value('epsilon', 1e-3)
+
+    # @TODO: Implement learning mode support
+    # momentum = onnx_node.get_attribute_value('momentum', 0.99)
+
+    if not is_test:
+        raise NotImplementedError('BatchNormalization node (%s): only `is_test` mode is currently '
+                                  'supported.', onnx_node.name)
+    if not spatial:
+        raise NotImplementedError('BatchNormalization node (%s): only `spatial` mode is currently '
+                                  'supported.', onnx_node.name)
 
     mean = ng.broadcast(mean, x.shape, axis=1)
     scale = ng.broadcast(scale, x.shape, axis=1)
