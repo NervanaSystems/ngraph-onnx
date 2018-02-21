@@ -369,10 +369,9 @@ def Gemm(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngra
 
 
 # Convolution ops
-@refactoring_required
 def Conv(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Calculate output of a convolution operation based on an input tensor and a filter."""
-    return cast_to_pos_axes(make_convolution_op(onnx_node, ng_inputs))
+    return make_convolution_op(onnx_node, ng_inputs)
 
 
 @refactoring_required
