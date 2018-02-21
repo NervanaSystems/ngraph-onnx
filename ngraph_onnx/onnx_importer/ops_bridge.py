@@ -342,29 +342,25 @@ def MatMul(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ng
     return ng.dot(left, right, reduction_axes_count)
 
 
-@refactoring_required
 def Gemm(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Calculate general matrix multiplication Y = alpha * (A @ B) + beta * C."""
     input_a, input_b, input_c = ng_inputs
     alpha = onnx_node.get_attribute_value('alpha', 1)  # Scalar multiplier for A @ B
     beta = onnx_node.get_attribute_value('beta', 1)  # Scalar multiplier for input tensor C
-    broadcast = onnx_node.get_attribute_value('broadcast', 1)  # Should C be broadcast?
     trans_a = onnx_node.get_attribute_value('transA', False)  # Should A be transposed?
     trans_b = onnx_node.get_attribute_value('transB', False)  # Should B be transposed?
 
-    if not broadcast:
-        logger.warning('Gemm node (%s): import does not support broadcast value %s',
-                       onnx_node.name, broadcast)
-
     if trans_a:
-        input_a = ng.Transpose(input_a)
+        # TODO, when Reshape will be available
+        raise NotImplementedError("Unfortunately currently we do not support "
+            "matrix transpositions")
 
     if trans_b:
-        input_b = ng.Transpose(input_b)
+        # TODO, when Reshape will be available
+        raise NotImplementedError("Unfortunately currently we do not support "
+            "matrix transpositions")
 
-    input_a, input_b = cast_axes_for_matmul(input_a, input_b)
     a_dot_b = ng.dot(input_a, input_b)
-    a_dot_b = cast_to_pos_axes(a_dot_b)
     return alpha * a_dot_b + beta * input_c
 
 
