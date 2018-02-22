@@ -353,18 +353,19 @@ def Gemm(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngra
 
     if trans_a:
         # TODO, when Reshape will be available
-        raise NotImplementedError("Unfortunately currently we do not support "
-            "matrix transpositions")
+        raise NotImplementedError('Gemm node (%s): unfortunately currently we do not support '
+                                  'matrix transpositions', onnx_node.name)
 
     if trans_b:
         # TODO, when Reshape will be available
-        raise NotImplementedError("Unfortunately currently we do not support "
-            "matrix transpositions")
+        raise NotImplementedError('Gemm node (%s): unfortunately currently we do not support '
+                                  'matrix transpositions', onnx_node.name)
 
     a_dot_b = ng.dot(input_a, input_b)
 
     if not broadcast and input_c.shape != a_dot_b.shape:
-        raise ValueError('Input data shapes are incompatible and broadcast was not requested!')
+        raise ValueError('Gemm node (%s): input data shapes are incompatible and broadcast '
+                         ' was not requested!', onnx_node.name)
 
     return alpha * a_dot_b + beta * input_c
 
