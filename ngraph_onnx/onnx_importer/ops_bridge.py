@@ -337,9 +337,6 @@ def Dot(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngrap
 def MatMul(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Calculate matrix product, similar to numpy.matmul."""
     left, right = ng_inputs
-    # FIXME: arogowie: Need set this parameter appropriately. Now just works out of the box for 2D
-    # reduction_axes_count = 1
-    # return ng.dot(left, right, reduction_axes_count)
     return ng.dot(left, right)
 
 
