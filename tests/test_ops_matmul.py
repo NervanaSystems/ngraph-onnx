@@ -52,7 +52,8 @@ def import_and_compute_matmul(input_left, input_right):
     return computation(input_data_left, input_data_right)
 
 
-def numpy_gemm(input_a, input_b, input_c, alpha=1, beta=1, trans_a=False, trans_b=False):
+def numpy_gemm(input_a, input_b, input_c, alpha=1, beta=1, trans_a=False, trans_b=False,
+               broadcast=False):
     input_a, input_b, input_c = np.array(input_a), np.array(input_b), np.array(input_c)
     if trans_a:
         input_a = input_a.T
@@ -132,19 +133,35 @@ def test_op_matmul_3d():
     assert np.array_equal(import_and_compute_matmul(*data), np.matmul(*data))
 
 
-@pytest.mark.skip(reason='Needs refactoring to ngraph++')
 def test_gemm():
     data = ([1, 2], [1, 3], [1, 4])
     assert np.array_equal(import_and_compute_gemm(*data), numpy_gemm(*data))
 
-    data = ([1, 2], [1, 3], [1, 4])
-    kwargs = {'trans_a': True, 'trans_b': True}
-    assert np.array_equal(import_and_compute_gemm(*data, **kwargs), numpy_gemm(*data, **kwargs))
+    data = ([1, 2], [1, 3], [[1, 2, 3]])
+    kwargs = {'broadcast': 0}
+    with pytest.raises(ValueError):
+        np.array_equal(import_and_compute_gemm(*data, **kwargs), numpy_gemm(*data, **kwargs))
+
+    data = ([1, 2], [1, 3], 1)
+    assert np.array_equal(import_and_compute_gemm(*data), numpy_gemm(*data))
+
+    data = ([1, 2], [1, 3], [1])
+    assert np.array_equal(import_and_compute_gemm(*data), numpy_gemm(*data))
+
+    # TODO: [arogowie] Currently we do not support transpositions
+    # data = ([1, 2], [1, 3], [1, 4])
+    # kwargs = {'trans_a': True, 'trans_b': True}
+    # assert np.array_equal(import_and_compute_gemm(*data, **kwargs), numpy_gemm(*data, **kwargs))
 
     data = ([1, 2], [1, 3], [1, 4])
     kwargs = {'alpha': 7, 'beta': 9}
     assert np.array_equal(import_and_compute_gemm(*data, **kwargs), numpy_gemm(*data, **kwargs))
 
-    data = ([[1, 2], [1, 2]], [[1, 3], [1, 3]], [4, 1])
-    kwargs = {'trans_a': True, 'trans_b': True, 'alpha': 7, 'beta': 9}
+    data = ([1, 2, 3, 4], [1, 3, 5, 7], [1, 4])
+    kwargs = {'alpha': 7, 'beta': 9}
     assert np.array_equal(import_and_compute_gemm(*data, **kwargs), numpy_gemm(*data, **kwargs))
+
+    # TODO: [arogowie] Currently we do not support transpositions
+    # data = ([[1, 2], [1, 2]], [[1, 3], [1, 3]], [4, 1])
+    # kwargs = {'trans_a': True, 'trans_b': True, 'alpha': 7, 'beta': 9}
+    # assert np.array_equal(import_and_compute_gemm(*data, **kwargs), numpy_gemm(*data, **kwargs))
