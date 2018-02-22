@@ -347,6 +347,7 @@ def Gemm(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngra
     input_a, input_b, input_c = ng_inputs
     alpha = onnx_node.get_attribute_value('alpha', 1)  # Scalar multiplier for A @ B
     beta = onnx_node.get_attribute_value('beta', 1)  # Scalar multiplier for input tensor C
+    broadcast = onnx_node.get_attribute_value('broadcast', 1)  # Should C be broadcast?
     trans_a = onnx_node.get_attribute_value('transA', False)  # Should A be transposed?
     trans_b = onnx_node.get_attribute_value('transB', False)  # Should B be transposed?
 
@@ -361,6 +362,10 @@ def Gemm(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngra
             "matrix transpositions")
 
     a_dot_b = ng.dot(input_a, input_b)
+
+    if not broadcast and input_c.shape != a_dot_b.shape:
+        raise ValueError('Input data shapes are incompatible and broadcast was not requested!')
+
     return alpha * a_dot_b + beta * input_c
 
 
