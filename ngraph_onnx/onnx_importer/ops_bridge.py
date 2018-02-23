@@ -350,14 +350,17 @@ def Gemm(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngra
     trans_b = onnx_node.get_attribute_value('transB', False)  # Should B be transposed?
 
     if trans_a:
-        # TODO, when Reshape will be available
-        raise NotImplementedError('Gemm node (%s): unfortunately currently we do not support '
-                                  'matrix transpositions', onnx_node.name)
-
+        axes_order = list(range(len(input_a.shape)))
+        axes_order.reverse()
+        out_shape = list(input_a.shape)
+        out_shape.reverse()
+        input_a = ng.reshape(input_a, axes_order, out_shape)
     if trans_b:
-        # TODO, when Reshape will be available
-        raise NotImplementedError('Gemm node (%s): unfortunately currently we do not support '
-                                  'matrix transpositions', onnx_node.name)
+        axes_order = list(range(len(input_b.shape)))
+        axes_order.reverse()
+        out_shape = list(input_b.shape)
+        out_shape.reverse()
+        input_b = ng.reshape(input_b, axes_order, out_shape)
 
     a_dot_b = ng.dot(input_a, input_b)
 

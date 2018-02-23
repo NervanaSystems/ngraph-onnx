@@ -64,7 +64,14 @@ def numpy_gemm(input_a, input_b, input_c, alpha=1, beta=1, trans_a=False, trans_
 
 
 def make_onnx_model_for_gemm_op(input_a, input_b, input_c, **kwargs):
-    output_shape = np.dot(input_a, input_b).shape
+    input_a_for_output = input_a
+    input_b_for_output = input_b
+    if kwargs.get('transA'):
+        input_a_for_output = input_a.T
+    if kwargs.get('transB'):
+        input_b_for_output = input_b.T
+
+    output_shape = np.dot(input_a_for_output, input_b_for_output).shape
     node = make_node('Gemm', ['A', 'B', 'C'], ['Y'], name='test_node', **kwargs)
     graph = make_graph([node], 'test_graph',
                        [make_tensor_value_info('A', onnx.TensorProto.FLOAT, input_a.shape),
@@ -148,11 +155,6 @@ def test_gemm():
     data = ([1, 2], [1, 3], [1])
     assert np.array_equal(import_and_compute_gemm(*data), numpy_gemm(*data))
 
-    # TODO: [arogowie] Currently we do not support transpositions
-    # data = ([1, 2], [1, 3], [1, 4])
-    # kwargs = {'trans_a': True, 'trans_b': True}
-    # assert np.array_equal(import_and_compute_gemm(*data, **kwargs), numpy_gemm(*data, **kwargs))
-
     data = ([1, 2], [1, 3], [1, 4])
     kwargs = {'alpha': 7, 'beta': 9}
     assert np.array_equal(import_and_compute_gemm(*data, **kwargs), numpy_gemm(*data, **kwargs))
@@ -161,7 +163,20 @@ def test_gemm():
     kwargs = {'alpha': 7, 'beta': 9}
     assert np.array_equal(import_and_compute_gemm(*data, **kwargs), numpy_gemm(*data, **kwargs))
 
-    # TODO: [arogowie] Currently we do not support transpositions
-    # data = ([[1, 2], [1, 2]], [[1, 3], [1, 3]], [4, 1])
-    # kwargs = {'trans_a': True, 'trans_b': True, 'alpha': 7, 'beta': 9}
-    # assert np.array_equal(import_and_compute_gemm(*data, **kwargs), numpy_gemm(*data, **kwargs))
+
+def test_gemm_transpositions():
+    data = ([1, 2], [1, 3], [1, 4])
+    kwargs = {'trans_a': True, 'trans_b': True}
+    assert np.array_equal(import_and_compute_gemm(*data, **kwargs), numpy_gemm(*data, **kwargs))
+
+    data = ([[1, 2], [1, 2]], [[1, 3], [1, 3]], [4, 1])
+    kwargs = {'trans_a': True, 'trans_b': True, 'alpha': 7, 'beta': 9}
+    assert np.array_equal(import_and_compute_gemm(*data, **kwargs), numpy_gemm(*data, **kwargs))
+
+    data = ([[1, 2]], [[1, 3]], 1)
+    kwargs = {'trans_b': True, 'alpha': 7, 'beta': 9}
+    assert np.array_equal(import_and_compute_gemm(*data, **kwargs), numpy_gemm(*data, **kwargs))
+
+    data = ([[1], [2]], [[1], [3]], 1)
+    kwargs = {'trans_a': True, 'alpha': 7, 'beta': 9}
+    assert np.array_equal(import_and_compute_gemm(*data, **kwargs), numpy_gemm(*data, **kwargs))
