@@ -174,10 +174,13 @@ def Softplus(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> 
 
 
 # Reduction Ops
-@refactoring_required
 def ReduceSum(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Compute the sum of the input tensor's elements along the provided axes."""
-    return make_reduction_op(ng.sum, onnx_node, ng_inputs[0])
+    attribute_axes = onnx_node.get_attribute_value('axes')
+    if onnx_node.get_attribute_value('keepdims', default=1):
+        raise NotImplementedError('ReduceSum node (%s): Keepdims attr is not implemented yet.',
+                                  onnx_node.name)
+    return ng.sum(ng_inputs[0], attribute_axes)
 
 
 @refactoring_required
@@ -571,12 +574,15 @@ def Constant(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> 
     return ng.constant(value_tensor.to_array())
 
 
-@refactoring_required
 def Softmax(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Compute softmax normalized values for each layer in the batch of the given input."""
     input_ = ng_inputs[0]
     axis = onnx_node.get_attribute_value('axis', 1)
-    return ng.softmax(input_, normalization_axes=input_.axes[axis])
+    if(axis == -1):  # cover lastdim case
+        axis = len(input_.shape) - 1
+    exp = ng.exp(input_)
+    sumexp = ng.sum(exp, {axis})
+    return exp / ng.broadcast(sumexp, exp.shape, 0)
 
 
 def BatchNormalization(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
