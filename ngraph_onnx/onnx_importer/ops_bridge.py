@@ -177,10 +177,9 @@ def Softplus(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> 
 def ReduceSum(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Compute the sum of the input tensor's elements along the provided axes."""
     attribute_axes = onnx_node.get_attribute_value('axes')
-    if attribute_axes:
-        attribute_axes = set(attribute_axes)
     if onnx_node.get_attribute_value('keepdims', default=1):
-        raise NotImplementedError('Keepdims in reduce sum is not implemented yet.')
+        raise NotImplementedError('ReduceSum node (%s): Keepdims attr is not implemented yet.',
+                                  onnx_node.name)
     return ng.sum(ng_inputs[0], attribute_axes)
 
 

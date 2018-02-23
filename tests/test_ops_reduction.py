@@ -127,25 +127,33 @@ def test_reduce_mean():
 def test_reduce_sum():
     data = np.array([[[5, 1], [20, 2]], [[30, 1], [40, 2]], [[55, 1], [60, 2]]], dtype=np.float32)
 
-    # TODO: unclock these tests when reshape op will be enabled in ng++ friendly api
-    # assert np.array_equal(import_and_compute('ReduceSum', data), np.sum(data, keepdims=True))
     assert np.array_equal(import_and_compute('ReduceSum', data, keepdims=0),
                           np.sum(data, keepdims=False))
 
-    # assert np.array_equal(import_and_compute('ReduceSum', data, axes=(1,)),
-    #                       np.sum(data, keepdims=True, axis=(1,)))
     assert np.array_equal(import_and_compute('ReduceSum', data, axes=(1,), keepdims=0),
                           np.sum(data, keepdims=False, axis=(1,)))
 
-    # assert np.array_equal(import_and_compute('ReduceSum', data, axes=(0, 2)),
-    #                       np.sum(data, keepdims=True, axis=(0, 2)))
     assert np.array_equal(import_and_compute('ReduceSum', data, axes=(0, 2), keepdims=0),
                           np.sum(data, keepdims=False, axis=(0, 2)))
 
-    # assert np.array_equal(import_and_compute('ReduceSum', data, axes=(0, 1, 2)),
-    #                       np.sum(data, keepdims=True, axis=(0, 1, 2)))
     assert np.array_equal(import_and_compute('ReduceSum', data, axes=(0, 1, 2), keepdims=0),
                           np.sum(data, keepdims=False, axis=(0, 1, 2)))
+
+
+@pytest.mark.xfail(reason='Needs reshape op to be implemented')
+def test_reduce_sum_keepdims():
+    data = np.array([[[5, 1], [20, 2]], [[30, 1], [40, 2]], [[55, 1], [60, 2]]], dtype=np.float32)
+
+    assert np.array_equal(import_and_compute('ReduceSum', data), np.sum(data, keepdims=True))
+
+    assert np.array_equal(import_and_compute('ReduceSum', data, axes=(1,)),
+                          np.sum(data, keepdims=True, axis=(1,)))
+
+    assert np.array_equal(import_and_compute('ReduceSum', data, axes=(0, 2)),
+                          np.sum(data, keepdims=True, axis=(0, 2)))
+
+    assert np.array_equal(import_and_compute('ReduceSum', data, axes=(0, 1, 2)),
+                          np.sum(data, keepdims=True, axis=(0, 1, 2)))
 
 
 @pytest.mark.skip(reason='Needs refactoring to ngraph++')
