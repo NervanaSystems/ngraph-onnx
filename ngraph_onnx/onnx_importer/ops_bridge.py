@@ -37,6 +37,7 @@ from ngraph_onnx.onnx_importer.utils.binary import broadcast_for_binary_operatio
     cast_axes_for_matmul
 from ngraph_onnx.onnx_importer.utils.conv import make_convolution_op
 from ngraph_onnx.onnx_importer.utils.utils_pos_axes import cast_to_pos_axes
+from ngraph_onnx.onnx_importer.utils.reshape import transpose
 
 if TYPE_CHECKING:
     from ngraph_onnx.onnx_importer.model_wrappers import NodeWrapper
@@ -353,15 +354,9 @@ def Gemm(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngra
     trans_b = onnx_node.get_attribute_value('transB', False)  # Should B be transposed?
 
     if trans_a:
-        # TODO, when Reshape will be available
-        raise NotImplementedError('Gemm node (%s): unfortunately currently we do not support '
-                                  'matrix transpositions', onnx_node.name)
-
+        input_a = transpose(input_a)
     if trans_b:
-        # TODO, when Reshape will be available
-        raise NotImplementedError('Gemm node (%s): unfortunately currently we do not support '
-                                  'matrix transpositions', onnx_node.name)
-
+        input_b = transpose(input_b)
     a_dot_b = ng.dot(input_a, input_b)
 
     if not broadcast and input_c.shape != a_dot_b.shape:
