@@ -37,6 +37,7 @@ from ngraph_onnx.onnx_importer.utils.binary import broadcast_for_binary_operatio
     cast_axes_for_matmul
 from ngraph_onnx.onnx_importer.utils.conv import make_convolution_op
 from ngraph_onnx.onnx_importer.utils.utils_pos_axes import cast_to_pos_axes
+from ngraph_onnx.onnx_importer.utils.reshape import transpose
 
 if TYPE_CHECKING:
     from ngraph_onnx.onnx_importer.model_wrappers import NodeWrapper
@@ -350,18 +351,9 @@ def Gemm(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngra
     trans_b = onnx_node.get_attribute_value('transB', False)  # Should B be transposed?
 
     if trans_a:
-        axes_order = list(range(len(input_a.shape)))
-        axes_order.reverse()
-        out_shape = list(input_a.shape)
-        out_shape.reverse()
-        input_a = ng.reshape(input_a, axes_order, out_shape)
+        input_a = transpose(input_a)
     if trans_b:
-        axes_order = list(range(len(input_b.shape)))
-        axes_order.reverse()
-        out_shape = list(input_b.shape)
-        out_shape.reverse()
-        input_b = ng.reshape(input_b, axes_order, out_shape)
-
+        input_b = transpose(input_b)
     a_dot_b = ng.dot(input_a, input_b)
 
     if not broadcast and input_c.shape != a_dot_b.shape:
