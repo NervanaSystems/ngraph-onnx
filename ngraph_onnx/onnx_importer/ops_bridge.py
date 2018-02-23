@@ -574,12 +574,15 @@ def Constant(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> 
     return ng.constant(value_tensor.to_array())
 
 
-@refactoring_required
 def Softmax(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Compute softmax normalized values for each layer in the batch of the given input."""
     input_ = ng_inputs[0]
     axis = onnx_node.get_attribute_value('axis', 1)
-    return ng.softmax(input_, normalization_axes=input_.axes[axis])
+    if axis == -1:  # Use last dimension
+        axis = len(input_.shape) - 1
+    exp = ng.exp(input_)
+    sumexp = ng.sum(exp, {axis})
+    return exp / ng.broadcast(sumexp, exp.shape, 0)
 
 
 def BatchNormalization(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
