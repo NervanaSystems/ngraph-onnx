@@ -37,7 +37,8 @@ from ngraph_onnx.onnx_importer.utils.binary import broadcast_for_binary_operatio
     cast_axes_for_matmul
 from ngraph_onnx.onnx_importer.utils.conv import make_convolution_op
 from ngraph_onnx.onnx_importer.utils.utils_pos_axes import cast_to_pos_axes
-from ngraph_onnx.onnx_importer.utils.reshape import transpose
+from ngraph_onnx.onnx_importer.utils.reshape import transpose, infer_dimensions
+
 
 if TYPE_CHECKING:
     from ngraph_onnx.onnx_importer.model_wrappers import NodeWrapper
@@ -513,22 +514,23 @@ def Squeeze(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> N
     return ng.tensor_slice(data, slices)
 
 
-@refactoring_required
 def Reshape(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
-    """Reshape the input tensor similar to numpy.reshape."""
-    data = ng_inputs[0]
-    shape = onnx_node.get_attribute_value('shape', data.axes.lengths)
+    """Reshape the input tensor similar to numpy.reshape.
 
-    # This is code we want to use, but cannot due to a bug:
-    # https://github.com/NervanaSystems/private-ngraph/issues/2372
+    At most one dimension of the new shape can be -1. In this case, the value is inferred from
+    the size of the tensor and the remaining dimensions. A dimension could also be 0, in which
+    case the actual dimension value is going to be copied from the shape argument.
     """
-    new_axes = ng.make_axes([ng.make_axis(length=length) for length in shape])
-    x = ng.flatten(data)
-    x = ng.cast_axes(x, new_axes.flatten())
-    x = ng.unflatten(x)
-    return cast_to_pos_axes(x)
-    """
-    return reshape_workaround(data, shape)
+    data = ng_inputs[0]
+    output_shape = onnx_node.get_attribute_value('shape', data.shape)
+
+    if output_shape == data.shape:
+        return data
+
+    input_order = list(range(len(data.shape)))
+    output_shape = infer_dimensions(onnx_node.name, data.shape, output_shape)
+
+    return ng.reshape(data, input_order, output_shape)
 
 
 @refactoring_required

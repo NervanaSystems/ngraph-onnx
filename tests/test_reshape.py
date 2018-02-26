@@ -22,7 +22,6 @@ import pytest
 from tests.utils import convert_and_calculate, all_arrays_equal
 
 
-@pytest.mark.skip(reason='Needs refactoring to ngraph++')
 def test_reshape():
     data = np.arange(2560).reshape(16, 4, 4, 10)
     node = onnx.helper.make_node('Reshape', inputs=['x'], outputs=['y'], shape=(256, 10))
