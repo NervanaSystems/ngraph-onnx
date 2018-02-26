@@ -402,10 +402,9 @@ def AveragePool(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) 
     return make_pooling_op(onnx_node, ng_inputs)
 
 
-@refactoring_required
 def MaxPool(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Apply max pooling across the the tensor."""
-    return cast_to_pos_axes(make_pooling_op(onnx_node, ng_inputs))
+    return make_pooling_op(onnx_node, ng_inputs)
 
 
 @refactoring_required

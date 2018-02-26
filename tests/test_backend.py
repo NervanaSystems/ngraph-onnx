@@ -51,7 +51,6 @@ backend_test.exclude('test_Embedding')
 backend_test.exclude('test_GLU')
 backend_test.exclude('test_Linear')
 backend_test.exclude('test_LogSoftmax')
-backend_test.exclude('test_MaxPool')
 backend_test.exclude('test_MaxPool1d')
 backend_test.exclude('test_PReLU')
 backend_test.exclude('test_PixelShuffle')
@@ -74,6 +73,11 @@ backend_test.exclude('test_default_axes')
 backend_test.exclude('test_AvgPool3d_stride_cpu')
 backend_test.exclude('test_AvgPool3d_stride1_pad0_gpu_input_cpu')
 backend_test.exclude('test_AvgPool3d_cpu')
+
+# Max Pooling tests
+backend_test.exclude('test_MaxPool3d_stride_cpu')
+backend_test.exclude('test_MaxPool3d_stride_padding_cpu')
+backend_test.exclude('test_MaxPool3d_cpu')
 
 # Convolution tests
 backend_test.exclude('test_Conv2d_depthwise_cpu')

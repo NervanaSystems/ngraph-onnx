@@ -263,7 +263,6 @@ def test_pool_average_3d(ndarray_1x1x4x4):
     assert np.array_equal(ng_results, [y])
 
 
-@pytest.mark.skip(reason='Needs refactoring to ngraph++')
 def test_pool_max(ndarray_1x1x4x4):
     node = onnx.helper.make_node('MaxPool', inputs=['x'], outputs=['y'],
                                  kernel_shape=(2, 2), strides=(2, 2))

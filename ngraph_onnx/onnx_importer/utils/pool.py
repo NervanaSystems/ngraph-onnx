@@ -120,8 +120,12 @@ def make_pooling_op(onnx_node, ng_inputs, custom_pool_params=None):
     strides = [pool_params['str_h'], pool_params['str_w']]
     padding_above = [pool_params['pad_h'], pool_params['pad_w']]
     kernel_shape = get_kernel_shape(onnx_node)[0:2]
+    type = pool_params['op']
 
-    ng_op = ng.avg_pool(x, kernel_shape, strides, padding_above, padding_above, False)
+    if type == 'avg':
+        ng_op = ng.avg_pool(x, kernel_shape, strides, padding_above, padding_above, False)
+    elif type == 'max':
+        ng_op = ng.max_pool(x, kernel_shape, strides, padding_above, padding_above)
 
     return ng_op
 
