@@ -46,7 +46,6 @@ backend_test.exclude('test_operator_permute2')
 backend_test.exclude('test_operator_view')
 
 
-backend_test.exclude('test_AvgPool')
 backend_test.exclude('test_ConstantPad2d')
 backend_test.exclude('test_Embedding')
 backend_test.exclude('test_GLU')
@@ -70,6 +69,11 @@ backend_test.exclude('test_matmul_4d')
 backend_test.exclude('test_reflect_pad')
 backend_test.exclude('test_slice')
 backend_test.exclude('test_default_axes')
+
+# Avg Pooling tests
+backend_test.exclude('test_AvgPool3d_stride_cpu')
+backend_test.exclude('test_AvgPool3d_stride1_pad0_gpu_input_cpu')
+backend_test.exclude('test_AvgPool3d_cpu')
 
 # Convolution tests
 backend_test.exclude('test_Conv2d_depthwise_cpu')

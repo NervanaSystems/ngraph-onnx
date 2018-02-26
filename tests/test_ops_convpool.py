@@ -228,7 +228,6 @@ def test_padding():
     assert np.array_equal(ng_results, [y])
 
 
-@pytest.mark.skip(reason='Needs refactoring to ngraph++')
 def test_pool_average(ndarray_1x1x4x4):
     x = ndarray_1x1x4x4
 
