@@ -37,8 +37,7 @@ from ngraph_onnx.onnx_importer.utils.binary import broadcast_for_binary_operatio
     cast_axes_for_matmul
 from ngraph_onnx.onnx_importer.utils.conv import make_convolution_op
 from ngraph_onnx.onnx_importer.utils.utils_pos_axes import cast_to_pos_axes
-from ngraph_onnx.onnx_importer.utils.reshape import transpose, infer_dimension_from_negative, \
-    fill_empty_dimensions
+from ngraph_onnx.onnx_importer.utils.reshape import transpose, infer_dimensions
 
 
 if TYPE_CHECKING:
@@ -529,8 +528,7 @@ def Reshape(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> N
         return data
 
     input_order = list(range(len(data.shape)))
-    output_shape = infer_dimension_from_negative(onnx_node.name, data.shape, output_shape)
-    output_shape = fill_empty_dimensions(onnx_node.name, data.shape, output_shape)
+    output_shape = infer_dimensions(onnx_node.name, data.shape, output_shape)
 
     return ng.reshape(data, input_order, output_shape)
 
