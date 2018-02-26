@@ -13,6 +13,10 @@
 # limitations under the License.
 # ----------------------------------------------------------------------------
 
+import numpy as np
+
+from typing import List
+
 from pyngraph import Node as NgraphNode
 
 import ngraph_api as ng
@@ -29,3 +33,49 @@ def transpose(node):  # type: (NgraphNode) -> NgraphNode
     out_shape.reverse()
     node = ng.reshape(node, axes_order, out_shape)
     return node
+
+
+def infer_dimension_from_negative(node_name, input_shape, output_shape):
+    # type: (str, List[int], List[int]) -> List[int]
+    """Infer dimension value from remaining dimensions.
+
+    Checks wheter there are dimensions equal to -1 in output_shape. There may be at most one
+    such case. It's value is then inferred from the size of the tensor and the remaining
+    dimensions.
+
+    :param node_name: The input node name.
+    :param input_shape: The input data shape.
+    :param output_shape: The requested output shape for the input node data.
+    """
+    if output_shape.count(-1) > 1:
+        raise ng.exceptions.UserInputError('Reshape node (%s): more than one dimension is set to '
+                                           '1. Only one dimension value can be inferred.',
+                                           node_name)
+    elif -1 in output_shape:
+        idx = output_shape.index(-1)
+        output_shape[idx] = 1
+        output_shape[idx] = int(np.product(input_shape) / np.product(output_shape))
+    return output_shape
+
+
+def fill_empty_dimensions(node_name, input_shape, output_shape):
+    # type: (str, List[int], List[int]) -> List[int]
+    """Fill dimensions equal to zero with corresponding value from input shape.
+
+    If an output dimension is equal to zero it actual value is copied from the input shape
+    argument.
+
+    :param node_name: The input node name.
+    :param input_shape: The input data shape.
+    :param output_shape: The requested output shape for the input node data.
+    """
+    for idx, d in enumerate(output_shape):
+        if d == 0:
+            try:
+                output_shape[idx] = input_shape[idx]
+                # d = input_shape[idx]
+            except IndexError as e:
+                raise ng.exceptions.UserInputError('Reshape node (%s): can not copy dimension '
+                                                   'from the shape argument since requested index '
+                                                   'is out of range.', node_name)
+    return output_shape
