@@ -101,7 +101,6 @@ def make_pool_output_axes(input_tensor, pool_params):  # type: ignore
     return output_axes
 
 
-@function_deprecated
 def make_pooling_op(onnx_node, ng_inputs, custom_pool_params=None):
     # type: (NodeWrapper, List[NgraphNode], Dict) -> NgraphNode
     """
@@ -114,29 +113,19 @@ def make_pooling_op(onnx_node, ng_inputs, custom_pool_params=None):
     """
     x = ng_inputs[0]
 
-    if len(x.axes) == 4:  # 2D pooling
-        # Reshape x axes from ONNX (N, C, H, W) to ngraph (C, D, H, W, N)
-        x = reorder_axes(x, 'NCHW', 'CDHWN')
-    elif len(x.axes) == 5:  # 3D pooling
-        # Reshape x axes from ONNX (N, C, H, W, D) to ngraph (C, D, H, W, N)
-        x = reorder_axes(x, 'NCHWD', 'CDHWN')
-    else:
-        raise NotImplementedError('%s node (%s): only 2D and 3D pooling ops are supported.',
-                                  onnx_node.op_type, onnx_node.name)
-
     pool_params = get_pool_params(onnx_node)
     if custom_pool_params:
         pool_params.update(custom_pool_params)
 
-    output_axes = make_pool_output_axes(x, pool_params)
+    strides = [pool_params['str_h'], pool_params['str_w']]
+    padding_above = [pool_params['pad_h'], pool_params['pad_w']]
+    kernel_shape = get_kernel_shape(onnx_node)[0:2]
+    type = pool_params['op']
 
-    ng_op = ng.pooling(pool_params, x, output_axes)
-
-    # ONNX output should have axes in the order N, C, H, W, D
-    ng_op = reorder_axes(ng_op, 'CDHWN', 'NCHWD')
-
-    if len(ng_inputs[0].axes) == 4:  # 2D convolution, slice away the D axis from output
-        ng_op = ng.tensor_slice(ng_op, [slice(None), slice(None), slice(None), slice(None), 0])
+    if type == 'avg':
+        ng_op = ng.avg_pool(x, kernel_shape, strides, padding_above, padding_above, False)
+    elif type == 'max':
+        ng_op = ng.max_pool(x, kernel_shape, strides, padding_above, padding_above)
 
     return ng_op
 
