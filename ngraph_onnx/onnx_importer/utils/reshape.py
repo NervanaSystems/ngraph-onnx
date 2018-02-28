@@ -43,6 +43,17 @@ def infer_dimensions(node_name, input_shape, output_shape):
     :param input_shape: The input data shape.
     :param output_shape: The requested output shape for the input node data.
     """
+    # If an output dimension is equal to zero its actual value is copied from the input shape
+    # argument.
+    for idx, dim in enumerate(output_shape):
+        if dim == 0:
+            try:
+                output_shape[idx] = input_shape[idx]
+            except IndexError as e:
+                raise ng.exceptions.UserInputError('Reshape node (%s): can not copy dimension '
+                                                   'from the shape argument since requested index '
+                                                   'is out of range.', node_name)
+
     # Check whether there are dimensions equal to -1 in output_shape. There may be at most one
     # such case. Its value is then inferred from the size of the tensor and the remaining
     # dimensions.
@@ -55,14 +66,4 @@ def infer_dimensions(node_name, input_shape, output_shape):
         output_shape[idx] = 1
         output_shape[idx] = int(np.product(input_shape) / np.product(output_shape))
 
-    # If an output dimension is equal to zero its actual value is copied from the input shape
-    # argument.
-    for idx, dim in enumerate(output_shape):
-        if dim == 0:
-            try:
-                output_shape[idx] = input_shape[idx]
-            except IndexError as e:
-                raise ng.exceptions.UserInputError('Reshape node (%s): can not copy dimension '
-                                                   'from the shape argument since requested index '
-                                                   'is out of range.', node_name)
     return output_shape
