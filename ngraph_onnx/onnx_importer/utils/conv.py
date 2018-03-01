@@ -34,7 +34,6 @@ from ngraph_onnx.onnx_importer.utils.utils_pos_axes import cast_to_pos_axes
 if TYPE_CHECKING:
     from ngraph_onnx.onnx_importer.model_wrappers import NodeWrapper
 
-@function_deprecated
 def get_pads(onnx_node: 'NodeWrapper') -> Tuple[int, int, int]:  # flake8: noqa
     """
     Get padding values for the operation described by an ONNX node.
@@ -49,7 +48,10 @@ def get_pads(onnx_node: 'NodeWrapper') -> Tuple[int, int, int]:  # flake8: noqa
     """
     auto_pad = onnx_node.get_attribute_value('auto_pad')
     pads = onnx_node.get_attribute_value('pads', ())  # Padding along each axis
-    kernel_shape = onnx_node.get_attribute_value('kernel_shape')
+    kernel_shape = get_kernel_shape(onnx_node)
+
+    if len(pads) == 0:
+        pads = [0] * len(kernel_shape)
 
     # Attribute 'auto_pad' is deprecated, but is currently used by CNTK
     if auto_pad:
@@ -71,20 +73,24 @@ def get_pads(onnx_node: 'NodeWrapper') -> Tuple[int, int, int]:  # flake8: noqa
 
     verify_symmetric_padding(onnx_node, pads)
 
-    pad_h, pad_w, pad_d = 0, 0, 0
-    if pads and len(pads) == 2:  # ONNX input axes NCHW
-        pad_h, pad_w = pads
-    if pads and len(pads) == 3:  # ONNX input axes NCHWD
-        pad_h, pad_w, pad_d = pads
-    if pads and len(pads) == 4:  # ONNX input axes NCHW
-        pad_h, pad_w, _, _ = pads
-    elif pads and len(pads) == 6:  # ONNX input axes NCHWD
-        pad_h, pad_w, pad_d, _, _, _ = pads
-
-    return pad_h, pad_w, pad_d
+    return pads
 
 
-@function_deprecated
+def get_kernel_shape(onnx_node):  # type:  (NodeWrapper) -> Tuple[int, int, int]
+    """
+    Get shape of kernel (filter) in pixels.
+
+    :param onnx_node: wrapped ONNX node for Conv or Pool operation
+    :return: tuple of numbers representing kernel shape (height, width, depth)
+    """
+    kernel_shape = onnx_node.get_attribute_value('kernel_shape', ())
+
+    if len(kernel_shape) == 0:
+        kernel_shape = [1, 1]
+
+    return kernel_shape
+
+
 def get_strides(onnx_node):  # type: (NodeWrapper) -> Tuple[int, int, int]
     """
     Get number of pixels to stride operation by in each direction.
@@ -92,18 +98,15 @@ def get_strides(onnx_node):  # type: (NodeWrapper) -> Tuple[int, int, int]
     :param onnx_node: wrapped ONNX node for Conv or Pool operation
     :return: tuple of numbers of pixels to stride by (height, width, depth)
     """
-    str_h, str_w, str_d = 1, 1, 1  # default values
     strides = onnx_node.get_attribute_value('strides', ())  # stride along each axis
+    kernel_shape = get_kernel_shape(onnx_node)
 
-    if len(strides) == 2:  # ONNX input axes order NCHW
-        str_h, str_w = strides
-    elif len(strides) == 3:  # ONNX input axes order NCHWD
-        str_h, str_w, str_d = strides
+    if len(strides) == 0:
+        strides = [1] * len(kernel_shape)
 
-    return str_h, str_w, str_d
+    return strides
 
 
-@function_deprecated
 def get_dilations(onnx_node):  # type: (NodeWrapper) -> Tuple[int, int, int]
     """
     Get number of pixels for filter dilation in each direction.
@@ -111,18 +114,15 @@ def get_dilations(onnx_node):  # type: (NodeWrapper) -> Tuple[int, int, int]
     :param onnx_node: wrapped ONNX node for Conv or Pool operation
     :return: tuple of numbers of pixels for filter dilation (height, width, depth)
     """
-    dil_h, dil_w, dil_d = 1, 1, 1  # default values
-    dilations = onnx_node.get_attribute_value('dilations', ())  # dilation along each filter axis
+    dilations = onnx_node.get_attribute_value('dilations', ())  # dilation along each axis
+    kernel_shape = get_kernel_shape(onnx_node)
 
-    if len(dilations) == 2:  # ONNX input axes order NCHW
-        dil_h, dil_w = dilations
-    elif len(dilations) == 3:  # ONNX input axes order NCHWD
-        dil_h, dil_w, dil_d = dilations
+    if len(dilations) == 0:
+        dilations = [1] * len(kernel_shape)
 
-    return dil_h, dil_w, dil_d
+    return dilations
 
 
-@function_deprecated
 def get_conv_params(onnx_node):  # type: (NodeWrapper) -> Dict
     """
     Parse ONNX Conv operation attributes and produce an ngraph compatible conv_params dict.
@@ -130,13 +130,11 @@ def get_conv_params(onnx_node):  # type: (NodeWrapper) -> Dict
     :param onnx_node: wrapped ONNX node for Conv or ConvTranspose operation
     :return: dict of conv_params for ng.convolution
     """
-    pad_h, pad_w, pad_d = get_pads(onnx_node)
-    str_h, str_w, str_d = get_strides(onnx_node)
-    dil_h, dil_w, dil_d = get_dilations(onnx_node)
+    pads = get_pads(onnx_node)
+    strides = get_strides(onnx_node)
+    dilations = get_dilations(onnx_node)
 
-    return {'pad_d': pad_d, 'pad_h': pad_h, 'pad_w': pad_w,
-            'str_d': str_d, 'str_h': str_h, 'str_w': str_w,
-            'dil_d': dil_d, 'dil_h': dil_h, 'dil_w': dil_w}
+    return {'pads': pads, 'strides': strides, 'dilations': dilations}
 
 
 def make_convolution_op(onnx_node, ng_inputs, transpose=False):
@@ -165,9 +163,17 @@ def make_convolution_op(onnx_node, ng_inputs, transpose=False):
     # Prepare ngraph convolution operation
     conv_params = get_conv_params(onnx_node)
 
-    strides = [conv_params['str_h'], conv_params['str_w']]
-    dilation = [conv_params['dil_h'], conv_params['dil_w']]
-    padding_above = [conv_params['pad_h'], conv_params['pad_w']]
-    conv = ng.convolution(x, weights, strides, dilation, padding_above, padding_above)
+    strides = conv_params['strides']
+    dilation = conv_params['dilations']
+    padding = conv_params['pads']
+
+    if len(padding) <= 3:
+        padding_above = padding
+        padding_bellow = padding
+    else:
+        padding_above = padding[:len(padding) // 2]
+        padding_bellow = padding[len(padding) // 2:]
+
+    conv = ng.convolution(x, weights, strides, dilation, padding_above, padding_bellow)
 
     return conv

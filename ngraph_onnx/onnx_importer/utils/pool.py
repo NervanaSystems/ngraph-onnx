@@ -22,29 +22,11 @@ from pyngraph import Node as NgraphNode
 import ngraph_api as ng
 
 from ngraph_onnx.onnx_importer.utils.axes import reorder_axes
-from ngraph_onnx.onnx_importer.utils.conv import get_pads, get_strides
+from ngraph_onnx.onnx_importer.utils.conv import get_pads, get_strides, get_kernel_shape
 from ngraph_onnx.onnx_importer.utils.decorators import function_deprecated
 
 if TYPE_CHECKING:
     from ngraph_onnx.onnx_importer.model_wrappers import NodeWrapper
-
-
-def get_kernel_shape(onnx_node):  # type:  (NodeWrapper) -> Tuple[int, int, int]
-    """
-    Get shape of kernel (filter) in pixels.
-
-    :param onnx_node: wrapped ONNX node for Conv or Pool operation
-    :return: tuple of numbers representing kernel shape (height, width, depth)
-    """
-    ker_h, ker_w, ker_d = 1, 1, 1  # default values
-    kernel_shape = onnx_node.get_attribute_value('kernel_shape', ())
-
-    if len(kernel_shape) == 2:  # ONNX input axes order NCHW
-        ker_h, ker_w = kernel_shape
-    elif len(kernel_shape) == 3:  # ONNX input axes order NCHWD
-        ker_h, ker_w, ker_d = kernel_shape
-
-    return ker_h, ker_w, ker_d
 
 
 def get_pool_params(onnx_node):  # type: (NodeWrapper) -> Dict
@@ -54,10 +36,9 @@ def get_pool_params(onnx_node):  # type: (NodeWrapper) -> Dict
     :param onnx_node: wrapped ONNX node for a pooling operation op
     :return: dict of pool_params for ng.pooling
     """
-    pad_h, pad_w, pad_d = get_pads(onnx_node)
-    str_h, str_w, str_d = get_strides(onnx_node)
-    ker_h, ker_w, ker_d = get_kernel_shape(onnx_node)
-    pad_c, str_c, ker_c = 0, 1, 1  # default values for channel
+    pads = get_pads(onnx_node)
+    strides = get_strides(onnx_node)
+    kernel_shape = get_kernel_shape(onnx_node)
 
     if onnx_node.op_type in ['AveragePool', 'GlobalAveragePool']:
         pooling_op = 'avg'
@@ -67,9 +48,7 @@ def get_pool_params(onnx_node):  # type: (NodeWrapper) -> Dict
         raise NotImplementedError('%s node (%s): Unsupported pooling type.',
                                   onnx_node.op_type, onnx_node.name)
 
-    return {'pad_d': pad_d, 'pad_h': pad_h, 'pad_w': pad_w, 'pad_c': pad_c,
-            'str_d': str_d, 'str_h': str_h, 'str_w': str_w, 'str_c': str_c,
-            'J': ker_c, 'R': ker_h, 'S': ker_w, 'T': ker_d, 'op': pooling_op}
+    return {'pads': pads, 'strides': strides, 'kernel_shape': kernel_shape, 'op': pooling_op}
 
 
 @function_deprecated
@@ -117,15 +96,22 @@ def make_pooling_op(onnx_node, ng_inputs, custom_pool_params=None):
     if custom_pool_params:
         pool_params.update(custom_pool_params)
 
-    strides = [pool_params['str_h'], pool_params['str_w']]
-    padding_above = [pool_params['pad_h'], pool_params['pad_w']]
-    kernel_shape = get_kernel_shape(onnx_node)[0:2]
+    strides = pool_params['strides']
+    padding = pool_params['pads']
+    kernel_shape = pool_params['kernel_shape']
     type = pool_params['op']
 
+    if len(padding) <= 3:
+        padding_above = padding
+        padding_bellow = padding
+    else:
+        padding_above = padding[:len(padding) // 2]
+        padding_bellow = padding[len(padding) // 2:]
+
     if type == 'avg':
-        ng_op = ng.avg_pool(x, kernel_shape, strides, padding_above, padding_above, False)
+        ng_op = ng.avg_pool(x, kernel_shape, strides, padding_above, padding_bellow, False)
     elif type == 'max':
-        ng_op = ng.max_pool(x, kernel_shape, strides, padding_above, padding_above)
+        ng_op = ng.max_pool(x, kernel_shape, strides, padding_above, padding_bellow)
 
     return ng_op
 
