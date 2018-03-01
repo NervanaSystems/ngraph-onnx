@@ -76,13 +76,7 @@ backend_test.exclude('test_Conv2d_depthwise_strided_cpu')
 backend_test.exclude('test_Conv2d_depthwise_with_multiplier_cpu')
 backend_test.exclude('test_Conv2d_groups_cpu')
 backend_test.exclude('test_Conv2d_groups_thnn_cpu')
-backend_test.exclude('test_Conv3d_cpu')
-backend_test.exclude('test_Conv3d_dilated_cpu')
-backend_test.exclude('test_Conv3d_dilated_strided_cpu')
 backend_test.exclude('test_Conv3d_groups_cpu')
-backend_test.exclude('test_Conv3d_no_bias_cpu')
-backend_test.exclude('test_Conv3d_stride_cpu')
-backend_test.exclude('test_Conv3d_stride_padding_cpu')
 
 # big models tests
 backend_test.exclude('test_bvlc_alexnet')
