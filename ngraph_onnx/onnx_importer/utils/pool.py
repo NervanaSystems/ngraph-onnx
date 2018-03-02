@@ -75,6 +75,13 @@ def make_pool_output_axes(input_tensor, pool_params):  # type: ignore
     return output_axes
 
 
+def reduce_dimensions(target_dimensions, source_shape):  # type: (int, Tuple[int, ...]) -> Tuple[int, ...]
+    """Reduce last important dimension when there is too many."""
+    if len(source_shape) > target_dimensions:
+        source_shape = source_shape[1:]
+    return source_shape
+
+
 def make_pooling_op(onnx_node, ng_inputs, custom_pool_params=None):
     # type: (NodeWrapper, List[NgraphNode], Dict) -> NgraphNode
     """
@@ -91,6 +98,13 @@ def make_pooling_op(onnx_node, ng_inputs, custom_pool_params=None):
     padding_above, padding_below = get_pads(onnx_node)
     kernel_shape = get_kernel_shape(onnx_node)
     type = get_op_type(onnx_node)
+
+    spatial_dims = len(x.shape) - 2  # get spatial dimensions
+
+    strides = reduce_dimensions(spatial_dims, strides)
+    padding_above = reduce_dimensions(spatial_dims, padding_above)
+    padding_below = reduce_dimensions(spatial_dims, padding_below)
+    kernel_shape = reduce_dimensions(spatial_dims, kernel_shape)
 
     if type == 'avg':
         ng_op = ng.avg_pool(x, kernel_shape, strides, padding_above, padding_below, False)
