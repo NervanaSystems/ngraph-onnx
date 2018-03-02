@@ -69,16 +69,6 @@ backend_test.exclude('test_reflect_pad')
 backend_test.exclude('test_slice')
 backend_test.exclude('test_default_axes')
 
-# Avg Pooling tests
-backend_test.exclude('test_AvgPool3d_stride_cpu')
-backend_test.exclude('test_AvgPool3d_stride1_pad0_gpu_input_cpu')
-backend_test.exclude('test_AvgPool3d_cpu')
-
-# Max Pooling tests
-backend_test.exclude('test_MaxPool3d_stride_cpu')
-backend_test.exclude('test_MaxPool3d_stride_padding_cpu')
-backend_test.exclude('test_MaxPool3d_cpu')
-
 # Convolution tests
 backend_test.exclude('test_Conv2d_depthwise_cpu')
 backend_test.exclude('test_Conv2d_depthwise_padded_cpu')
@@ -86,13 +76,7 @@ backend_test.exclude('test_Conv2d_depthwise_strided_cpu')
 backend_test.exclude('test_Conv2d_depthwise_with_multiplier_cpu')
 backend_test.exclude('test_Conv2d_groups_cpu')
 backend_test.exclude('test_Conv2d_groups_thnn_cpu')
-backend_test.exclude('test_Conv3d_cpu')
-backend_test.exclude('test_Conv3d_dilated_cpu')
-backend_test.exclude('test_Conv3d_dilated_strided_cpu')
 backend_test.exclude('test_Conv3d_groups_cpu')
-backend_test.exclude('test_Conv3d_no_bias_cpu')
-backend_test.exclude('test_Conv3d_stride_cpu')
-backend_test.exclude('test_Conv3d_stride_padding_cpu')
 
 # big models tests
 backend_test.exclude('test_bvlc_alexnet')

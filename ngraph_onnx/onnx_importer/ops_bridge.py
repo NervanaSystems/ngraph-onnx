@@ -616,5 +616,6 @@ def BatchNormalization(onnx_node, ng_inputs):  # type: (NodeWrapper, List[Ngraph
     scale = ng.broadcast(scale, x.shape, axis=1)
     var = ng.broadcast(var, x.shape, axis=1)
     bias = ng.broadcast(bias, x.shape, axis=1)
-    epsilon = ng.broadcast(ng.constant(epsilon, dtype=float), x.shape, axis=1)
+    epsilon = ng.broadcast(ng.constant(epsilon, dtype=get_dtype(x.get_element_type())),
+                           x.shape, axis=1)
     return (scale * ((x - mean) * (1 / (ng.sqrt(var + epsilon)))) + bias)

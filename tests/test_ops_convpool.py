@@ -128,7 +128,6 @@ def test_2d_conv():
                                    dtype=np.float32))
 
 
-@pytest.mark.skip(reason='Needs refactoring to ngraph++')
 def test_3d_conv():
     # x should have shape N(batch) x C x H x W x D
     input_x = np.array([
@@ -151,7 +150,7 @@ def test_3d_conv():
     input_filter = np.broadcast_to(input_filter, (1, 1, 3, 3, 3))
 
     # convolution with padding=0 should produce 7 x 7 x 2 output:
-    result = import_and_compute_conv(input_x, input_filter,
+    result = import_and_compute_conv(input_x, input_filter, dilations=(1, 1, 1),
                                      pads=(0, 0, 0, 0, 0, 0), strides=(1, 1, 1))
 
     assert np.array_equal(np.moveaxis(result.squeeze(), (0, 1, 2), (1, 2, 0)),
@@ -247,10 +246,9 @@ def test_pool_average(ndarray_1x1x4x4):
     assert np.array_equal(ng_results, [y])
 
 
-@pytest.mark.skip(reason='Needs refactoring to ngraph++')
+@pytest.mark.xfail(reason='nans in result probably ngraph++ problem')
 def test_pool_average_3d(ndarray_1x1x4x4):
     x = np.broadcast_to(ndarray_1x1x4x4, (1, 1, 4, 4, 4))
-
     node = onnx.helper.make_node('AveragePool', inputs=['x'], outputs=['y'],
                                  kernel_shape=(2, 2, 2), strides=(2, 2, 2))
     y = np.array([[[13.5, 15.5],
