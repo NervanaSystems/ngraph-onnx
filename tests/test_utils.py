@@ -21,6 +21,7 @@ from onnx.helper import make_node, make_graph, make_tensor_value_info
 
 from ngraph_onnx.onnx_importer.model_wrappers import NodeWrapper, GraphWrapper
 from ngraph_onnx.onnx_importer.utils.conv import get_pads
+from ngraph_onnx.onnx_importer.utils.matmul import has_matmul_compatible_shapes
 
 
 @pytest.mark.skip(reason='Needs refactoring to ngraph++')
@@ -54,3 +55,38 @@ def test_get_pads():
         node = wrap_node(make_node('Conv', ['X', 'Y'], ['Z'],
                                    auto_pad='SAME_UPPER', kernel_shape=(6, 6)))
         assert get_pads(node) == (2, 2, 0)
+
+
+def test_matmul_compatible_shapes():
+    # --------- Positive cases ---------
+    # matrix @ matrix
+    shape_a = [2, 3]
+    shape_b = [3, 2]
+    assert has_matmul_compatible_shapes(shape_a, shape_b)
+
+    # matrix @ vector
+    shape_a = [2, 4]
+    shape_b = [4]
+    assert has_matmul_compatible_shapes(shape_a, shape_b)
+
+    # vector @ matrix
+    shape_a = [3]
+    shape_b = [3, 2]
+    assert has_matmul_compatible_shapes(shape_a, shape_b)
+
+    # vector @ vector
+    shape_a = [4]
+    shape_b = [4]
+    assert has_matmul_compatible_shapes(shape_a, shape_b)
+
+    # --------- Broadcasting cases ---------
+    shape_a = [4, 1, 2, 3]
+    shape_b = [3, 2]
+    assert has_matmul_compatible_shapes(shape_a, shape_b)
+
+    shape_a = [3, 2, 4]
+    shape_b = [1, 1, 4, 10]
+    assert has_matmul_compatible_shapes(shape_a, shape_b)
+
+    # --------- Negative cases ---------
+    # TODO

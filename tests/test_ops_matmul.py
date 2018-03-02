@@ -180,3 +180,11 @@ def test_gemm_transpositions():
     data = ([[1], [2]], [[1], [3]], 1)
     kwargs = {'trans_a': True, 'alpha': 7, 'beta': 9}
     assert np.array_equal(import_and_compute_gemm(*data, **kwargs), numpy_gemm(*data, **kwargs))
+
+
+@pytest.mark.xfail(reason='Need add support for flattening to numpy_gemm')
+def test_gemm_flatten():
+    # input_a.shape is (4,1,1)
+    data = ([[[1]], [[2]], [[3]], [[4]]], [1, 3, 5, 7], [1, 4])
+    kwargs = {'alpha': 7, 'beta': 9}
+    assert np.array_equal(import_and_compute_gemm(*data, **kwargs), numpy_gemm(*data, **kwargs))

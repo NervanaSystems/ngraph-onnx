@@ -67,3 +67,27 @@ def infer_dimensions(node_name, input_shape, output_shape):
         output_shape[idx] = int(np.product(input_shape) / np.product(output_shape))
 
     return output_shape
+
+
+def flatten_innermost_empty_dims(node):  # type: (NgraphNode) -> NgraphNode
+    """Flatten input shape if there is at least one innermost dimension equal to one.
+
+    node(shape: 1,2,3,1,1,1) -> node(shape: 1,2,3)
+    node(shape: 1,2,3) -> node(shape: 1,2,3)
+    node(shape: 1) -> node(shape: 1)
+
+    :param node: The input node whose data we want to flatten.
+    """
+    shape = node.shape
+    if len(shape) < 2:
+        return node
+
+    input_order = list(range(len(node.shape)))
+
+    if shape[-1] == 1:
+        output_shape = list(shape)
+        while len(output_shape) > 1 and output_shape[-1] == 1:
+            output_shape.pop()
+        return ng.reshape(node, input_order, output_shape)
+    else:
+        return node
