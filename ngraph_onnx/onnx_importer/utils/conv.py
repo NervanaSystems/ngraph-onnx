@@ -130,20 +130,6 @@ def get_dilations(onnx_node):  # type: (NodeWrapper) -> Tuple[int, int, int]
     return dilations
 
 
-def get_conv_params(onnx_node):  # type: (NodeWrapper) -> Dict
-    """
-    Parse ONNX Conv operation attributes and produce an ngraph compatible conv_params dict.
-
-    :param onnx_node: wrapped ONNX node for Conv or ConvTranspose operation
-    :return: dict of conv_params for ng.convolution
-    """
-    pads = get_pads(onnx_node)
-    strides = get_strides(onnx_node)
-    dilations = get_dilations(onnx_node)
-
-    return {'pads': pads, 'strides': strides, 'dilations': dilations}
-
-
 def make_convolution_op(onnx_node, ng_inputs, transpose=False):
     # type: (NodeWrapper, List[NgraphNode], bool) -> NgraphNode
     """
@@ -167,12 +153,9 @@ def make_convolution_op(onnx_node, ng_inputs, transpose=False):
         log.warning('Conv node (%s): `group` attribute value %d is not supported.',
                     onnx_node.name, groups)
 
-    # Prepare ngraph convolution operation
-    conv_params = get_conv_params(onnx_node)
-
-    strides = conv_params['strides']
-    dilation = conv_params['dilations']
-    padding_above, padding_below = conv_params['pads']
+    strides = get_strides(onnx_node)
+    dilation = get_dilations(onnx_node)
+    padding_above, padding_below = get_pads(onnx_node)
 
     conv = ng.convolution(x, weights, strides, dilation, padding_above, padding_below)
 

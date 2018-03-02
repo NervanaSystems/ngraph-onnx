@@ -21,7 +21,6 @@ from typing import Tuple, Dict, List, TYPE_CHECKING
 from pyngraph import Node as NgraphNode
 import ngraph_api as ng
 
-from ngraph_onnx.onnx_importer.utils.axes import reorder_axes
 from ngraph_onnx.onnx_importer.utils.conv import get_pads, get_strides, get_kernel_shape
 from ngraph_onnx.onnx_importer.utils.decorators import function_deprecated
 
@@ -29,17 +28,13 @@ if TYPE_CHECKING:
     from ngraph_onnx.onnx_importer.model_wrappers import NodeWrapper
 
 
-def get_pool_params(onnx_node):  # type: (NodeWrapper) -> Dict
+def get_op_type(onnx_node):  # type: (NodeWrapper) -> str
     """
     Parse ONNX pooling operation attributes and produce an ngraph compatible pool_params dict.
 
     :param onnx_node: wrapped ONNX node for a pooling operation op
     :return: dict of pool_params for ng.pooling
     """
-    pads = get_pads(onnx_node)
-    strides = get_strides(onnx_node)
-    kernel_shape = get_kernel_shape(onnx_node)
-
     if onnx_node.op_type in ['AveragePool', 'GlobalAveragePool']:
         pooling_op = 'avg'
     elif onnx_node.op_type in ['MaxPool', 'GlobalMaxPool']:
@@ -48,7 +43,7 @@ def get_pool_params(onnx_node):  # type: (NodeWrapper) -> Dict
         raise NotImplementedError('%s node (%s): Unsupported pooling type.',
                                   onnx_node.op_type, onnx_node.name)
 
-    return {'pads': pads, 'strides': strides, 'kernel_shape': kernel_shape, 'op': pooling_op}
+    return pooling_op
 
 
 @function_deprecated
@@ -92,14 +87,10 @@ def make_pooling_op(onnx_node, ng_inputs, custom_pool_params=None):
     """
     x = ng_inputs[0]
 
-    pool_params = get_pool_params(onnx_node)
-    if custom_pool_params:
-        pool_params.update(custom_pool_params)
-
-    strides = pool_params['strides']
-    padding_above, padding_below = pool_params['pads']
-    kernel_shape = pool_params['kernel_shape']
-    type = pool_params['op']
+    strides = get_strides(onnx_node)
+    padding_above, padding_below = get_pads(onnx_node)
+    kernel_shape = get_kernel_shape(onnx_node)
+    type = get_op_type(onnx_node)
 
     if type == 'avg':
         ng_op = ng.avg_pool(x, kernel_shape, strides, padding_above, padding_below, False)
