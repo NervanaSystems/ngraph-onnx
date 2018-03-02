@@ -38,8 +38,8 @@ from ngraph_onnx.onnx_importer.utils.binary import broadcast_for_binary_operatio
 from ngraph_onnx.onnx_importer.utils.conv import make_convolution_op
 from ngraph_onnx.onnx_importer.utils.utils_pos_axes import cast_to_pos_axes
 from ngraph_onnx.onnx_importer.utils.reshape import transpose, infer_dimensions, \
-    try_flatten
-from ngraph_onnx.onnx_importer.utils.multiply import has_matmul_compatible_shapes
+    flatten_innermost_empty_dims
+from ngraph_onnx.onnx_importer.utils.matmul import has_matmul_compatible_shapes
 
 if TYPE_CHECKING:
     from ngraph_onnx.onnx_importer.model_wrappers import NodeWrapper
@@ -366,12 +366,11 @@ def Gemm(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngra
     #
     # Firstly, we check wheter input data have incompatible shapes and then try flatten input data.
     if not has_matmul_compatible_shapes(input_a.shape, input_b.shape):
-        input_a = try_flatten(input_a, onnx_node.name)
-        input_b = try_flatten(input_b, onnx_node.name)
-
-    if not has_matmul_compatible_shapes(input_a.shape, input_b.shape):
-        raise ValueError('Gemm node (%s): input "A" and "B" data shapes are incompatible to '
-                         'multiply with each other.', onnx_node.name)
+        input_a = flatten_innermost_empty_dims(input_a)
+        input_b = flatten_innermost_empty_dims(input_b)
+        if not has_matmul_compatible_shapes(input_a.shape, input_b.shape):
+            raise ValueError('Gemm node (%s): input "A" and "B" data shapes are incompatible to '
+                             'multiply with each other.', onnx_node.name)
 
     a_dot_b = ng.dot(input_a, input_b)
 

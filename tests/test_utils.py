@@ -21,7 +21,7 @@ from onnx.helper import make_node, make_graph, make_tensor_value_info
 
 from ngraph_onnx.onnx_importer.model_wrappers import NodeWrapper, GraphWrapper
 from ngraph_onnx.onnx_importer.utils.conv import get_pads
-from ngraph_onnx.onnx_importer.utils.multiply import has_matmul_compatible_shapes
+from ngraph_onnx.onnx_importer.utils.matmul import has_matmul_compatible_shapes
 
 
 @pytest.mark.skip(reason='Needs refactoring to ngraph++')
