@@ -17,6 +17,7 @@ from __future__ import print_function, division
 
 import numpy as np
 import onnx
+import pytest
 from onnx.helper import make_graph, make_model, make_tensor_value_info
 
 import ngraph_api as ng
@@ -24,7 +25,7 @@ from ngraph_onnx.onnx_importer.importer import import_onnx_model
 
 
 def get_transformer():
-    return ng.runtime()
+    return ng.runtime(manager_name=pytest.config.getoption('backend', default='CPU'))
 
 
 def convert_and_calculate(onnx_node, data_inputs, data_outputs):
