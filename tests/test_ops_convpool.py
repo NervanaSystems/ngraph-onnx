@@ -60,7 +60,7 @@ def import_and_compute_conv(x, weights, transpose=False, **attributes):
 
 
 def get_transformer():
-    return ng.runtime()
+    return ng.runtime(manager_name=pytest.config.getoption('backend', default='CPU'))
 
 
 def test_2d_conv():
