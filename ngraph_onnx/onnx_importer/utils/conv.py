@@ -18,8 +18,6 @@ from __future__ import print_function
 
 import logging
 
-log = logging.getLogger(__file__)
-
 from math import floor, ceil
 from typing import Tuple, List, Dict, TYPE_CHECKING
 
@@ -31,10 +29,13 @@ from ngraph_onnx.onnx_importer.utils.decorators import function_deprecated
 from ngraph_onnx.onnx_importer.utils.misc import verify_symmetric_padding
 from ngraph_onnx.onnx_importer.utils.utils_pos_axes import cast_to_pos_axes
 
+log = logging.getLogger(__file__)
+
 if TYPE_CHECKING:
     from ngraph_onnx.onnx_importer.model_wrappers import NodeWrapper
 
-def get_pads(onnx_node: 'NodeWrapper') -> Tuple[Tuple[int], Tuple[int]]:  # flake8: noqa
+
+def get_pads(onnx_node: 'NodeWrapper') -> Tuple[Tuple[int], Tuple[int]]:
     """
     Get padding values for the operation described by an ONNX node.
 
@@ -143,7 +144,7 @@ def make_convolution_op(onnx_node, ng_inputs, transpose=False):
         x, weights, bias = ng_inputs
     elif len(ng_inputs) == 2:
         x, weights = ng_inputs
-        bias = ng.constant(0)
+        bias = ng.constant(0, dtype=float)
     else:
         raise ValueError('Conv node (%s): unexpected number of input values: %d.',
                          onnx_node.name, len(ng_inputs))
@@ -159,4 +160,4 @@ def make_convolution_op(onnx_node, ng_inputs, transpose=False):
 
     conv = ng.convolution(x, weights, strides, dilation, padding_above, padding_below)
 
-    return conv
+    return conv + bias
