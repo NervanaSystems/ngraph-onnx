@@ -15,8 +15,6 @@
 
 from ngraph_api.utils.types import TensorShape
 
-from ngraph_onnx.onnx_importer.utils.color_string import PrintInColor
-
 
 def _is_matrix(shape):  # type: (TensorShape) -> bool
     """Check if tensor is a 2D matrix.
