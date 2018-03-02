@@ -37,8 +37,9 @@ from ngraph_onnx.onnx_importer.utils.binary import broadcast_for_binary_operatio
     cast_axes_for_matmul
 from ngraph_onnx.onnx_importer.utils.conv import make_convolution_op
 from ngraph_onnx.onnx_importer.utils.utils_pos_axes import cast_to_pos_axes
-from ngraph_onnx.onnx_importer.utils.reshape import transpose, infer_dimensions
-
+from ngraph_onnx.onnx_importer.utils.reshape import transpose, infer_dimensions, \
+    try_flatten
+from ngraph_onnx.onnx_importer.utils.multiply import has_matmul_compatible_shapes
 
 if TYPE_CHECKING:
     from ngraph_onnx.onnx_importer.model_wrappers import NodeWrapper
@@ -358,6 +359,20 @@ def Gemm(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngra
         input_a = transpose(input_a)
     if trans_b:
         input_b = transpose(input_b)
+
+    # [arogowie] onnx-tensorflow: https://github.com/onnx/onnx-tensorflow/
+    #  blob/17075f44c9071600beccfc62c92b22d1cd957bfd/onnx_tf/backend.py#L711
+    # They have hardcoded flatten input `A` before transposition.
+    #
+    # Firstly, we check wheter input data have incompatible shapes and then try flatten input data.
+    if not has_matmul_compatible_shapes(input_a.shape, input_b.shape):
+        input_a = try_flatten(input_a, onnx_node.name)
+        input_b = try_flatten(input_b, onnx_node.name)
+
+    if not has_matmul_compatible_shapes(input_a.shape, input_b.shape):
+        raise ValueError('Gemm node (%s): input "A" and "B" data shapes are incompatible to '
+                         'multiply with each other.', onnx_node.name)
+
     a_dot_b = ng.dot(input_a, input_b)
 
     if not broadcast and input_c.shape != a_dot_b.shape:
