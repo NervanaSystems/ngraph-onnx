@@ -34,7 +34,7 @@ from ngraph_onnx.onnx_importer.utils.utils_pos_axes import cast_to_pos_axes
 if TYPE_CHECKING:
     from ngraph_onnx.onnx_importer.model_wrappers import NodeWrapper
 
-def get_pads(onnx_node: 'NodeWrapper') -> Tuple[int, int, int]:  # flake8: noqa
+def get_pads(onnx_node: 'NodeWrapper') -> Tuple[Tuple[int], Tuple[int]]:  # flake8: noqa
     """
     Get padding values for the operation described by an ONNX node.
 
@@ -73,7 +73,14 @@ def get_pads(onnx_node: 'NodeWrapper') -> Tuple[int, int, int]:  # flake8: noqa
 
     verify_symmetric_padding(onnx_node, pads)
 
-    return pads
+    if len(pads) <= 3:
+        padding_above = pads
+        padding_below = pads
+    else:
+        padding_above = pads[:len(pads) // 2]
+        padding_below = pads[len(pads) // 2:]
+
+    return padding_above, padding_below
 
 
 def get_kernel_shape(onnx_node):  # type:  (NodeWrapper) -> Tuple[int, int, int]
@@ -165,15 +172,8 @@ def make_convolution_op(onnx_node, ng_inputs, transpose=False):
 
     strides = conv_params['strides']
     dilation = conv_params['dilations']
-    padding = conv_params['pads']
+    padding_above, padding_below = conv_params['pads']
 
-    if len(padding) <= 3:
-        padding_above = padding
-        padding_bellow = padding
-    else:
-        padding_above = padding[:len(padding) // 2]
-        padding_bellow = padding[len(padding) // 2:]
-
-    conv = ng.convolution(x, weights, strides, dilation, padding_above, padding_bellow)
+    conv = ng.convolution(x, weights, strides, dilation, padding_above, padding_below)
 
     return conv
