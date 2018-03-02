@@ -66,3 +66,47 @@ def infer_dimensions(node_name, input_shape, output_shape):
                                                    'from the shape argument since requested index '
                                                    'is out of range.', node_name)
     return output_shape
+
+
+def flatten(node, node_name, input_order=None, output_shape=None):
+    # type: (NgraphNode, str, List[int], List[int]) -> NgraphNode
+    """Flattens input node dimensions.
+
+    The default behavior is to flatten dimensions preserving only first two axis. Requires that
+    input tensor rank is at least 2.
+
+    :param node: The input node whose data we want to flatten.
+    :param node_name: Currently processed node name.
+    :param input_order: The order we use to walk through dimensions of input node data.
+    :param output_shape: The requested output shape for the input node data.
+    """
+    if len(node.shape) < 2:
+        raise ng.exceptions.UserInputError('Node (%s): can not flatten tensor with rank '
+                                           'lower than 2.')
+    if input_order is None:
+        input_order = list(range(len(node.shape)))
+    if output_shape is None:
+        output_shape = list(node.shape[0:2])
+
+    return ng.reshape(node, input_order, output_shape)
+
+
+def try_flatten(node, node_name):  # type: (NgraphNode, str) -> NgraphNode
+    """Flatten input shape if there is at least one outermost dimension equal to one.
+
+    If can not flatten return original node.
+
+    :param node: The input node whose data we want to flatten.
+    :param node_name: Currently processed node name.
+    """
+    shape = node.shape
+    if len(shape) < 2:
+        return node
+
+    if shape[-1] == 1:
+        output_shape = list(shape)
+        while len(output_shape) > 1 and output_shape[-1] == 1:
+            output_shape.pop()
+        return flatten(node, node_name, output_shape=output_shape)
+    else:
+        return node
