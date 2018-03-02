@@ -22,12 +22,11 @@ from math import floor, ceil
 from typing import Tuple, List, Dict, TYPE_CHECKING
 
 from pyngraph import Node as NgraphNode
+
 import ngraph_api as ng
 
-from ngraph_onnx.onnx_importer.utils.axes import reorder_axes
-from ngraph_onnx.onnx_importer.utils.decorators import function_deprecated
+from ngraph_api.utils.types import get_dtype
 from ngraph_onnx.onnx_importer.utils.misc import verify_symmetric_padding
-from ngraph_onnx.onnx_importer.utils.utils_pos_axes import cast_to_pos_axes
 
 log = logging.getLogger(__file__)
 
@@ -144,7 +143,7 @@ def make_convolution_op(onnx_node, ng_inputs, transpose=False):
         x, weights, bias = ng_inputs
     elif len(ng_inputs) == 2:
         x, weights = ng_inputs
-        bias = ng.constant(0, dtype=float)
+        bias = ng.constant(0, dtype=get_dtype(x.get_element_type()))
     else:
         raise ValueError('Conv node (%s): unexpected number of input values: %d.',
                          onnx_node.name, len(ng_inputs))
