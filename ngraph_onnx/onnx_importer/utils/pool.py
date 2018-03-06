@@ -75,10 +75,15 @@ def make_pool_output_axes(input_tensor, pool_params):  # type: ignore
     return output_axes
 
 
-def reduce_dimensions(target_dimensions, source_shape):  # type: (int, Tuple[int, ...]) -> Tuple[int, ...]
-    """Reduce last important dimension when there is too many."""
-    if len(source_shape) > target_dimensions:
-        source_shape = source_shape[1:]
+def get_spatial_dims(spatial_dims_count, source_shape):  
+    # type: (int, Tuple[int, ...]) -> Tuple[int, ...]
+    """Retrieve only those dimensions relative to actual data from source_shape."""
+    # We assume data are in [N,C,D1,...,DN] format 
+    # (https://github.com/onnx/onnx/blob/master/docs/Operators.md#inputs-5),
+    # thus we extract only those [D1,...,DN] dimensions relative to actual data.
+    if len(source_shape) > spatial_dims_count:
+        logger.warn('Parameter shape size is bigger than spatial dimensions count.')
+        source_shape = source_shape[-spatial_dims_count:]
     return source_shape
 
 
@@ -99,12 +104,13 @@ def make_pooling_op(onnx_node, ng_inputs, custom_pool_params=None):
     kernel_shape = get_kernel_shape(onnx_node)
     type = get_op_type(onnx_node)
 
+    # We assume data are in [N,C,D1,...,DN] format thus we subtract [N,C] dimensions.
     spatial_dims = len(x.shape) - 2  # get spatial dimensions
 
-    strides = reduce_dimensions(spatial_dims, strides)
-    padding_above = reduce_dimensions(spatial_dims, padding_above)
-    padding_below = reduce_dimensions(spatial_dims, padding_below)
-    kernel_shape = reduce_dimensions(spatial_dims, kernel_shape)
+    strides = get_spatial_dims(spatial_dims, strides)
+    padding_above = get_spatial_dims(spatial_dims, padding_above)
+    padding_below = get_spatial_dims(spatial_dims, padding_below)
+    kernel_shape = get_spatial_dims(spatial_dims, kernel_shape)
 
     if type == 'avg':
         ng_op = ng.avg_pool(x, kernel_shape, strides, padding_above, padding_below, False)
