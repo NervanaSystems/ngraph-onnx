@@ -20,12 +20,15 @@ from typing import Tuple, Dict, List, TYPE_CHECKING
 
 from pyngraph import Node as NgraphNode
 import ngraph_api as ng
+import logging
 
 from ngraph_onnx.onnx_importer.utils.conv import get_pads, get_strides, get_kernel_shape
 from ngraph_onnx.onnx_importer.utils.decorators import function_deprecated
 
 if TYPE_CHECKING:
     from ngraph_onnx.onnx_importer.model_wrappers import NodeWrapper
+
+log = logging.getLogger(__file__)
 
 
 def get_op_type(onnx_node):  # type: (NodeWrapper) -> str
@@ -75,14 +78,14 @@ def make_pool_output_axes(input_tensor, pool_params):  # type: ignore
     return output_axes
 
 
-def get_spatial_dims(spatial_dims_count, source_shape):  
+def get_spatial_dims(spatial_dims_count, source_shape):
     # type: (int, Tuple[int, ...]) -> Tuple[int, ...]
     """Retrieve only those dimensions relative to actual data from source_shape."""
-    # We assume data are in [N,C,D1,...,DN] format 
+    # We assume data are in [N,C,D1,...,DN] format
     # (https://github.com/onnx/onnx/blob/master/docs/Operators.md#inputs-5),
     # thus we extract only those [D1,...,DN] dimensions relative to actual data.
     if len(source_shape) > spatial_dims_count:
-        logger.warn('Parameter shape size is bigger than spatial dimensions count.')
+        log.warning('Parameter shape size is bigger than spatial dimensions count.')
         source_shape = source_shape[-spatial_dims_count:]
     return source_shape
 
