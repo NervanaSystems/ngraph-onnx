@@ -3,7 +3,7 @@
 ### Pre-requisites
 
 Install ngraph-cpp:
-https://github.com/NervanaSystems/private-ngraph-cpp#steps
+https://github.com/NervanaSystems/ngraph-cpp#steps
 
 Install ngraph-neon Python Bindings:
 https://github.com/NervanaSystems/ngraph-neon
