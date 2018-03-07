@@ -83,11 +83,11 @@ def test_value_info_wrapper(onnx_model):
 
     parameter = wrapped_value_info.get_ng_parameter()
     assert parameter.__class__ == pyngraph.op.Parameter
-    assert parameter.shape == shape
+    assert list(parameter.shape) == shape
 
     constant = wrapped_value_info.get_ng_constant()
     assert constant.__class__ == pyngraph.op.Constant
-    assert constant.shape == shape
+    assert list(constant.shape) == shape
 
     ng_node = wrapped_value_info.get_ng_node()
     assert ng_node == constant
