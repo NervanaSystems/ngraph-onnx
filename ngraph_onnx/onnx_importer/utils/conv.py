@@ -19,7 +19,7 @@ from __future__ import print_function
 import logging
 
 from math import floor, ceil
-from typing import Tuple, List, Dict, TYPE_CHECKING
+from typing import Tuple, List, TYPE_CHECKING
 
 from pyngraph import Node as NgraphNode
 
@@ -34,7 +34,7 @@ if TYPE_CHECKING:
     from ngraph_onnx.onnx_importer.model_wrappers import NodeWrapper
 
 
-def get_pads(onnx_node: 'NodeWrapper') -> Tuple[Tuple[int], Tuple[int]]:
+def get_pads(onnx_node: 'NodeWrapper') -> Tuple[List[int], List[int]]:
     """
     Get padding values for the operation described by an ONNX node.
 
@@ -83,7 +83,7 @@ def get_pads(onnx_node: 'NodeWrapper') -> Tuple[Tuple[int], Tuple[int]]:
     return padding_above, padding_below
 
 
-def get_kernel_shape(onnx_node):  # type:  (NodeWrapper) -> Tuple[int, int, int]
+def get_kernel_shape(onnx_node):  # type: (NodeWrapper) -> List[int]
     """
     Get shape of kernel (filter) in pixels.
 
@@ -98,7 +98,7 @@ def get_kernel_shape(onnx_node):  # type:  (NodeWrapper) -> Tuple[int, int, int]
     return kernel_shape
 
 
-def get_strides(onnx_node):  # type: (NodeWrapper) -> Tuple[int, int, int]
+def get_strides(onnx_node):  # type: (NodeWrapper) -> List[int]
     """
     Get number of pixels to stride operation by in each direction.
 
@@ -114,7 +114,7 @@ def get_strides(onnx_node):  # type: (NodeWrapper) -> Tuple[int, int, int]
     return strides
 
 
-def get_dilations(onnx_node):  # type: (NodeWrapper) -> Tuple[int, int, int]
+def get_dilations(onnx_node):  # type: (NodeWrapper) -> List[int]
     """
     Get number of pixels for filter dilation in each direction.
 
