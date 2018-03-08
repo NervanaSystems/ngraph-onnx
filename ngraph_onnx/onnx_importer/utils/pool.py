@@ -16,7 +16,7 @@
 from __future__ import division
 from __future__ import print_function
 
-from typing import Tuple, Dict, List, TYPE_CHECKING
+from typing import Dict, List, TYPE_CHECKING
 
 from pyngraph import Node as NgraphNode
 import ngraph_api as ng
@@ -78,16 +78,24 @@ def make_pool_output_axes(input_tensor, pool_params):  # type: ignore
     return output_axes
 
 
-def get_spatial_dims(spatial_dims_count, source_shape):
-    # type: (int, Tuple[int, ...]) -> Tuple[int, ...]
-    """Retrieve only those dimensions relative to actual data from source_shape."""
-    # We assume data are in [N,C,D1,...,DN] format
-    # (https://github.com/onnx/onnx/blob/master/docs/Operators.md#inputs-5),
-    # thus we extract only those [D1,...,DN] dimensions relative to actual data.
-    if len(source_shape) > spatial_dims_count:
-        log.warning('Parameter shape size is bigger than spatial dimensions count.')
-        source_shape = source_shape[-spatial_dims_count:]
-    return source_shape
+def reduce_extra_dims(spatial_dims_count, param_shape, onnx_node):
+    # type: (int, List[int], NodeWrapper) -> List[int]
+    """Remove extra dimensions from input parameter shape.
+
+    :param spatial_dims_count: The number of current node spatial dimensions.
+    :param param_shape: Parameter shape.
+    :param onnx_node: The currently processed node.
+    """
+    # We assume data are in [D1,...,DN] format
+    # (https://github.com/onnx/onnx/blob/master/docs/Operators.md#attributes-4),
+    # In case when there is more dimensions than we expected actually we don't know which part of
+    # them is correct. Thus we assume here the correct part is the one with innermost dimensions and
+    # we inform the user about this situation.
+    if len(param_shape) > spatial_dims_count:
+        log.warning('{} node ({}) Parameter shape size is bigger than spatial dimensions count. '
+                    'Reducing outermost dimensions!'.format(onnx_node.op_type, onnx_node.name))
+        param_shape = param_shape[-spatial_dims_count:]
+    return param_shape
 
 
 def make_pooling_op(onnx_node, ng_inputs, custom_pool_params=None):
@@ -105,21 +113,23 @@ def make_pooling_op(onnx_node, ng_inputs, custom_pool_params=None):
     strides = get_strides(onnx_node)
     padding_above, padding_below = get_pads(onnx_node)
     kernel_shape = get_kernel_shape(onnx_node)
-    type = get_op_type(onnx_node)
+    op_type = get_op_type(onnx_node)
 
-    # We assume data are in [N,C,D1,...,DN] format thus we subtract [N,C] dimensions.
+    # We assume data are in [D1,...,DN] format thus we subtract [N,C] dimensions.
     spatial_dims = len(x.shape) - 2  # get spatial dimensions
 
-    strides = get_spatial_dims(spatial_dims, strides)
-    padding_above = get_spatial_dims(spatial_dims, padding_above)
-    padding_below = get_spatial_dims(spatial_dims, padding_below)
-    kernel_shape = get_spatial_dims(spatial_dims, kernel_shape)
+    strides = reduce_extra_dims(spatial_dims, strides, onnx_node)
+    padding_above = reduce_extra_dims(spatial_dims, padding_above, onnx_node)
+    padding_below = reduce_extra_dims(spatial_dims, padding_below, onnx_node)
+    kernel_shape = reduce_extra_dims(spatial_dims, kernel_shape, onnx_node)
 
-    if type == 'avg':
+    if op_type == 'avg':
         ng_op = ng.avg_pool(x, kernel_shape, strides, padding_above, padding_below, False)
-    elif type == 'max':
+    elif op_type == 'max':
         ng_op = ng.max_pool(x, kernel_shape, strides, padding_above, padding_below)
-
+    else:
+        raise NotImplementedError('%s node (%s): Unsupported pooling type.',
+                                  onnx_node.op_type, onnx_node.name)
     return ng_op
 
 
