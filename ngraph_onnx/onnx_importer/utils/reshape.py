@@ -78,7 +78,7 @@ def flatten_innermost_empty_dims(node):  # type: (NgraphNode) -> NgraphNode
 
     :param node: The input node whose data we want to flatten.
     """
-    shape = node.shape
+    shape = list(node.shape)
     if len(shape) < 2:
         return node
 
