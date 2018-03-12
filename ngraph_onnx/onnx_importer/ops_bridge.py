@@ -196,7 +196,6 @@ def ReduceMin(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) ->
     return make_reduction_op(ng.min, onnx_node, ng_inputs[0])
 
 
-@refactoring_required
 def ReduceLogSumExp(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Compute the log sum exponent of the input tensor's element' along the provided axes."""
     op = ng.exp(ng_inputs[0])
@@ -211,7 +210,6 @@ def ReduceMean(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -
     return make_reduction_op(ng.mean, onnx_node, ng_inputs[0])
 
 
-@refactoring_required
 def ReduceProd(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Compute the product of the input tensor's elements along the provided axes."""
     return make_reduction_op(ng.prod, onnx_node, ng_inputs[0])

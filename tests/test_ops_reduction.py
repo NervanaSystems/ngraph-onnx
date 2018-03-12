@@ -152,7 +152,6 @@ def test_reduce_sum_keepdims():
                           np.sum(data, keepdims=True, axis=(0, 1, 2)))
 
 
-@pytest.mark.skip(reason='Needs refactoring to ngraph++')
 def test_reduce_prod():
     data = np.array([[[5, 1], [20, 2]], [[30, 1], [40, 2]], [[55, 1], [60, 2]]], dtype=np.float32)
 
@@ -176,7 +175,6 @@ def test_reduce_prod():
                           np.prod(data, keepdims=False, axis=(0, 1, 2)))
 
 
-@pytest.mark.skip(reason='Needs refactoring to ngraph++')
 def test_reduce_log_sum_exp():
     data = np.array([[[5, 1], [20, 2]], [[30, 1], [40, 2]], [[55, 1], [60, 2]]], dtype=np.float32)
 
