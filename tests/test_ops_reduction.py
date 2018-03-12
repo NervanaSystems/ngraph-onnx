@@ -29,7 +29,6 @@ def import_and_compute(op_type, input_data, **node_attrs):
     return convert_and_calculate(node, data_inputs, data_inputs).pop()
 
 
-@pytest.mark.skip(reason='Needs refactoring to ngraph++')
 def test_reduce_max():
     data = np.array([[[5, 1], [20, 2]], [[30, 1], [40, 2]], [[55, 1], [60, 2]]], dtype=np.float32)
 
@@ -53,7 +52,6 @@ def test_reduce_max():
                           np.max(data, keepdims=False, axis=(0, 1, 2)))
 
 
-@pytest.mark.skip(reason='Needs refactoring to ngraph++')
 def test_reduce_max_keepdims():
     data = np.array([[[5, 1], [20, 2]], [[30, 1], [40, 2]], [[55, 1], [60, 2]]], dtype=np.float32)
 
@@ -76,7 +74,6 @@ def test_reduce_max_keepdims():
                           np.max(data, keepdims=True, axis=(0, 1, 2)))
 
 
-@pytest.mark.skip(reason='Needs refactoring to ngraph++')
 def test_reduce_min():
     data = np.array([[[5, 1], [20, 2]], [[30, 1], [40, 2]], [[55, 1], [60, 2]]], dtype=np.float32)
 
