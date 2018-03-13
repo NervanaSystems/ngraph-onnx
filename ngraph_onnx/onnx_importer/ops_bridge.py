@@ -22,24 +22,24 @@ from typing import Tuple, List, TYPE_CHECKING
 
 import numpy as np
 from functools import reduce
-from ngraph_api.utils.types import get_dtype
+from ngraph_api.utils.types import get_dtype, make_constant_node
 
 from pyngraph import Node as NgraphNode
 import ngraph_api as ng
 
 from ngraph_onnx.onnx_importer.utils.axes import reorder_axes, reshape_workaround, \
     rename_axes
-from ngraph_onnx.onnx_importer.utils.decorators import refactoring_required
-from ngraph_onnx.onnx_importer.utils.misc import split_pads_into_pairs
-from ngraph_onnx.onnx_importer.utils.pool import make_pooling_op, make_global_pooling_op
-from ngraph_onnx.onnx_importer.utils.reduction import make_reduction_op
 from ngraph_onnx.onnx_importer.utils.binary import broadcast_for_binary_operation, \
     cast_axes_for_matmul
 from ngraph_onnx.onnx_importer.utils.conv import make_convolution_op
-from ngraph_onnx.onnx_importer.utils.utils_pos_axes import cast_to_pos_axes
+from ngraph_onnx.onnx_importer.utils.decorators import refactoring_required
+from ngraph_onnx.onnx_importer.utils.misc import split_pads_into_pairs
+from ngraph_onnx.onnx_importer.utils.matmul import has_matmul_compatible_shapes
+from ngraph_onnx.onnx_importer.utils.pool import make_pooling_op, make_global_pooling_op
+from ngraph_onnx.onnx_importer.utils.reduction import make_reduction_op, get_reduction_axes
 from ngraph_onnx.onnx_importer.utils.reshape import transpose, infer_dimensions, \
     flatten_innermost_empty_dims
-from ngraph_onnx.onnx_importer.utils.matmul import has_matmul_compatible_shapes
+from ngraph_onnx.onnx_importer.utils.utils_pos_axes import cast_to_pos_axes
 
 if TYPE_CHECKING:
     from ngraph_onnx.onnx_importer.model_wrappers import NodeWrapper
@@ -204,10 +204,15 @@ def ReduceLogSumExp(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNod
     return op
 
 
-@refactoring_required
 def ReduceMean(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Compute the mean value of the input tensor's elements along the provided axes."""
-    return make_reduction_op(ng.mean, onnx_node, ng_inputs[0])
+    input_shape = list(ng_inputs[0].shape)
+    sum_node = make_reduction_op(ng.sum, onnx_node, ng_inputs[0])
+    reduction_axes = get_reduction_axes(onnx_node, ng_inputs[0])
+    avg_elem_count = np.prod([input_shape[x] for x in reduction_axes])
+    const_node = ng.broadcast(ng.constant(avg_elem_count, get_dtype(sum_node.get_element_type())),
+                              sum_node.shape)
+    return ng.divide(sum_node, const_node)
 
 
 def ReduceProd(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
