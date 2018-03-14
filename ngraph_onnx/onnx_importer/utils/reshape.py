@@ -23,24 +23,19 @@ from ngraph.impl import Node as NgraphNode
 import ngraph as ng
 
 
-def transpose(node, axes_order=None):  # type: (NgraphNode, Optional[List[int]]) -> NgraphNode
-    """Return transposed tensor.
+def reorder_axes(node, axes_order):  # type: (NgraphNode, List[int]) -> NgraphNode
+    """Permute axes according to specified axes_order parameter.
 
-    By default, reverse the dimensions, otherwise permute the axes
-    according to the axes_order parameter.
-
-    :param axes_order: The permutation of axes we want to perform.
-    :param node: Input tensor we want to transpose
+    :param node: The node which axes we want to permute.
+    :param axes_order: The permutation of node tensor axes.
+    :return: New node with permuted axes.
     """
     out_shape = list(node.shape)
-    out_shape.reverse()
-
     if axes_order is None:
         axes_order = list(range(len(node.shape)))
-        axes_order.reverse()
-    elif len(axes_order) > len(node.shape):
-        raise ng.exceptions.UserInputError('Node (%s): there is more axis provided than input '
-                                           'tensor rank.', node.name)
+    elif len(axes_order) != len(node.shape):
+        raise ng.exceptions.UserInputError('Node (%s): provided axes count is different than '
+                                           'input tensor rank.', node.name)
     else:
         for idx, axis in enumerate(axes_order):
             try:
@@ -48,8 +43,18 @@ def transpose(node, axes_order=None):  # type: (NgraphNode, Optional[List[int]])
             except IndexError as e:
                 raise ng.exceptions.UserInputError('Node (%s): provided axes indices are out '
                                                    'of range.', node.name)
-
     return ng.reshape(node, axes_order, out_shape)
+
+
+def transpose(node):  # type: (NgraphNode) -> NgraphNode
+    """Return transposed tensor (with reversed dimensions).
+
+    :param node: Input tensor we want to transpose
+    :return: New node with reversed dimensions.
+    """
+    axes_order = list(range(len(node.shape)))
+    axes_order.reverse()
+    return reorder_axes(node, axes_order)
 
 
 def infer_dimensions(node_name, input_shape, output_shape):

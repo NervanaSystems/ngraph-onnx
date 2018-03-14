@@ -38,7 +38,8 @@ from ngraph_onnx.onnx_importer.utils.misc import split_pads_into_pairs
 from ngraph_onnx.onnx_importer.utils.pool import make_pooling_op, make_global_pooling_op
 from ngraph_onnx.onnx_importer.utils.reduction import make_reduction_op
 from ngraph_onnx.onnx_importer.utils.reshape import transpose, infer_dimensions, \
-    flatten_innermost_empty_dims
+    flatten_innermost_empty_dims, reorder_axes
+from ngraph_onnx.onnx_importer.utils.utils_pos_axes import cast_to_pos_axes
 
 if TYPE_CHECKING:
     from ngraph_onnx.onnx_importer.model_wrappers import NodeWrapper
@@ -466,7 +467,10 @@ def Transpose(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) ->
     """
     input_node = ng_inputs[0]
     permute_axes = onnx_node.get_attribute_value('perm')
-    return transpose(input_node, permute_axes)
+    if permute_axes is None:
+        return transpose(input_node)
+    else:
+        return reorder_axes(input_node, permute_axes)
 
 
 
