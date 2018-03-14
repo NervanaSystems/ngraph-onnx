@@ -33,10 +33,10 @@ import ngraph as ng
 from ngraph_onnx.onnx_importer.utils.binary import broadcast_for_binary_operation
 from ngraph_onnx.onnx_importer.utils.conv import make_convolution_op
 from ngraph_onnx.onnx_importer.utils.decorators import refactoring_required
-from ngraph_onnx.onnx_importer.utils.misc import split_pads_into_pairs
 from ngraph_onnx.onnx_importer.utils.matmul import has_matmul_compatible_shapes
+from ngraph_onnx.onnx_importer.utils.misc import split_pads_into_pairs
 from ngraph_onnx.onnx_importer.utils.pool import make_pooling_op, make_global_pooling_op
-from ngraph_onnx.onnx_importer.utils.reduction import make_reduction_op, get_reduction_axes
+from ngraph_onnx.onnx_importer.utils.reduction import make_reduction_op
 from ngraph_onnx.onnx_importer.utils.reshape import transpose, infer_dimensions, \
     flatten_innermost_empty_dims
 
@@ -364,7 +364,7 @@ def Gemm(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngra
     #  blob/17075f44c9071600beccfc62c92b22d1cd957bfd/onnx_tf/backend.py#L711
     # They have hardcoded flatten input `A` before transposition.
     #
-    # Firstly, we check wheter input data have incompatible shapes and then try flatten input data.
+    # Firstly, we check whether input data have incompatible shapes and then try flatten input data.
     if not has_matmul_compatible_shapes(input_a.shape, input_b.shape):
         input_a = flatten_innermost_empty_dims(input_a)
         input_b = flatten_innermost_empty_dims(input_b)
@@ -458,27 +458,16 @@ def Flatten(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> N
     return ng.reshape(input_node, input_order, output_shape)
 
 
-@refactoring_required
 def Transpose(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Transpose the input tensor similar to numpy.transpose.
 
     By default, reverse the dimensions, but if `perm` attribute is specified
     permute the axes according to the values given.
     """
-    # data = ng_inputs[0]
+    input_node = ng_inputs[0]
     permute_axes = onnx_node.get_attribute_value('perm')
+    return transpose(input_node, permute_axes)
 
-    if permute_axes:
-        pass
-        # input_template = ''.join([ascii_letters[i] for i in range(len(data.axes))])
-        # output_template = ''.join([ascii_letters[i] for i in permute_axes])
-        # ng_op = reorder_axes(data, input_template, output_template)
-    else:
-        pass
-        # ng_op = ng.Transpose(data)
-
-    return None  # tmp
-    # return cast_to_pos_axes(ng_op)
 
 
 @refactoring_required

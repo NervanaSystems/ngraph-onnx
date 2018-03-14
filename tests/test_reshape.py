@@ -53,7 +53,6 @@ def test_flatten_exception():
         convert_and_calculate(node, [data], [data])
 
 
-@pytest.mark.skip(reason='Needs refactoring to ngraph++')
 def test_transpose():
     data = np.arange(120).reshape(2, 3, 4, 5)
 

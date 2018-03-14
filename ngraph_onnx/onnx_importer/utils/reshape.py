@@ -16,24 +16,40 @@
 
 import numpy as np
 
-from typing import List
+from typing import List, Optional
 
 from ngraph.impl import Node as NgraphNode
 
 import ngraph as ng
 
 
-def transpose(node):  # type: (NgraphNode) -> NgraphNode
+def transpose(node, axes_order=None):  # type: (NgraphNode, Optional[List[int]]) -> NgraphNode
     """Return transposed tensor.
 
+    By default, reverse the dimensions, otherwise permute the axes
+    according to the axes_order parameter.
+
+    :param axes_order: The permutation of axes we want to perform.
     :param node: Input tensor we want to transpose
     """
-    axes_order = list(range(len(node.shape)))
-    axes_order.reverse()
     out_shape = list(node.shape)
     out_shape.reverse()
-    node = ng.reshape(node, axes_order, out_shape)
-    return node
+
+    if axes_order is None:
+        axes_order = list(range(len(node.shape)))
+        axes_order.reverse()
+    elif len(axes_order) > len(node.shape):
+        raise ng.exceptions.UserInputError('Node (%s): there is more axis provided than input '
+                                           'tensor rank.', node.name)
+    else:
+        for idx, axis in enumerate(axes_order):
+            try:
+                out_shape[idx] = node.shape[axis]
+            except IndexError as e:
+                raise ng.exceptions.UserInputError('Node (%s): provided axes indices are out '
+                                                   'of range.', node.name)
+
+    return ng.reshape(node, axes_order, out_shape)
 
 
 def infer_dimensions(node_name, input_shape, output_shape):
