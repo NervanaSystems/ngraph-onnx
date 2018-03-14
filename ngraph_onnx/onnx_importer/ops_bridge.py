@@ -438,18 +438,24 @@ def GlobalAveragePool(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphN
 
 
 # Reshape ops
-@refactoring_required
 def Flatten(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Flatten the input tensor into a 2D matrix."""
-    data = ng_inputs[0]
+    input_node = ng_inputs[0]
     axis = onnx_node.get_attribute_value('axis', 1)
+    input_shape = list(input_node.shape)
 
-    if axis < 0 or axis > len(data.axes):
+    if axis < 0 or axis > len(input_shape):
         raise ValueError('Flatten node (%s): %d is not a valid value for `axis`.',
                          onnx_node.name, axis)
 
-    return None  # tmp
-    # return cast_to_pos_axes(ng.flatten_at(data, axis))
+    input_order = list(range(len(input_shape)))
+    if axis > 0:
+        input_shape = [np.prod(input_shape[0:axis]).astype(int), *input_shape[axis:]]
+
+    output_shape = [1, -1] if axis == 0 else [input_shape[0], -1]
+    output_shape = infer_dimensions(onnx_node.name, input_shape, output_shape)
+
+    return ng.reshape(input_node, input_order, output_shape)
 
 
 @refactoring_required
