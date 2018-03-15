@@ -12,7 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ----------------------------------------------------------------------------
-from typing import Sequence, List, Tuple, TYPE_CHECKING
+from typing import Sequence, List, Tuple
+
+from ngraph_onnx import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from ngraph_onnx.onnx_importer.model_wrappers import NodeWrapper

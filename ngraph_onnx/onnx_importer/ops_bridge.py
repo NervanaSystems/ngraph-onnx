@@ -18,11 +18,13 @@ from __future__ import division
 
 import logging
 from string import ascii_letters
-from typing import Tuple, List, TYPE_CHECKING
+from typing import Tuple, List
 
 import numpy as np
 from functools import reduce
 from ngraph_api.utils.types import get_dtype
+
+from ngraph_onnx import TYPE_CHECKING
 
 from pyngraph import Node as NgraphNode
 import ngraph_api as ng
