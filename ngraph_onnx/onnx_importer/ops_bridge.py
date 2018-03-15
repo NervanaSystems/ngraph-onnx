@@ -450,13 +450,15 @@ def Flatten(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> N
                          onnx_node.name, axis)
 
     input_order = list(range(len(input_shape)))
-    if axis > 0:
-        input_shape = [np.prod(input_shape[0:axis]).astype(int), *input_shape[axis:]]
+    first_dim = 1
+    last_dim = 1
 
-    output_shape = [1, -1] if axis == 0 else [input_shape[0], -1]
-    output_shape = infer_dimensions(onnx_node.name, input_shape, output_shape)
+    for index in range(len(input_shape)):
+        last_dim = last_dim * input_shape[index]
+        if index < axis:
+            first_dim = last_dim    
 
-    return ng.reshape(input_node, input_order, output_shape)
+    return ng.reshape(input_node, input_order, [first_dim, int(last_dim / first_dim)])
 
 
 def Transpose(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode

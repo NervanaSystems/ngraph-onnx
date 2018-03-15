@@ -37,6 +37,7 @@ def test_reshape():
     (1, np.arange(120).reshape(2, 60)),
     (2, np.arange(120).reshape(6, 20)),
     (3, np.arange(120).reshape(24, 5)),
+    (4, np.arange(120).reshape(120, 1)),
 ])
 def test_flatten(axis, expected_output):
     data = np.arange(120).reshape(2, 3, 4, 5)
