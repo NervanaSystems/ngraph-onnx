@@ -18,7 +18,8 @@ from __future__ import print_function
 
 import ngraph_api as ng
 
-from typing import Callable, Iterable, List, Optional, TYPE_CHECKING
+from typing import Callable, Iterable, List, Optional
+from ngraph_onnx import TYPE_CHECKING
 from pyngraph import Node as NgraphNode
 if TYPE_CHECKING:
     from ngraph_onnx.onnx_importer.model_wrappers import NodeWrapper

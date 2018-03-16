@@ -180,8 +180,8 @@ def Softplus(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> 
 def ReduceSum(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Compute the sum of the input tensor's elements along the provided axes.
 
-    The resulted tensor has the same rank as the input if keepdims equal 1. If keepdims
-    equal 0, then the resulted tensor have the reduced dimension pruned.
+    The output tensor has the same rank as the input if Node attribute keepdims equals 1.
+    If keepdims equals 0, then the output tensor have the reduced dimension pruned.
     """
     return make_reduction_op(ng.sum, onnx_node, ng_inputs[0])
 
