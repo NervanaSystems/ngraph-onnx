@@ -23,7 +23,7 @@ import onnx.mapping
 from cachetools.func import lru_cache
 from google import protobuf
 from typing import Any, Dict, Optional, List
-from pyngraph import Node as NgraphNode
+from ngraph import Node as NgraphNode
 import ngraph_api as ng
 
 from ngraph_onnx.onnx_importer.ops_bridge import make_ng_nodes

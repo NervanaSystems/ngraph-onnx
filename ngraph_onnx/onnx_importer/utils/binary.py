@@ -26,7 +26,7 @@ from typing import List
 from ngraph_onnx import TYPE_CHECKING
 
 from ngraph_onnx.onnx_importer.utils.decorators import function_deprecated
-from pyngraph import Node as NgraphNode
+from ngraph import Node as NgraphNode
 
 if TYPE_CHECKING:
     from ngraph_onnx.onnx_importer.model_wrappers import NodeWrapper

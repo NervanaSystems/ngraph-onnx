@@ -18,7 +18,7 @@ import numpy as np
 
 from typing import List
 
-from pyngraph import Node as NgraphNode
+from ngraph import Node as NgraphNode
 
 import ngraph_api as ng
 
