@@ -30,10 +30,7 @@ from ngraph_onnx import TYPE_CHECKING
 from ngraph import Node as NgraphNode
 import ngraph_api as ng
 
-from ngraph_onnx.onnx_importer.utils.axes import reorder_axes, reshape_workaround, \
-    rename_axes
-from ngraph_onnx.onnx_importer.utils.binary import broadcast_for_binary_operation, \
-    cast_axes_for_matmul
+from ngraph_onnx.onnx_importer.utils.binary import broadcast_for_binary_operation
 from ngraph_onnx.onnx_importer.utils.conv import make_convolution_op
 from ngraph_onnx.onnx_importer.utils.decorators import refactoring_required
 from ngraph_onnx.onnx_importer.utils.misc import split_pads_into_pairs
@@ -42,7 +39,6 @@ from ngraph_onnx.onnx_importer.utils.pool import make_pooling_op, make_global_po
 from ngraph_onnx.onnx_importer.utils.reduction import make_reduction_op, get_reduction_axes
 from ngraph_onnx.onnx_importer.utils.reshape import transpose, infer_dimensions, \
     flatten_innermost_empty_dims
-from ngraph_onnx.onnx_importer.utils.utils_pos_axes import cast_to_pos_axes
 
 if TYPE_CHECKING:
     from ngraph_onnx.onnx_importer.model_wrappers import NodeWrapper
@@ -364,7 +360,7 @@ def Gemm(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngra
     if trans_b:
         input_b = transpose(input_b)
 
-    # [arogowie] onnx-tensorflow: https://github.com/onnx/onnx-tensorflow/
+    # onnx-tensorflow: https://github.com/onnx/onnx-tensorflow/
     #  blob/17075f44c9071600beccfc62c92b22d1cd957bfd/onnx_tf/backend.py#L711
     # They have hardcoded flatten input `A` before transposition.
     #
@@ -394,7 +390,8 @@ def Conv(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngra
 @refactoring_required
 def ConvTranspose(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Calculate output of a transpose convolution operation based on an input tensor and a filter."""
-    return cast_to_pos_axes(make_convolution_op(onnx_node, ng_inputs, transpose=True))
+    return None  # tmp
+    # return cast_to_pos_axes(make_convolution_op(onnx_node, ng_inputs, transpose=True))
 
 
 @refactoring_required
@@ -411,7 +408,8 @@ def Pad(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngrap
 
     # Split paddings into pairs for each axis
     pads = [pad for pad in split_pads_into_pairs(pads)]
-    return cast_to_pos_axes(ng.pad(ng_inputs[0], pads))
+    return None  # tmp
+    # return cast_to_pos_axes(ng.pad(ng_inputs[0], pads))
 
 
 # Pooling
@@ -428,13 +426,15 @@ def MaxPool(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> N
 @refactoring_required
 def GlobalMaxPool(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Equivalent to MaxPool with kernel size equal to spatial dimensions of input tensor."""
-    return cast_to_pos_axes(make_global_pooling_op(onnx_node, ng_inputs))
+    return None  # tmp
+    # return cast_to_pos_axes(make_global_pooling_op(onnx_node, ng_inputs))
 
 
 @refactoring_required
 def GlobalAveragePool(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Equivalent to AveragePool with kernel size equal to spatial dimensions of input tensor."""
-    return cast_to_pos_axes(make_global_pooling_op(onnx_node, ng_inputs))
+    return None  # tmp
+    # return cast_to_pos_axes(make_global_pooling_op(onnx_node, ng_inputs))
 
 
 # Reshape ops
@@ -448,7 +448,8 @@ def Flatten(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> N
         raise ValueError('Flatten node (%s): %d is not a valid value for `axis`.',
                          onnx_node.name, axis)
 
-    return cast_to_pos_axes(ng.flatten_at(data, axis))
+    return None  # tmp
+    # return cast_to_pos_axes(ng.flatten_at(data, axis))
 
 
 @refactoring_required
@@ -458,17 +459,20 @@ def Transpose(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) ->
     By default, reverse the dimensions, but if `perm` attribute is specified
     permute the axes according to the values given.
     """
-    data = ng_inputs[0]
+    # data = ng_inputs[0]
     permute_axes = onnx_node.get_attribute_value('perm')
 
     if permute_axes:
-        input_template = ''.join([ascii_letters[i] for i in range(len(data.axes))])
-        output_template = ''.join([ascii_letters[i] for i in permute_axes])
-        ng_op = reorder_axes(data, input_template, output_template)
+        pass
+        # input_template = ''.join([ascii_letters[i] for i in range(len(data.axes))])
+        # output_template = ''.join([ascii_letters[i] for i in permute_axes])
+        # ng_op = reorder_axes(data, input_template, output_template)
     else:
-        ng_op = ng.Transpose(data)
+        pass
+        # ng_op = ng.Transpose(data)
 
-    return cast_to_pos_axes(ng_op)
+    return None  # tmp
+    # return cast_to_pos_axes(ng_op)
 
 
 @refactoring_required
@@ -488,10 +492,11 @@ def Slice(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngr
         raise ValueError('Slice node (%s): specifies %d slices, there are only %d input axes.',
                          onnx_node.name, slices_count, len(x.axes))
 
-    slices = [slice(starts[axes.index(axis_number)], ends[axes.index(axis_number)])
-              if (axis_number in axes) else slice(None) for axis_number in range(len(x.axes))]
+    # slices = [slice(starts[axes.index(axis_number)], ends[axes.index(axis_number)])
+    #           if (axis_number in axes) else slice(None) for axis_number in range(len(x.axes))]
 
-    return cast_to_pos_axes(ng.tensor_slice(x, slices))
+    return None  # tmp
+    # return cast_to_pos_axes(ng.tensor_slice(x, slices))
 
 
 @refactoring_required

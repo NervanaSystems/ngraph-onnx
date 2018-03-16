@@ -26,7 +26,7 @@ import ngraph_api as ng
 import logging
 
 from ngraph_onnx.onnx_importer.utils.conv import get_pads, get_strides, get_kernel_shape
-from ngraph_onnx.onnx_importer.utils.decorators import function_deprecated
+from ngraph_onnx.onnx_importer.utils.decorators import refactoring_required
 
 if TYPE_CHECKING:
     from ngraph_onnx.onnx_importer.model_wrappers import NodeWrapper
@@ -50,35 +50,6 @@ def get_op_type(onnx_node):  # type: (NodeWrapper) -> str
                                   onnx_node.op_type, onnx_node.name)
 
     return pooling_op
-
-
-@function_deprecated
-def make_pool_output_axes(input_tensor, pool_params):  # type: ignore
-    """
-    Prepare axes for the output of an ng.convolution operation.
-
-    :param input_tensor: ngraph tensor with pooling input data
-    :param pool_params: dict of pool_params for ng.pooling
-    :return: ngraph Axes compatible with pooling operation
-    """
-    number_output_channels = input_tensor.axes[0].length
-    mini_batch_size = input_tensor.axes[-1].length
-
-    input_d, input_h, input_w = input_tensor.axes.lengths[1:4]  # axes order C, D, H, W, N
-
-    params = pool_params
-    output_d = int((input_d + 2 * params['pad_d'] - params['T']) / params['str_d']) + 1
-    output_h = int((input_h + 2 * params['pad_h'] - params['R']) / params['str_h']) + 1
-    output_w = int((input_w + 2 * params['pad_w'] - params['S']) / params['str_w']) + 1
-
-    output_axes = ng.make_axes(axes=(
-        ng.make_axis(name='C', docstring='channels', length=int(number_output_channels)),
-        ng.make_axis(name='D', docstring='depth', length=int(output_d)),
-        ng.make_axis(name='H', docstring='height', length=int(output_h)),
-        ng.make_axis(name='W', docstring='width', length=int(output_w)),
-        ng.make_axis(name='N', docstring='mini-batch size', length=int(mini_batch_size)),
-    ))
-    return output_axes
 
 
 def reduce_extra_dims(spatial_dims_count, param_shape, onnx_node):
@@ -136,7 +107,7 @@ def make_pooling_op(onnx_node, ng_inputs, custom_pool_params=None):
     return ng_op
 
 
-@function_deprecated
+@refactoring_required
 def make_global_pooling_op(onnx_node, ng_inputs):
     # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """

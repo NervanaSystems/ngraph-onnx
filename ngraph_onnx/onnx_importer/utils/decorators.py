@@ -27,15 +27,3 @@ def refactoring_required(function: Callable) -> Callable:
     def wrapper(*args, **kwds):  # type: ignore
         raise NotImplementedError('Function %s has not been refactored yet', function.__name__)
     return wrapper
-
-
-def function_deprecated(function: Callable) -> Callable:
-    """Mark this function as deprecated.
-
-    The function should probably be removed during the switch from ngraph to ngraph++ API.
-    """
-    @wraps(function)
-    def wrapper(*args, **kwds):  # type: ignore
-        log.warning('Using deprecated function %s', function.__name__)
-        return function(*args, **kwds)
-    return wrapper
