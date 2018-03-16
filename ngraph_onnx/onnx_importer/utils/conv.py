@@ -20,7 +20,9 @@ from __future__ import print_function
 import logging
 
 from math import floor, ceil
-from typing import Tuple, List, TYPE_CHECKING
+from typing import Tuple, List
+
+from ngraph_onnx import TYPE_CHECKING
 
 from pyngraph import Node as NgraphNode
 

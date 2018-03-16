@@ -17,7 +17,9 @@
 from __future__ import division
 from __future__ import print_function
 
-from typing import Dict, List, TYPE_CHECKING
+from typing import Dict, List
+
+from ngraph_onnx import TYPE_CHECKING
 
 from pyngraph import Node as NgraphNode
 import ngraph_api as ng

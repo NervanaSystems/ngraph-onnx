@@ -21,7 +21,9 @@ import logging
 
 import ngraph_api as ng
 
-from typing import List, TYPE_CHECKING
+from typing import List
+
+from ngraph_onnx import TYPE_CHECKING
 
 from ngraph_onnx.onnx_importer.utils.decorators import function_deprecated
 from pyngraph import Node as NgraphNode

@@ -19,28 +19,30 @@ from __future__ import division
 
 import logging
 from string import ascii_letters
-from typing import Tuple, List, TYPE_CHECKING
+from typing import Tuple, List
 
 import numpy as np
 from functools import reduce
-from ngraph_api.utils.types import get_dtype
+from ngraph_api.utils.types import get_dtype, make_constant_node
+
+from ngraph_onnx import TYPE_CHECKING
 
 from pyngraph import Node as NgraphNode
 import ngraph_api as ng
 
 from ngraph_onnx.onnx_importer.utils.axes import reorder_axes, reshape_workaround, \
     rename_axes
-from ngraph_onnx.onnx_importer.utils.decorators import refactoring_required
-from ngraph_onnx.onnx_importer.utils.misc import split_pads_into_pairs
-from ngraph_onnx.onnx_importer.utils.pool import make_pooling_op, make_global_pooling_op
-from ngraph_onnx.onnx_importer.utils.reduction import make_reduction_op
 from ngraph_onnx.onnx_importer.utils.binary import broadcast_for_binary_operation, \
     cast_axes_for_matmul
 from ngraph_onnx.onnx_importer.utils.conv import make_convolution_op
-from ngraph_onnx.onnx_importer.utils.utils_pos_axes import cast_to_pos_axes
+from ngraph_onnx.onnx_importer.utils.decorators import refactoring_required
+from ngraph_onnx.onnx_importer.utils.misc import split_pads_into_pairs
+from ngraph_onnx.onnx_importer.utils.matmul import has_matmul_compatible_shapes
+from ngraph_onnx.onnx_importer.utils.pool import make_pooling_op, make_global_pooling_op
+from ngraph_onnx.onnx_importer.utils.reduction import make_reduction_op, get_reduction_axes
 from ngraph_onnx.onnx_importer.utils.reshape import transpose, infer_dimensions, \
     flatten_innermost_empty_dims
-from ngraph_onnx.onnx_importer.utils.matmul import has_matmul_compatible_shapes
+from ngraph_onnx.onnx_importer.utils.utils_pos_axes import cast_to_pos_axes
 
 if TYPE_CHECKING:
     from ngraph_onnx.onnx_importer.model_wrappers import NodeWrapper
@@ -179,27 +181,24 @@ def Softplus(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> 
 
 # Reduction Ops
 def ReduceSum(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
-    """Compute the sum of the input tensor's elements along the provided axes."""
-    attribute_axes = onnx_node.get_attribute_value('axes')
-    if onnx_node.get_attribute_value('keepdims', default=1):
-        raise NotImplementedError('ReduceSum node (%s): Keepdims attr is not implemented yet.',
-                                  onnx_node.name)
-    return ng.sum(ng_inputs[0], attribute_axes)
+    """Compute the sum of the input tensor's elements along the provided axes.
+
+    The output tensor has the same rank as the input if Node attribute keepdims equals 1.
+    If keepdims equals 0, then the output tensor have the reduced dimension pruned.
+    """
+    return make_reduction_op(ng.sum, onnx_node, ng_inputs[0])
 
 
-@refactoring_required
 def ReduceMax(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Compute the maximum value of the input tensor's elements along the provided axes."""
     return make_reduction_op(ng.max, onnx_node, ng_inputs[0])
 
 
-@refactoring_required
 def ReduceMin(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Compute the minimum value of the input tensor's elements along the provided axes."""
     return make_reduction_op(ng.min, onnx_node, ng_inputs[0])
 
 
-@refactoring_required
 def ReduceLogSumExp(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Compute the log sum exponent of the input tensor's element' along the provided axes."""
     op = ng.exp(ng_inputs[0])
@@ -208,13 +207,17 @@ def ReduceLogSumExp(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNod
     return op
 
 
-@refactoring_required
 def ReduceMean(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Compute the mean value of the input tensor's elements along the provided axes."""
-    return make_reduction_op(ng.mean, onnx_node, ng_inputs[0])
+    input_shape = list(ng_inputs[0].shape)
+    sum_node = make_reduction_op(ng.sum, onnx_node, ng_inputs[0])
+    reduction_axes = get_reduction_axes(onnx_node, ng_inputs[0])
+    avg_elem_count = np.prod([input_shape[x] for x in reduction_axes])
+    const_node = ng.broadcast(ng.constant(avg_elem_count, get_dtype(sum_node.get_element_type())),
+                              sum_node.shape)
+    return ng.divide(sum_node, const_node)
 
 
-@refactoring_required
 def ReduceProd(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Compute the product of the input tensor's elements along the provided axes."""
     return make_reduction_op(ng.prod, onnx_node, ng_inputs[0])

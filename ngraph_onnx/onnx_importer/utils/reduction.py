@@ -19,28 +19,24 @@ from __future__ import print_function
 
 import ngraph_api as ng
 
-from ngraph_onnx.onnx_importer.utils.decorators import function_deprecated
+from typing import Callable, Iterable, List, Optional
+from ngraph_onnx import TYPE_CHECKING
+from pyngraph import Node as NgraphNode
+if TYPE_CHECKING:
+    from ngraph_onnx.onnx_importer.model_wrappers import NodeWrapper
 
 
-@function_deprecated
-def get_reduction_axes(onnx_node):  # type: ignore
-    """Create an ngraph Axes object for a subset of axes to be used in a reduction operation."""
-    input_tensor = onnx_node.get_ng_inputs()[0]
-    attribute_axes = onnx_node.get_attribute_value('axes')
-    attribute_axis = onnx_node.get_attribute_value('axis')
+def get_reduction_axes(onnx_node, ng_input):  # type: (NodeWrapper, NgraphNode) -> List[int]
+    """Create a list of axes to be used in a reduction operation."""
+    reduction_axes = onnx_node.get_attribute_value('axes')
+    if reduction_axes is None:
+        reduction_axes = list(range(len(ng_input.shape)))
 
-    if attribute_axes is not None:
-        ng_reduction_axes = ng.make_axes([input_tensor.axes[ind] for ind in attribute_axes])
-    elif attribute_axis is not None:
-        ng_reduction_axes = ng.make_axes((input_tensor.axes[attribute_axis],))
-    else:
-        ng_reduction_axes = input_tensor.axes
-
-    return ng_reduction_axes
+    return reduction_axes
 
 
-@function_deprecated
-def make_reduction_op(ng_op_type, onnx_node, ng_input):  # type: ignore
+def make_reduction_op(ng_op_type, onnx_node, ng_input):
+    # type: (Callable, NodeWrapper, NgraphNode) -> NgraphNode
     """
     Create an ngraph Op node for a reduction operation (min, max, sum, etc.).
 
@@ -48,13 +44,14 @@ def make_reduction_op(ng_op_type, onnx_node, ng_input):  # type: ignore
     :param onnx_node: wrapped ONNX node
     :param ng_input: ngraph Op to be used as input to the reduction node
     """
-    reduction_ng_axes = get_reduction_axes(onnx_node)
-    op = ng_op_type(ng_input, reduction_axes=reduction_ng_axes)
+    reduction_axes = get_reduction_axes(onnx_node, ng_input)
+    op_node = ng_op_type(ng_input, reduction_axes)
 
     if onnx_node.get_attribute_value('keepdims', default=1):
-        for axis in reduction_ng_axes:
-            pos = ng_input.axes.index(axis)
-            new_axis = ng.make_axis(length=1, name=axis.name)
-            op = ng.expand_dims(op, new_axis, pos)
+        output_shape = list(ng_input.shape)
+        # flatten reduced axes
+        for idx in reduction_axes:
+            output_shape[idx] = 1
+        op_node = ng.reshape(op_node, list(range(len(op_node.shape))), output_shape)
 
-    return op
+    return op_node
