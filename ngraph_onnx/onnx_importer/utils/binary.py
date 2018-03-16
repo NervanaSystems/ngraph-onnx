@@ -25,7 +25,6 @@ from typing import List
 
 from ngraph_onnx import TYPE_CHECKING
 
-from ngraph_onnx.onnx_importer.utils.decorators import function_deprecated
 from ngraph import Node as NgraphNode
 
 if TYPE_CHECKING:
@@ -59,50 +58,4 @@ def broadcast_for_binary_operation(onnx_node, ng_inputs):  # type: (NodeWrapper,
 
     start_axis = onnx_node.get_attribute_value('axis')  # start of mutually equal shape
     right = ng.broadcast(right, left.shape, start_axis)
-    return left, right
-
-
-@function_deprecated
-def cast_axes_for_matmul(ng_input_left, ng_input_right):  # type: ignore
-    """
-    Prepare two ngraph tensors for matrix multiplication by casting axes.
-
-    Matching axes will be cast to enable matrix @ matrix or vector @ matrix dot multiply.
-
-    :param ng_input_left: first input to matrix multiplication
-    :param ng_input_right: second input to matrix multiplication
-    :return: tuple with the first and second input tensor with axes cast for matrix multiplication
-    """
-    left, right = ng_input_left, ng_input_right
-    left_num_axes = len(left.axes)
-    right_num_axes = len(right.axes)
-
-    if left_num_axes == right_num_axes == 1:
-        # vector @ vector
-        # cast to axes: i, icast_axes_for_matmul
-        assert left.shape.lengths == right.shape.lengths, \
-            'Vector lengths must be equal for multiplication.'
-        if left.shape != right.shape:
-            right = ng.cast_axes(right, axes=left.axes)
-
-    elif left_num_axes == 1:
-        # vector @ matrix
-        # cast to axes: i, ...ij
-        if left.axes[0] != right.axes[-2]:
-            left = ng.cast_axes(left, axes=right.axes[-2])
-
-    elif right_num_axes == 1:
-        # matrix @ vector
-        # cast to axes: ...i, i
-        if left.axes[-1] != right.axes[0]:
-            right = ng.cast_axes(right, axes=left.axes[-1])
-
-    else:
-        # matrix @ matrix
-        # cast to axes: ...ij, ...jk
-        right_axes = [ng.make_axis(name='DOT_{}'.format(i), length=axis.length)
-                      for i, axis in enumerate(right.shape)]
-        right_axes[-2] = left.axes[-1]
-        right = ng.cast_axes(right, axes=right_axes)
-
     return left, right
