@@ -1,8 +1,8 @@
 # ngraph-onnx
 
-nGraph™ Backend for ONNX
+nGraph™ Backend for ONNX.
 
-This repository contains tools to run ONNX models using the Intel® nGraph™ library as a backend.
+This repository contains tools to run [ONNX](http://onnx.ai/) models using the [Intel® nGraph™ library](https://github.com/NervanaSystems/ngraph) as a backend.
 
 ## Installation
 
@@ -108,3 +108,54 @@ array([[ 1.312082 , -1.6729496,  4.2079577,  1.4012241, -3.5463796,
       dtype=float32)
 ```
 
+### Supported ONNX operations
+
+* Abs
+* Add
+* And
+* AveragePool
+* BatchNormalization
+* Ceil
+* Constant
+* Conv
+* Div
+* Dot
+* Elu
+* Equal
+* Exp
+* Floor
+* Gemm
+* Greater
+* LeakyRelu
+* Less
+* Log
+* MatMul
+* Max
+* MaxPool
+* Mean
+* Min
+* Mul
+* Neg
+* Not
+* Or
+* PRelu
+* Reciprocal
+* ReduceLogSumExp
+* ReduceMax
+* ReduceMean
+* ReduceMin
+* ReduceProd
+* ReduceSum
+* Relu
+* Reshape
+* Selu
+* Sigmoid
+* Softmax
+* Sqrt
+* Sub
+* Sum
+* Tanh
+* Xor
+
+Refer to ONNX docs for the complete
+[operator list](https://github.com/onnx/onnx/blob/master/docs/Operators.md).
