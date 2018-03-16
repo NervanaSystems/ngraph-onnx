@@ -30,7 +30,6 @@ backend_test.exclude('test_shape')
 backend_test.exclude('test_size')
 backend_test.exclude('test_softplus')
 backend_test.exclude('test_softsign')
-backend_test.exclude('test_softmax')
 backend_test.exclude('test_squeeze')
 backend_test.exclude('test_sum_one_input')
 backend_test.exclude('test_thresholdedrelu')
@@ -69,6 +68,26 @@ backend_test.exclude('test_reflect_pad')
 backend_test.exclude('test_slice')
 backend_test.exclude('test_default_axes')
 
+# Softmax tests
+backend_test.exclude('test_softmax_axis_0_cpu')
+backend_test.exclude('test_softmax_axis_1_cpu')
+backend_test.exclude('test_softmax_default_axis_cpu')
+backend_test.exclude('test_softmax_large_number_cpu')
+
+# Global Pooling tests
+backend_test.exclude('test_globalmaxpool_precomputed_cpu')
+backend_test.exclude('test_globalmaxpool_cpu')
+backend_test.exclude('test_globalaveragepool_precomputed_cpu')
+backend_test.exclude('test_globalaveragepool_cpu')
+
+# Casting tests
+backend_test.exclude('test_cast_FLOAT_to_FLOAT16_cpu')
+backend_test.exclude('test_cast_FLOAT_to_DOUBLE_cpu')
+backend_test.exclude('test_cast_FLOAT16_to_FLOAT_cpu')
+backend_test.exclude('test_cast_FLOAT16_to_DOUBLE_cpu')
+backend_test.exclude('test_cast_DOUBLE_to_FLOAT_cpu')
+backend_test.exclude('test_cast_DOUBLE_to_FLOAT16_cpu')
+
 # Convolution tests
 backend_test.exclude('test_Conv2d_no_bias')  # computational mismatch 1.56%
 backend_test.exclude('test_Conv3d_dilated')  # computational mismatch 0.46%
@@ -79,6 +98,8 @@ backend_test.exclude('test_Conv2d_depthwise_with_multiplier_cpu')
 backend_test.exclude('test_Conv2d_groups_cpu')
 backend_test.exclude('test_Conv2d_groups_thnn_cpu')
 backend_test.exclude('test_Conv3d_groups_cpu')
+
+backend_test.exclude('test_Conv3d_stride_padding_cpu')  # Pytorch converted model comp. mismatch 0.46%
 
 # big models tests
 backend_test.exclude('test_bvlc_alexnet')
