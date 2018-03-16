@@ -27,7 +27,7 @@ from ngraph_api.utils.types import get_dtype, make_constant_node
 
 from ngraph_onnx import TYPE_CHECKING
 
-from pyngraph import Node as NgraphNode
+from ngraph import Node as NgraphNode
 import ngraph_api as ng
 
 from ngraph_onnx.onnx_importer.utils.axes import reorder_axes, reshape_workaround, \

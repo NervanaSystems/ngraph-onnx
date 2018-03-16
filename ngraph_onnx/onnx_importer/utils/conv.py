@@ -24,7 +24,7 @@ from typing import Tuple, List
 
 from ngraph_onnx import TYPE_CHECKING
 
-from pyngraph import Node as NgraphNode
+from ngraph import Node as NgraphNode
 
 import ngraph_api as ng
 

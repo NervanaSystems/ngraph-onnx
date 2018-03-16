@@ -19,7 +19,7 @@ from __future__ import print_function, division
 import pytest
 import onnx
 import numpy as np
-import pyngraph
+import ngraph
 
 from onnx.helper import make_node, make_graph, make_tensor_value_info, make_model, make_tensor
 from ngraph_onnx.onnx_importer.model_wrappers import ModelWrapper, GraphWrapper, \
@@ -65,8 +65,8 @@ def test_graph_wrapper(onnx_model):
     assert not wrapped_graph.get_initializer('Y')
 
     ng_model = wrapped_graph.get_ng_model()[0]
-    assert ng_model['output'].__class__ == pyngraph.op.Add
-    assert ng_model['inputs'][0].__class__ == pyngraph.op.Parameter
+    assert ng_model['output'].__class__ == ngraph.op.Add
+    assert ng_model['inputs'][0].__class__ == ngraph.op.Parameter
 
 
 def test_value_info_wrapper(onnx_model):
@@ -83,11 +83,11 @@ def test_value_info_wrapper(onnx_model):
     assert shape == [1, 2]
 
     parameter = wrapped_value_info.get_ng_parameter()
-    assert parameter.__class__ == pyngraph.op.Parameter
+    assert parameter.__class__ == ngraph.op.Parameter
     assert list(parameter.shape) == shape
 
     constant = wrapped_value_info.get_ng_constant()
-    assert constant.__class__ == pyngraph.op.Constant
+    assert constant.__class__ == ngraph.op.Constant
     assert list(constant.shape) == shape
 
     ng_node = wrapped_value_info.get_ng_node()
@@ -100,11 +100,11 @@ def test_node_wrapper(onnx_model):
 
     ng_inputs = wrapped_node.get_ng_inputs()
     assert len(ng_inputs) == 2
-    assert ng_inputs[0].__class__ == pyngraph.op.Constant
+    assert ng_inputs[0].__class__ == ngraph.op.Constant
 
     ng_outputs = wrapped_node.get_ng_nodes_dict()
     assert len(ng_outputs) == 1
-    assert ng_outputs['Z'].__class__ == pyngraph.op.Add
+    assert ng_outputs['Z'].__class__ == ngraph.op.Add
 
 
 def test_attribute_wrapper():
