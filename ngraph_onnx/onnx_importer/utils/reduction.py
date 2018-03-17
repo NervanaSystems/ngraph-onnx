@@ -17,11 +17,11 @@
 from __future__ import division
 from __future__ import print_function
 
-import ngraph_api as ng
+import ngraph as ng
 
 from typing import Callable, Iterable, List, Optional
 from ngraph_onnx import TYPE_CHECKING
-from ngraph import Node as NgraphNode
+from ngraph.impl import Node as NgraphNode
 if TYPE_CHECKING:
     from ngraph_onnx.onnx_importer.model_wrappers import NodeWrapper
 

@@ -14,7 +14,7 @@
 # limitations under the License.
 # ******************************************************************************
 
-from ngraph_api.utils.types import TensorShape
+from ngraph.utils.types import TensorShape
 
 
 def _is_matrix(shape):  # type: (TensorShape) -> bool

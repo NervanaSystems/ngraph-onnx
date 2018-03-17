@@ -21,8 +21,8 @@ from typing import Dict, List
 
 from ngraph_onnx import TYPE_CHECKING
 
-from ngraph import Node as NgraphNode
-import ngraph_api as ng
+from ngraph.impl import Node as NgraphNode
+import ngraph as ng
 import logging
 
 from ngraph_onnx.onnx_importer.utils.conv import get_pads, get_strides, get_kernel_shape
