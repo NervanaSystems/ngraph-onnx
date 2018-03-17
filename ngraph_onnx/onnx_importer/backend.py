@@ -26,7 +26,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import numpy as np
-import ngraph_api as ng
+import ngraph as ng
 import onnx
 
 from onnx.helper import make_tensor_value_info, make_graph, make_model

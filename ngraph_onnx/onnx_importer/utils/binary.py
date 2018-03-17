@@ -19,13 +19,13 @@ from __future__ import print_function
 
 import logging
 
-import ngraph_api as ng
+import ngraph as ng
 
 from typing import List
 
 from ngraph_onnx import TYPE_CHECKING
 
-from ngraph import Node as NgraphNode
+from ngraph.impl import Node as NgraphNode
 
 if TYPE_CHECKING:
     from ngraph_onnx.onnx_importer.model_wrappers import NodeWrapper

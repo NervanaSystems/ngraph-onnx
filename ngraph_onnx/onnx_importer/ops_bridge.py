@@ -23,12 +23,12 @@ from typing import Tuple, List
 
 import numpy as np
 from functools import reduce
-from ngraph_api.utils.types import get_dtype, make_constant_node
+from ngraph.utils.types import get_dtype, make_constant_node
 
 from ngraph_onnx import TYPE_CHECKING
 
-from ngraph import Node as NgraphNode
-import ngraph_api as ng
+from ngraph.impl import Node as NgraphNode
+import ngraph as ng
 
 from ngraph_onnx.onnx_importer.utils.binary import broadcast_for_binary_operation
 from ngraph_onnx.onnx_importer.utils.conv import make_convolution_op

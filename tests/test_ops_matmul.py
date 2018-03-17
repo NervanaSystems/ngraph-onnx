@@ -21,7 +21,7 @@ from cachetools.func import lru_cache
 
 import onnx
 
-import ngraph_api as ng
+import ngraph as ng
 import numpy as np
 from onnx.helper import make_node, make_graph, make_tensor_value_info, make_model
 from ngraph_onnx.onnx_importer.importer import import_onnx_model

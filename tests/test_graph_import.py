@@ -17,7 +17,7 @@
 from __future__ import print_function, division
 
 import onnx
-import ngraph_api as ng
+import ngraph as ng
 import numpy as np
 import pytest
 from onnx.helper import make_node, make_graph, make_tensor_value_info, make_model

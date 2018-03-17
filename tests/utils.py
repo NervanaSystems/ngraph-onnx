@@ -21,7 +21,7 @@ import onnx
 import pytest
 from onnx.helper import make_graph, make_model, make_tensor_value_info
 
-import ngraph_api as ng
+import ngraph as ng
 from ngraph_onnx.onnx_importer.importer import import_onnx_model
 
 

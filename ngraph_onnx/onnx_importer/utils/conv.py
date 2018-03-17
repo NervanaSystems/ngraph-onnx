@@ -24,11 +24,11 @@ from typing import Tuple, List
 
 from ngraph_onnx import TYPE_CHECKING
 
-from ngraph import Node as NgraphNode
+from ngraph.impl import Node as NgraphNode
 
-import ngraph_api as ng
+import ngraph as ng
 
-from ngraph_api.utils.types import get_dtype
+from ngraph.utils.types import get_dtype
 from ngraph_onnx.onnx_importer.utils.misc import verify_symmetric_padding
 
 log = logging.getLogger(__file__)

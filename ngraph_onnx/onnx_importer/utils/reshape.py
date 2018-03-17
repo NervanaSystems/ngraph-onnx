@@ -18,9 +18,9 @@ import numpy as np
 
 from typing import List
 
-from ngraph import Node as NgraphNode
+from ngraph.impl import Node as NgraphNode
 
-import ngraph_api as ng
+import ngraph as ng
 
 
 def transpose(node):  # type: (NgraphNode) -> NgraphNode
