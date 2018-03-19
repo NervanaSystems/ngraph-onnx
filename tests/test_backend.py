@@ -84,6 +84,13 @@ backend_test.exclude('test_reflect_pad')
 backend_test.exclude('test_slice')
 backend_test.exclude('test_default_axes')
 
+# Reshape tests
+backend_test.exclude('test_reshape_extended_dims_cpu')
+backend_test.exclude('test_reshape_negative_dim_cpu')
+backend_test.exclude('test_reshape_one_dim_cpu')
+backend_test.exclude('test_reshape_reduced_dims_cpu')
+backend_test.exclude('test_reshape_reordered_dims_cpu')
+
 # Softmax tests
 backend_test.exclude('test_softmax_axis_0_cpu')
 backend_test.exclude('test_softmax_axis_1_cpu')
@@ -105,8 +112,6 @@ backend_test.exclude('test_cast_DOUBLE_to_FLOAT_cpu')
 backend_test.exclude('test_cast_DOUBLE_to_FLOAT16_cpu')
 
 # Convolution tests
-backend_test.exclude('test_Conv2d_no_bias')  # computational mismatch 1.56%
-backend_test.exclude('test_Conv3d_dilated')  # computational mismatch 0.46%
 backend_test.exclude('test_Conv2d_depthwise_cpu')
 backend_test.exclude('test_Conv2d_depthwise_padded_cpu')
 backend_test.exclude('test_Conv2d_depthwise_strided_cpu')
@@ -114,8 +119,6 @@ backend_test.exclude('test_Conv2d_depthwise_with_multiplier_cpu')
 backend_test.exclude('test_Conv2d_groups_cpu')
 backend_test.exclude('test_Conv2d_groups_thnn_cpu')
 backend_test.exclude('test_Conv3d_groups_cpu')
-
-backend_test.exclude('test_Conv3d_stride_padding_cpu')  # Pytorch converted model comp. mismatch 0.46%
 
 # big models tests
 backend_test.exclude('test_bvlc_alexnet')
