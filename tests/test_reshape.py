@@ -68,7 +68,6 @@ def test_transpose():
     assert np.array_equal(ng_results, [expected_output])
 
 
-@pytest.mark.skip(reason='Needs refactoring to ngraph++')
 def test_slice():
     data = np.array([[1, 2, 3, 4], [5, 6, 7, 8]])
 
@@ -78,8 +77,48 @@ def test_slice():
     ng_results = convert_and_calculate(node, [data], [expected_output])
     assert np.array_equal(ng_results, [expected_output])
 
-    expected_output = np.array([[1, 2, 3, 4]])
-    node = onnx.helper.make_node('Slice', inputs=['x'], outputs=['y'], starts=[0], ends=[-1])
+    expected_output = np.array([[2, 3, 4]])
+    node = onnx.helper.make_node('Slice', inputs=['x'], outputs=['y'], starts=[0, 1],
+                                 ends=[-1, 1000])
+    ng_results = convert_and_calculate(node, [data], [expected_output])
+    assert np.array_equal(ng_results, [expected_output])
+
+    node = onnx.helper.make_node('Slice', inputs=['x'], outputs=['y'], axes=[0, 1],
+                                 starts=[0, 0], ends=[3, 10])
+    data = np.random.randn(20, 10, 5).astype(np.float32)
+    expected_output = data[0:3, 0:10]
+    ng_results = convert_and_calculate(node, [data], [expected_output])
+    assert np.array_equal(ng_results, [expected_output])
+
+    # default axes
+    node = onnx.helper.make_node('Slice', inputs=['x'], outputs=['y'], starts=[0, 0, 3],
+                                 ends=[20, 10, 4])
+    data = np.random.randn(20, 10, 5).astype(np.float32)
+    expected_output = data[:, :, 3:4]
+    ng_results = convert_and_calculate(node, [data], [expected_output])
+    assert np.array_equal(ng_results, [expected_output])
+
+    # end out of bounds
+    node = onnx.helper.make_node('Slice', inputs=['x'], outputs=['y'], axes=[1], starts=[1],
+                                 ends=[1000])
+    data = np.random.randn(20, 10, 5).astype(np.float32)
+    expected_output = data[:, 1:1000]
+    ng_results = convert_and_calculate(node, [data], [expected_output])
+    assert np.array_equal(ng_results, [expected_output])
+
+    # negative value
+    node = onnx.helper.make_node('Slice', inputs=['x'], outputs=['y'], axes=[1], starts=[0],
+                                 ends=[-1])
+    data = np.random.randn(20, 10, 5).astype(np.float32)
+    expected_output = data[:, 0:-1]
+    ng_results = convert_and_calculate(node, [data], [expected_output])
+    assert np.array_equal(ng_results, [expected_output])
+
+    # start ouf of bounds
+    node = onnx.helper.make_node('Slice', inputs=['x'], outputs=['y'], axes=[1], starts=[1000],
+                                 ends=[1000])
+    data = np.random.randn(20, 10, 5).astype(np.float32)
+    expected_output = data[:, 1000:1000]
     ng_results = convert_and_calculate(node, [data], [expected_output])
     assert np.array_equal(ng_results, [expected_output])
 

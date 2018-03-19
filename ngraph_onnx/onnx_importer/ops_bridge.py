@@ -18,13 +18,11 @@ from __future__ import print_function
 from __future__ import division
 
 import logging
-from string import ascii_letters
 from typing import Tuple, List
 
 import numpy as np
 from functools import reduce
-from ngraph.utils.types import get_dtype, make_constant_node
-
+from ngraph.utils.types import get_dtype
 from ngraph_onnx import TYPE_CHECKING
 
 from ngraph.impl import Node as NgraphNode
@@ -35,11 +33,10 @@ from ngraph_onnx.onnx_importer.utils.conv import make_convolution_op
 from ngraph_onnx.onnx_importer.utils.decorators import refactoring_required
 from ngraph_onnx.onnx_importer.utils.matmul import has_matmul_compatible_shapes
 from ngraph_onnx.onnx_importer.utils.misc import split_pads_into_pairs
-from ngraph_onnx.onnx_importer.utils.pool import make_pooling_op, make_global_pooling_op
-from ngraph_onnx.onnx_importer.utils.reduction import make_reduction_op
+from ngraph_onnx.onnx_importer.utils.pool import make_pooling_op
+from ngraph_onnx.onnx_importer.utils.reduction import make_reduction_op, get_reduction_axes
 from ngraph_onnx.onnx_importer.utils.reshape import transpose, infer_dimensions, \
-    flatten_innermost_empty_dims, reorder_axes
-from ngraph_onnx.onnx_importer.utils.utils_pos_axes import cast_to_pos_axes
+    flatten_innermost_empty_dims, reorder_axes, get_bound
 
 if TYPE_CHECKING:
     from ngraph_onnx.onnx_importer.model_wrappers import NodeWrapper
@@ -456,7 +453,7 @@ def Flatten(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> N
     for index in range(len(input_shape)):
         last_dim = last_dim * input_shape[index]
         if index < axis:
-            first_dim = last_dim    
+            first_dim = last_dim
 
     return ng.reshape(input_node, input_order, [first_dim, int(last_dim / first_dim)])
 
@@ -475,11 +472,9 @@ def Transpose(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) ->
         return reorder_axes(input_node, permute_axes)
 
 
-
-@refactoring_required
 def Slice(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Produce a slice of the input tensor along multiple axes."""
-    x = ng_inputs[0]
+    input_node = ng_inputs[0]
 
     starts = onnx_node.get_attribute_value('starts')
     ends = onnx_node.get_attribute_value('ends')
@@ -487,17 +482,23 @@ def Slice(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngr
         raise ValueError('Slice node (%s): attributes `starts` and `ends` must be set '
                          'and of equal length.', onnx_node.name)
 
-    axes = onnx_node.get_attribute_value('axes', list(range(len(starts))))
-    slices_count = max(len(axes), *starts)
-    if slices_count > len(x.axes):
-        raise ValueError('Slice node (%s): specifies %d slices, there are only %d input axes.',
-                         onnx_node.name, slices_count, len(x.axes))
+    axes = onnx_node.get_attribute_value('axes')
+    if axes is None:
+        axes = list(range(len(starts)))
+    else:
+        for axe in axes:
+            if axe < 0 or axe > len(input_node.shape) - 1:
+                raise ValueError('Slice node (%s): specified axes are out of node\' dimensions '
+                                 'bounds', onnx_node.name)
 
-    # slices = [slice(starts[axes.index(axis_number)], ends[axes.index(axis_number)])
-    #           if (axis_number in axes) else slice(None) for axis_number in range(len(x.axes))]
+    lower_bounds = [0] * len(input_node.shape)
+    upper_bounds = list(input_node.shape)
 
-    return None  # tmp
-    # return cast_to_pos_axes(ng.tensor_slice(x, slices))
+    for idx, axe in enumerate(axes):
+        lower_bounds[axe] = get_bound(starts[idx], input_node.shape[axe])
+        upper_bounds[axe] = get_bound(ends[idx], input_node.shape[axe])
+
+    return ng.slice(input_node, lower_bounds, upper_bounds)
 
 
 @refactoring_required

@@ -16,7 +16,7 @@
 
 import numpy as np
 
-from typing import List, Optional
+from typing import List
 
 from ngraph.impl import Node as NgraphNode
 
@@ -113,3 +113,21 @@ def flatten_innermost_empty_dims(node):  # type: (NgraphNode) -> NgraphNode
         return ng.reshape(node, input_order, output_shape)
     else:
         return node
+
+
+def get_bound(requested_bound, max_bound_val):  # type: (int, int) -> int
+    """Return valid bound value withing range [0,max_bound_val].
+
+    Negative values are interpreted such that it represent number
+    of elements before `the max_bound_val`.
+    If `requested_bound` is greater than `max_bound_val` then it is
+    interpreted as `max_bound_val`.
+
+    :param requested_bound: The value of bound we would like to get.
+    :param max_bound_val: The maximum available bound value.
+    :return: Valid bound value.
+    """
+    if requested_bound >= 0:
+        return min(requested_bound, max_bound_val)
+    else:
+        return max(0, max_bound_val + requested_bound)
