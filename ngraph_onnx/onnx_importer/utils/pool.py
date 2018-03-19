@@ -17,7 +17,7 @@
 from __future__ import division
 from __future__ import print_function
 
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 from ngraph_onnx import TYPE_CHECKING
 
@@ -26,7 +26,6 @@ import ngraph as ng
 import logging
 
 from ngraph_onnx.onnx_importer.utils.conv import get_pads, get_strides, get_kernel_shape
-from ngraph_onnx.onnx_importer.utils.decorators import refactoring_required
 
 if TYPE_CHECKING:
     from ngraph_onnx.onnx_importer.model_wrappers import NodeWrapper
@@ -34,7 +33,7 @@ if TYPE_CHECKING:
 log = logging.getLogger(__file__)
 
 
-def get_op_type(onnx_node):  # type: (NodeWrapper) -> str
+def get_op_type(onnx_node):  # type: (NodeWrapper) -> Tuple[str, bool]
     """
     Parse ONNX pooling operation attributes and produce an ngraph compatible pool_params dict.
 
@@ -43,13 +42,15 @@ def get_op_type(onnx_node):  # type: (NodeWrapper) -> str
     """
     if onnx_node.op_type in ['AveragePool', 'GlobalAveragePool']:
         pooling_op = 'avg'
+        global_pooling = onnx_node.op_type in ['GlobalAveragePool']
     elif onnx_node.op_type in ['MaxPool', 'GlobalMaxPool']:
         pooling_op = 'max'
+        global_pooling = onnx_node.op_type in ['GlobalMaxPool']
     else:
         raise NotImplementedError('%s node (%s): Unsupported pooling type.',
                                   onnx_node.op_type, onnx_node.name)
 
-    return pooling_op
+    return pooling_op, global_pooling
 
 
 def reduce_extra_dims(spatial_dims_count, param_shape, onnx_node):
@@ -84,18 +85,23 @@ def make_pooling_op(onnx_node, ng_inputs, custom_pool_params=None):
     """
     x = ng_inputs[0]
 
-    strides = get_strides(onnx_node)
-    padding_above, padding_below = get_pads(onnx_node)
-    kernel_shape = get_kernel_shape(onnx_node)
-    op_type = get_op_type(onnx_node)
+    op_type, is_global = get_op_type(onnx_node)
 
     # We assume data are in [D1,...,DN] format thus we subtract [N,C] dimensions.
     spatial_dims = len(x.shape) - 2  # get spatial dimensions
 
+    if(is_global):
+        kernel_shape = reduce_extra_dims(spatial_dims, list(x.shape), onnx_node)
+    else:
+        kernel_shape = get_kernel_shape(onnx_node)
+        kernel_shape = reduce_extra_dims(spatial_dims, kernel_shape, onnx_node)
+
+    strides = get_strides(onnx_node, kernel_shape)
+    padding_above, padding_below = get_pads(onnx_node, kernel_shape)
+
     strides = reduce_extra_dims(spatial_dims, strides, onnx_node)
     padding_above = reduce_extra_dims(spatial_dims, padding_above, onnx_node)
     padding_below = reduce_extra_dims(spatial_dims, padding_below, onnx_node)
-    kernel_shape = reduce_extra_dims(spatial_dims, kernel_shape, onnx_node)
 
     if op_type == 'avg':
         ng_op = ng.avg_pool(x, kernel_shape, strides, padding_above, padding_below, False)
@@ -105,30 +111,3 @@ def make_pooling_op(onnx_node, ng_inputs, custom_pool_params=None):
         raise NotImplementedError('%s node (%s): Unsupported pooling type.',
                                   onnx_node.op_type, onnx_node.name)
     return ng_op
-
-
-@refactoring_required
-def make_global_pooling_op(onnx_node, ng_inputs):
-    # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
-    """
-    Create a ngraph global pooling operation.
-
-    This is equivalent to pooling with kernel size equal to the spatial dimension of input tensor.
-
-    :param onnx_node: wrapped ONNX node for a pooling op
-    :param ng_inputs: ngraph TensorOp input tensors
-    :return: ngraph pooling op
-    """
-    x = ng_inputs[0]
-
-    if len(x.axes) == 4:  # ONNX input axes order NCHW
-        _, _, kernel_h, kernel_w = x.axes.lengths
-        pool_params = {'R': kernel_h, 'S': kernel_w}
-    elif len(x.axes) == 5:  # ONNX input axes order NCHWD
-        _, _, kernel_h, kernel_w, kernel_d = x.axes.lengths
-        pool_params = {'R': kernel_h, 'S': kernel_w, 'T': kernel_d}
-    else:
-        raise NotImplementedError('%s node (%s): only 2D and 3D pooling ops are supported.',
-                                  onnx_node.op_type, onnx_node.name)
-
-    return make_pooling_op(onnx_node, ng_inputs, custom_pool_params=pool_params)

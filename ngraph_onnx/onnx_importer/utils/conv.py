@@ -37,7 +37,7 @@ if TYPE_CHECKING:
     from ngraph_onnx.onnx_importer.model_wrappers import NodeWrapper
 
 
-def get_pads(onnx_node: 'NodeWrapper') -> Tuple[List[int], List[int]]:
+def get_pads(onnx_node: 'NodeWrapper', kernel_shape: 'List[int]'=None) -> Tuple[List[int], List[int]]:
     """
     Get padding values for the operation described by an ONNX node.
 
@@ -51,7 +51,8 @@ def get_pads(onnx_node: 'NodeWrapper') -> Tuple[List[int], List[int]]:
     """
     auto_pad = onnx_node.get_attribute_value('auto_pad')
     pads = onnx_node.get_attribute_value('pads', ())  # Padding along each axis
-    kernel_shape = get_kernel_shape(onnx_node)
+    if(kernel_shape is None):
+        kernel_shape = get_kernel_shape(onnx_node)
 
     if len(pads) == 0:
         pads = [0] * len(kernel_shape)
@@ -101,7 +102,7 @@ def get_kernel_shape(onnx_node):  # type: (NodeWrapper) -> List[int]
     return kernel_shape
 
 
-def get_strides(onnx_node):  # type: (NodeWrapper) -> List[int]
+def get_strides(onnx_node, kernel_shape=None):  # type: (NodeWrapper, List[int]) -> List[int]
     """
     Get number of pixels to stride operation by in each direction.
 
@@ -109,7 +110,8 @@ def get_strides(onnx_node):  # type: (NodeWrapper) -> List[int]
     :return: tuple of numbers of pixels to stride by (height, width, depth)
     """
     strides = onnx_node.get_attribute_value('strides', ())  # stride along each axis
-    kernel_shape = get_kernel_shape(onnx_node)
+    if kernel_shape is None:
+        kernel_shape = get_kernel_shape(onnx_node)
 
     if len(strides) == 0:
         strides = [1] * len(kernel_shape)
