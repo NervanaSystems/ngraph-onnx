@@ -123,7 +123,6 @@ def test_slice():
     assert np.array_equal(ng_results, [expected_output])
 
 
-@pytest.mark.skip(reason='Needs refactoring to ngraph++')
 def test_concat():
     a = np.array([[1, 2], [3, 4]])
     b = np.array([[5, 6]])
@@ -138,6 +137,29 @@ def test_concat():
     node = onnx.helper.make_node('Concat', inputs=['x', 'y'], outputs=['z'], axis=1)
     ng_results = convert_and_calculate(node, [a, b], [expected_output])
     assert np.array_equal(ng_results, [expected_output])
+
+    test_cases = {
+        '1d': ([1, 2],
+               [3, 4]),
+        '2d': ([[1, 2], [3, 4]],
+               [[5, 6], [7, 8]]),
+        '3d': ([[[1, 2], [3, 4]], [[5, 6], [7, 8]]],
+               [[[9, 10], [11, 12]], [[13, 14], [15, 16]]]),
+    }
+
+    for test_case, values in test_cases.items():
+        values = [np.asarray(v) for v in values]
+        for i in range(len(values[0].shape)):
+            in_args = ['value' + str(k) for k in range(len(values))]
+            node = onnx.helper.make_node(
+                'Concat',
+                inputs=[s for s in in_args],
+                outputs=['output'],
+                axis=i,
+            )
+            expected_output = np.concatenate(values, i)
+            ng_results = convert_and_calculate(node, [v for v in values], [expected_output])
+            assert np.array_equal(ng_results, [expected_output])
 
 
 @pytest.mark.skip(reason='Needs refactoring to ngraph++')

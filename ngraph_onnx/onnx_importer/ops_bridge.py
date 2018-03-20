@@ -501,24 +501,24 @@ def Slice(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngr
     return ng.slice(input_node, lower_bounds, upper_bounds)
 
 
-@refactoring_required
 def Concat(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Concatenate a list of tensors into a single tensor."""
-    axis = onnx_node.get_attribute_value('axis', 0)
+    axis = onnx_node.get_attribute_value('axis')
+    if axis is None:
+        raise ValueError('Concat node (%s): requires "axis" attribute', onnx_node.name)
 
     if len(ng_inputs) < 2:
         raise ValueError('Concat node (%s): requires at least 2 inputs, %d given.',
                          onnx_node.name, len(ng_inputs))
 
-    unique_input_ranks = {len(node.axes) for node in ng_inputs}
+    unique_input_ranks = {len(node.shape) for node in ng_inputs}
     if len(unique_input_ranks) != 1:
         raise ValueError('Concat node (%s): input tensors must be of equal rank.', onnx_node.name)
 
-    if axis >= unique_input_ranks.pop():
+    if axis >= unique_input_ranks.pop() or axis < 0:
         raise ValueError('Concat node (%s): `axis` attribute is out of range.', onnx_node.name)
 
-    ng_axis = ng_inputs[0].axes[axis]
-    return ng.concat_along_axis(ng_inputs, ng_axis)
+    return ng.concat(ng_inputs, axis)
 
 
 @refactoring_required

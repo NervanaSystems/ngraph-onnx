@@ -33,7 +33,6 @@ backend_test = onnx.backend.test.BackendTest(NgraphBackend, __name__)
 
 # Need refactoring to ngraph++
 backend_test.exclude('test_clip')
-backend_test.exclude('test_concat')
 backend_test.exclude('test_gather')
 backend_test.exclude('test_hardmax')
 backend_test.exclude('test_hardsigmoid')
