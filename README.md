@@ -16,14 +16,14 @@ You will need Protocol Buffers `v.2.6.1` or higher installed on your system to u
 
 On Ubuntu, for exmaple you can install protobuf using:
 
-    $ sudo apt-get install protobuf-compiler libprotobuf-dev
+    # apt install protobuf-compiler libprotobuf-dev
 
 And on Mac OS you can install protobuf using Homebrew:
 
     $ brew install protobuf
 
 
-You can verify whether you have version `>2.6.1` installed using the command:
+You can verify whether you have version `>=2.6.1` installed using the command:
 
     $ protoc --version
     libprotoc 3.4.0
@@ -36,17 +36,25 @@ You can follow these instructions to build an ngraph Python wheel containing bot
 
 https://github.com/NervanaSystems/ngraph/blob/master/python/README.md
 
+nGraph build process on Ubuntu 16.04:
+
+    # apt update
+    # apt install python3 python3-pip python3-dev
+    # apt install build-essential cmake curl clang-3.9 git zlib1g zlib1g-dev libtinfo-dev
+    $ git clone https://github.com/NervanaSystems/ngraph.git
+    $ cd ngraph/python
+    $ ./build_python3_wheel.sh
 
 Once the Python binary wheel file (`ngraph-*.whl`) is prepared you can install it using pip.
 
 For example:
 
-    (your_venv) $ pip install -U build/dist/ngraph-0.0.1-cp35-cp35m-linux_x86_64.whl
+    (your_venv) $ pip install -U build/dist/ngraph-0.1.0-cp35-cp35m-linux_x86_64.whl
 
 You can check that ngraph is properly installed in your Python shell:
 
 ```python
->>> import ngraph_api as ng
+>>> import ngraph as ng
 >>> ng.abs([[1, 2, 3], [4, 5, 6]])
 <Abs: 'Abs_1' ([2, 3])>
 ```
@@ -92,7 +100,7 @@ After importing the ONNX model, you can use it to generate and call a computatio
 
 ```python
 # Using an ngraph runtime (CPU backend) create a callable computation
->>> import ngraph_api as ng
+>>> import ngraph as ng
 >>> ng_model = ng_models[0]
 >>> runtime = ng.runtime(manager_name='CPU')
 >>> resnet = runtime.computation(ng_model['output'], *ng_model['inputs'])
