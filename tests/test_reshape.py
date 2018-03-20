@@ -212,8 +212,7 @@ def test_unsqueeze():
     assert np.array_equal(ng_results, [expected_output])
 
 
-@pytest.mark.skip(reason='Needs refactoring to ngraph++')
-@pytest.mark.parametrize('node,expected_output', [
+@pytest.mark.parametrize('node, expected_output', [
     # Split into 2 equal parts along axis=0
     (onnx.helper.make_node('Split', inputs=['x'], outputs=['y', 'z'], axis=0),
      [np.array([[0, 1, 2, 3]]), np.array([[4, 5, 6, 7]])]),

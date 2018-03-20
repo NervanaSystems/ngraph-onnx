@@ -30,7 +30,7 @@ def get_transformer():
 
 
 def convert_and_calculate(onnx_node, data_inputs, data_outputs):
-    # type: (NodeProto, List[np.ndarray], List[np.ndarray]) -> List[np.ndarray]
+    # type: (onnx.NodeProto, List[np.ndarray], List[np.ndarray]) -> List[np.ndarray]
     """
     Convert ONNX node to ngraph node and perform computation on input data.
 

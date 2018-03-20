@@ -131,3 +131,23 @@ def get_bound(requested_bound, max_bound_val):  # type: (int, int) -> int
         return min(requested_bound, max_bound_val)
     else:
         return max(0, max_bound_val + requested_bound)
+
+
+def make_slice_op(node, axes, starts, ends):
+    # type: (NgraphNode, List[int], List[int], List[int]) -> NgraphNode
+    """Perform slice operation on provided node.
+
+    :param node: The node we want to slice.
+    :param axes: The list of axes on which we perform slicing.
+    :param starts: The start index (inclusive) of slice for each sliced axis respectively.
+    :param ends: The end index (exclusive) of slice for each sliced axis respectively.
+    :return: The new node representing sliced portion of input node data.
+    """
+    lower_bounds = [0] * len(node.shape)
+    upper_bounds = list(node.shape)
+
+    for idx, axe in enumerate(axes):
+        lower_bounds[axe] = get_bound(starts[idx], node.shape[axe])
+        upper_bounds[axe] = get_bound(ends[idx], node.shape[axe])
+
+    return ng.slice(node, lower_bounds, upper_bounds)

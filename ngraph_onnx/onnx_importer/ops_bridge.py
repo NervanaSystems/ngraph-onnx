@@ -36,7 +36,7 @@ from ngraph_onnx.onnx_importer.utils.misc import split_pads_into_pairs
 from ngraph_onnx.onnx_importer.utils.pool import make_pooling_op
 from ngraph_onnx.onnx_importer.utils.reduction import make_reduction_op, get_reduction_axes
 from ngraph_onnx.onnx_importer.utils.reshape import transpose, infer_dimensions, \
-    flatten_innermost_empty_dims, reorder_axes, get_bound
+    flatten_innermost_empty_dims, reorder_axes, make_slice_op
 
 if TYPE_CHECKING:
     from ngraph_onnx.onnx_importer.model_wrappers import NodeWrapper
@@ -491,14 +491,7 @@ def Slice(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngr
                 raise ValueError('Slice node (%s): specified axes are out of node\' dimensions '
                                  'bounds', onnx_node.name)
 
-    lower_bounds = [0] * len(input_node.shape)
-    upper_bounds = list(input_node.shape)
-
-    for idx, axe in enumerate(axes):
-        lower_bounds[axe] = get_bound(starts[idx], input_node.shape[axe])
-        upper_bounds[axe] = get_bound(ends[idx], input_node.shape[axe])
-
-    return ng.slice(input_node, lower_bounds, upper_bounds)
+    return make_slice_op(input_node, axes, starts, ends)
 
 
 def Concat(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
@@ -588,35 +581,38 @@ def Reshape(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> N
     return ng.reshape(data, input_order, output_shape)
 
 
-@refactoring_required
-def Split(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Tuple[NgraphNode]
+def Split(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Tuple[NgraphNode, ...]
     """Split a tensor into a list of tensors."""
     data = ng_inputs[0]
     count_outputs = len(onnx_node.get_output_names())
-    axis_to_split = onnx_node.get_attribute_value('axis')
-    if axis_to_split < 0:
-        axis_to_split = len(data.axes) + axis_to_split
-    len_axis_to_split = data.axes[axis_to_split].length
+    axis_to_split = onnx_node.get_attribute_value('axis', 0)
+
+    if axis_to_split < 0 or axis_to_split >= len(data.shape):
+        raise ValueError('Split node (%s) provided split axis is out of input tensor dimensions'
+                         ' range.', onnx_node.name)
+
+    len_axis_to_split = data.shape[axis_to_split]
     len_parts = onnx_node.get_attribute_value('split')
 
-    if not len_parts:
+    if len_parts is None:
         if len_axis_to_split % count_outputs:
             raise ValueError('Split node (%s): Tensor cannot be split into %d equal parts, along '
                              'axis of length %d', onnx_node.name, count_outputs, len_axis_to_split)
         len_parts = [int(len_axis_to_split / count_outputs)] * count_outputs
+    elif sum(len_parts) != len_axis_to_split:
+        raise ValueError('Split node (%s): provided lengths of splitted parts does not sum up to '
+                         'length of axis we split on: %d != %d', onnx_node.name, sum(len_parts),
+                         len_axis_to_split)
 
     outputs = []
     start_index = 0
+
     for len_part in len_parts:
         end_index = start_index + len_part
-        output_axes = [ng.make_axis(length=len_part, name=data.axes[i].name) if i == axis_to_split
-                       else data.axes[i] for i in range(len(data.axes))]
-        slices = [slice(start_index, end_index) if i == axis_to_split else
-                  slice(None) for i in range(len(data.axes))]
-        outputs.append(ng.tensor_slice(data, slices, axes=ng.make_axes(output_axes)))
+        outputs.append(make_slice_op(data, [axis_to_split], [start_index], [end_index]))
         start_index = end_index
 
-    return tuple(outputs)  # type: ignore
+    return tuple(outputs)
 
 
 # Misc
