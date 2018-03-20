@@ -38,7 +38,7 @@ def get_op_type(onnx_node):  # type: (NodeWrapper) -> Tuple[str, bool]
     Parse ONNX pooling operation attributes and produce an ngraph compatible pool_params dict.
 
     :param onnx_node: wrapped ONNX node for a pooling operation op
-    :return: dict of pool_params for ng.pooling
+    :return: dict of pool_params for ng.pooling and if it is a global pooling op
     """
     if onnx_node.op_type in ['AveragePool', 'GlobalAveragePool']:
         pooling_op = 'avg'
