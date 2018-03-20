@@ -521,20 +521,25 @@ def Concat(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ng
     return ng.concat(ng_inputs, axis)
 
 
-@refactoring_required
 def Squeeze(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Remove single-dimensional entries from the shape of a tensor."""
     data = ng_inputs[0]
     axes_to_squeeze = onnx_node.get_attribute_value('axes')
+    if axes_to_squeeze is None:
+        raise ValueError('Squeeze node (%s): the "axes" attribute is mandatory.', onnx_node.name)
 
-    if max(axes_to_squeeze) >= len(data.axes):
-        raise ValueError('Squeeze node (%s): `axes` attribute value %d is out of range.',
-                         onnx_node.name, max(axes_to_squeeze))
+    for axe in axes_to_squeeze:
+        if axe < 0 or axe >= len(data.shape):
+            raise ValueError('Squeeze node (%s): `axes` attribute value %d is out of range.',
+                             onnx_node.name, axe)
+        if data.shape[axe] > 1:
+            raise ValueError('Squeeze node (%s): can not remove non one-dimensional axes: '
+                             'shape[%d] = %d', onnx_node.name, axe, data.shape[axe])
 
-    slices = [0 if index in axes_to_squeeze else
-              slice(None) for index, axis in enumerate(data.axes)]
+    input_order = list(range(len(data.shape)))
+    out_shape = [data.shape[i] for i in range(len(data.shape)) if i not in axes_to_squeeze]
 
-    return ng.tensor_slice(data, slices)
+    return ng.reshape(data, input_order, out_shape)
 
 
 def Reshape(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode

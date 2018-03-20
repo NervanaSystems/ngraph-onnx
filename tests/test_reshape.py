@@ -162,7 +162,6 @@ def test_concat():
             assert np.array_equal(ng_results, [expected_output])
 
 
-@pytest.mark.skip(reason='Needs refactoring to ngraph++')
 def test_squeeze():
     data = np.arange(6).reshape(1, 2, 3, 1)
     expected_output = data.reshape(2, 3)
@@ -170,6 +169,29 @@ def test_squeeze():
     node = onnx.helper.make_node('Squeeze', inputs=['x'], outputs=['y'], axes=[0, 3])
     ng_results = convert_and_calculate(node, [data], [expected_output])
     assert np.array_equal(ng_results, [expected_output])
+
+    data = np.random.randn(1, 3, 4, 5).astype(np.float32)
+    expected_output = np.squeeze(data, axis=0)
+    node = onnx.helper.make_node('Squeeze', inputs=['x'], outputs=['y'], axes=[0])
+    ng_results = convert_and_calculate(node, [data], [expected_output])
+    assert np.array_equal(ng_results, [expected_output])
+
+
+def test_squeeze_exceptions():
+    data = np.random.randn(1, 3, 4, 5).astype(np.float32)
+    expected_output = np.squeeze(data, axis=0)
+
+    node = onnx.helper.make_node('Squeeze', inputs=['x'], outputs=['y'], axes=[-1])
+    with pytest.raises(ValueError):
+        convert_and_calculate(node, [data], [expected_output])
+
+    node = onnx.helper.make_node('Squeeze', inputs=['x'], outputs=['y'], axes=[4])
+    with pytest.raises(ValueError):
+        convert_and_calculate(node, [data], [expected_output])
+
+    node = onnx.helper.make_node('Squeeze', inputs=['x'], outputs=['y'], axes=[1])
+    with pytest.raises(ValueError):
+        convert_and_calculate(node, [data], [expected_output])
 
 
 @pytest.mark.skip(reason='Needs refactoring to ngraph++')
