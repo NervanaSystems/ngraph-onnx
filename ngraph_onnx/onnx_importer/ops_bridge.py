@@ -542,6 +542,33 @@ def Squeeze(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> N
     return ng.reshape(data, input_order, out_shape)
 
 
+def Unsqueeze(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
+    """Insert single-dimensional entries to the shape of a tensor.
+
+    :param onnx_node: The ONNX node we create operation for.
+    :param ng_inputs: nGraph node which provide data.
+    :return: nGraph node with applied unsqueeze operation on it's data.
+    """
+    data = ng_inputs[0]
+    axes = onnx_node.get_attribute_value('axes')
+    if axes is None:
+        raise ValueError('Unsqueeze node (%s): the "axes" attribute is mandatory.', onnx_node.name)
+
+    input_order = list(range(len(data.shape)))
+    out_shape = list(data.shape)
+    axes.sort()
+    for axe in axes:
+        # XXX: this condition forbids adding new dimensions greater than len(out_shape), i.e:
+        # if we have input tensor of shape (3,4,5) and we provide 'axes' attribute with value
+        # [10], then such input is considered invalid.
+        if axe < 0 or axe > len(out_shape):
+            raise ValueError('Unsqueeze node (%s): `axes` attribute value %d is out of range.',
+                             onnx_node.name, axe)
+        out_shape.insert(axe, 1)
+
+    return ng.reshape(data, input_order, out_shape)
+
+
 def Reshape(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Reshape the input tensor similar to numpy.reshape.
 

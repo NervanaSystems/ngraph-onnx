@@ -194,6 +194,24 @@ def test_squeeze_exceptions():
         convert_and_calculate(node, [data], [expected_output])
 
 
+def test_unsqueeze():
+    data = np.random.randn(3, 4, 5).astype(np.float32)
+    expected_output = np.expand_dims(data, axis=0)
+    node = onnx.helper.make_node('Unsqueeze', inputs=['x'], outputs=['y'], axes=[0])
+    ng_results = convert_and_calculate(node, [data], [expected_output])
+    assert np.array_equal(ng_results, [expected_output])
+
+    expected_output = np.reshape(data, [1, 3, 4, 5, 1])
+    node = onnx.helper.make_node('Unsqueeze', inputs=['x'], outputs=['y'], axes=[0, 4])
+    ng_results = convert_and_calculate(node, [data], [expected_output])
+    assert np.array_equal(ng_results, [expected_output])
+
+    expected_output = np.reshape(data, [1, 3, 1, 4, 5])
+    node = onnx.helper.make_node('Unsqueeze', inputs=['x'], outputs=['y'], axes=[0, 2])
+    ng_results = convert_and_calculate(node, [data], [expected_output])
+    assert np.array_equal(ng_results, [expected_output])
+
+
 @pytest.mark.skip(reason='Needs refactoring to ngraph++')
 @pytest.mark.parametrize('node,expected_output', [
     # Split into 2 equal parts along axis=0
