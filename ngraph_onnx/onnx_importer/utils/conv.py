@@ -37,7 +37,8 @@ if TYPE_CHECKING:
     from ngraph_onnx.onnx_importer.model_wrappers import NodeWrapper
 
 
-def get_pads(onnx_node: 'NodeWrapper', kernel_shape: 'List[int]'=None) -> Tuple[List[int], List[int]]:
+def get_pads(onnx_node, kernel_shape=None):
+    # type: (NodeWrapper, List[int]) -> Tuple[List[int], List[int]]
     """
     Get padding values for the operation described by an ONNX node.
 
