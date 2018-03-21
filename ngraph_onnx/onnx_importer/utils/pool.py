@@ -33,24 +33,22 @@ if TYPE_CHECKING:
 log = logging.getLogger(__file__)
 
 
-def get_op_type(onnx_node):  # type: (NodeWrapper) -> Tuple[str, bool]
+def get_op_type(onnx_node):  # type: (NodeWrapper) -> str
     """
     Parse ONNX pooling operation attributes and produce an ngraph compatible pool_params dict.
 
     :param onnx_node: wrapped ONNX node for a pooling operation op
-    :return: type of poling op and if it is a global pooling op
+    :return: type of poling op
     """
     if onnx_node.op_type in ['AveragePool', 'GlobalAveragePool']:
         pooling_op = 'avg'
-        global_pooling = onnx_node.op_type in ['GlobalAveragePool']
     elif onnx_node.op_type in ['MaxPool', 'GlobalMaxPool']:
         pooling_op = 'max'
-        global_pooling = onnx_node.op_type in ['GlobalMaxPool']
     else:
         raise NotImplementedError('%s node (%s): Unsupported pooling type.',
                                   onnx_node.op_type, onnx_node.name)
 
-    return pooling_op, global_pooling
+    return pooling_op
 
 
 def reduce_extra_dims(spatial_dims_count, param_shape, onnx_node):
@@ -73,19 +71,20 @@ def reduce_extra_dims(spatial_dims_count, param_shape, onnx_node):
     return param_shape
 
 
-def make_pooling_op(onnx_node, ng_inputs, custom_pool_params=None):
-    # type: (NodeWrapper, List[NgraphNode], Dict) -> NgraphNode
+def make_pooling_op(onnx_node, ng_inputs, is_global=False, custom_pool_params=None):
+    # type: (NodeWrapper, List[NgraphNode], bool, Dict) -> NgraphNode
     """
     Create an ngraph pooling Op based on an ONNX node.
 
     :param onnx_node: wrapped ONNX node for a pooling op
     :param ng_inputs: ngraph TensorOp input tensors
+    :param is_global: is it a global pooling op?
     :param custom_pool_params: optional pool_params overriding values based on onnx_node
     :return: ngraph pooling op
     """
     x = ng_inputs[0]
 
-    op_type, is_global = get_op_type(onnx_node)
+    op_type = get_op_type(onnx_node)
 
     # We assume data are in [D1,...,DN] format thus we subtract [N,C] dimensions.
     spatial_dims = len(x.shape) - 2  # get spatial dimensions

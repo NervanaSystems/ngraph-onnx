@@ -424,12 +424,12 @@ def MaxPool(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> N
 
 def GlobalMaxPool(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Equivalent to MaxPool with kernel size equal to spatial dimensions of input tensor."""
-    return make_pooling_op(onnx_node, ng_inputs)
+    return make_pooling_op(onnx_node, ng_inputs, True)
 
 
 def GlobalAveragePool(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Equivalent to AveragePool with kernel size equal to spatial dimensions of input tensor."""
-    return make_pooling_op(onnx_node, ng_inputs)
+    return make_pooling_op(onnx_node, ng_inputs, True)
 
 
 # Reshape ops
