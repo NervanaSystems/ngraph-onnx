@@ -76,8 +76,6 @@ def get_pads(onnx_node, kernel_shape=None):
                          floor(pad_value(dim)) for dim in kernel_shape]
             pads = pads_starts + pads_ends
 
-    verify_symmetric_padding(onnx_node, pads)
-
     if len(pads) <= 3:
         padding_above = pads
         padding_below = pads
