@@ -47,7 +47,7 @@ def reorder_axes(node, axes_order):  # type: (NgraphNode, List[int]) -> NgraphNo
 
 
 def transpose(node):  # type: (NgraphNode) -> NgraphNode
-    """Return transposed tensor (with reversed dimensions).
+    """Return transposed tensor (with axes in reversed order).
 
     :param node: Input tensor we want to transpose
     :return: New node with reversed dimensions.
@@ -115,22 +115,20 @@ def flatten_innermost_empty_dims(node):  # type: (NgraphNode) -> NgraphNode
         return node
 
 
-def get_bound(requested_bound, max_bound_val):  # type: (int, int) -> int
-    """Return valid bound value withing range [0,max_bound_val].
+def get_valid_array_idx(idx, last_idx):  # type: (int, int) -> int
+    """Return valid array index value within range [0, last_idx].
 
-    Negative values are interpreted such that it represent number
-    of elements before `the max_bound_val`.
-    If `requested_bound` is greater than `max_bound_val` then it is
-    interpreted as `max_bound_val`.
+    Negative values are interpreted such that it represent number of elements before the array end.
+    If `idx` is greater than `last_idx` then it is interpreted as `last_idx` value.
 
-    :param requested_bound: The value of bound we would like to get.
-    :param max_bound_val: The maximum available bound value.
-    :return: Valid bound value.
+    :param idx: The value of index we would like to get.
+    :param last_idx: The maximum available index value.
+    :return: Valid index value.
     """
-    if requested_bound >= 0:
-        return min(requested_bound, max_bound_val)
+    if idx >= 0:
+        return min(idx, last_idx)
     else:
-        return max(0, max_bound_val + requested_bound)
+        return max(0, last_idx + idx)
 
 
 def make_slice_op(node, axes, starts, ends):
@@ -147,7 +145,7 @@ def make_slice_op(node, axes, starts, ends):
     upper_bounds = list(node.shape)
 
     for idx, axe in enumerate(axes):
-        lower_bounds[axe] = get_bound(starts[idx], node.shape[axe])
-        upper_bounds[axe] = get_bound(ends[idx], node.shape[axe])
+        lower_bounds[axe] = get_valid_array_idx(starts[idx], node.shape[axe])
+        upper_bounds[axe] = get_valid_array_idx(ends[idx], node.shape[axe])
 
     return ng.slice(node, lower_bounds, upper_bounds)

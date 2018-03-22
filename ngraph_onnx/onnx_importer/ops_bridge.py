@@ -437,7 +437,12 @@ def GlobalAveragePool(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphN
 
 # Reshape ops
 def Flatten(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
-    """Flatten the input tensor into a 2D matrix."""
+    """Flatten the input tensor into a 2D matrix.
+
+    Flattening happens at axis specified by 'axis' attribute.
+    First dimension of output tensor is the product of [d_0, ... d_{axis-1}] dimensions of input tensor.
+    The last dimension is the product of the rest of input tensor dimensions: [d_{axis}, ..., d_n]
+    """
     input_node = ng_inputs[0]
     axis = onnx_node.get_attribute_value('axis', 1)
     input_shape = list(input_node.shape)
@@ -446,7 +451,6 @@ def Flatten(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> N
         raise ValueError('Flatten node (%s): %d is not a valid value for `axis`.',
                          onnx_node.name, axis)
 
-    input_order = list(range(len(input_shape)))
     first_dim = 1
     last_dim = 1
 
@@ -455,7 +459,12 @@ def Flatten(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> N
         if index < axis:
             first_dim = last_dim
 
-    return ng.reshape(input_node, input_order, [first_dim, int(last_dim / first_dim)])
+    last_dim = int(last_dim / first_dim)
+    # the order in which we iterate over input tensor dimensions while reshaping it.
+    input_order = list(range(len(input_shape)))
+    output_shape = [first_dim, last_dim]
+
+    return ng.reshape(input_node, input_order, output_shape)
 
 
 def Transpose(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
@@ -486,8 +495,8 @@ def Slice(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngr
     if axes is None:
         axes = list(range(len(starts)))
     else:
-        for axe in axes:
-            if axe < 0 or axe > len(input_node.shape) - 1:
+        for axis in axes:
+            if axis < 0 or axis > len(input_node.shape) - 1:
                 raise ValueError('Slice node (%s): specified axes are out of node\' dimensions '
                                  'bounds', onnx_node.name)
 
@@ -521,13 +530,13 @@ def Squeeze(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> N
     if axes_to_squeeze is None:
         raise ValueError('Squeeze node (%s): the "axes" attribute is mandatory.', onnx_node.name)
 
-    for axe in axes_to_squeeze:
-        if axe < 0 or axe >= len(data.shape):
+    for axis in axes_to_squeeze:
+        if axis < 0 or axis >= len(data.shape):
             raise ValueError('Squeeze node (%s): `axes` attribute value %d is out of range.',
-                             onnx_node.name, axe)
-        if data.shape[axe] > 1:
-            raise ValueError('Squeeze node (%s): can not remove non one-dimensional axes: '
-                             'shape[%d] = %d', onnx_node.name, axe, data.shape[axe])
+                             onnx_node.name, axis)
+        if data.shape[axis] > 1:
+            raise ValueError('Squeeze node (%s): can only remove single-dimensional axes: '
+                             'shape[%d] = %d', onnx_node.name, axis, data.shape[axis])
 
     input_order = list(range(len(data.shape)))
     out_shape = [data.shape[i] for i in range(len(data.shape)) if i not in axes_to_squeeze]
@@ -550,14 +559,14 @@ def Unsqueeze(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) ->
     input_order = list(range(len(data.shape)))
     out_shape = list(data.shape)
     axes.sort()
-    for axe in axes:
-        # XXX: this condition forbids adding new dimensions greater than len(out_shape), i.e:
+    for axis in axes:
+        # this condition forbids adding new dimensions greater than len(out_shape), i.e:
         # if we have input tensor of shape (3,4,5) and we provide 'axes' attribute with value
         # [10], then such input is considered invalid.
-        if axe < 0 or axe > len(out_shape):
+        if axis < 0 or axis > len(out_shape):
             raise ValueError('Unsqueeze node (%s): `axes` attribute value %d is out of range.',
-                             onnx_node.name, axe)
-        out_shape.insert(axe, 1)
+                             onnx_node.name, axis)
+        out_shape.insert(axis, 1)
 
     return ng.reshape(data, input_order, out_shape)
 
@@ -600,7 +609,7 @@ def Split(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Tup
                              'axis of length %d', onnx_node.name, count_outputs, len_axis_to_split)
         len_parts = [int(len_axis_to_split / count_outputs)] * count_outputs
     elif sum(len_parts) != len_axis_to_split:
-        raise ValueError('Split node (%s): provided lengths of splitted parts does not sum up to '
+        raise ValueError('Split node (%s): provided lengths of split parts does not sum up to '
                          'length of axis we split on: %d != %d', onnx_node.name, sum(len_parts),
                          len_axis_to_split)
 
