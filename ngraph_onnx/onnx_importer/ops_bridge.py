@@ -18,7 +18,6 @@ from __future__ import print_function
 from __future__ import division
 
 import logging
-from string import ascii_letters
 from typing import Tuple, List
 
 import numpy as np
@@ -423,18 +422,14 @@ def MaxPool(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> N
     return make_pooling_op(onnx_node, ng_inputs)
 
 
-@refactoring_required
 def GlobalMaxPool(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Equivalent to MaxPool with kernel size equal to spatial dimensions of input tensor."""
-    return None  # tmp
-    # return cast_to_pos_axes(make_global_pooling_op(onnx_node, ng_inputs))
+    return make_global_pooling_op(onnx_node, ng_inputs)
 
 
-@refactoring_required
 def GlobalAveragePool(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Equivalent to AveragePool with kernel size equal to spatial dimensions of input tensor."""
-    return None  # tmp
-    # return cast_to_pos_axes(make_global_pooling_op(onnx_node, ng_inputs))
+    return make_global_pooling_op(onnx_node, ng_inputs)
 
 
 # Reshape ops

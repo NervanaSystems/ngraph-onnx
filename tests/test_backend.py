@@ -97,12 +97,6 @@ backend_test.exclude('test_softmax_axis_1_cpu')
 backend_test.exclude('test_softmax_default_axis_cpu')
 backend_test.exclude('test_softmax_large_number_cpu')
 
-# Global Pooling tests
-backend_test.exclude('test_globalmaxpool_precomputed_cpu')
-backend_test.exclude('test_globalmaxpool_cpu')
-backend_test.exclude('test_globalaveragepool_precomputed_cpu')
-backend_test.exclude('test_globalaveragepool_cpu')
-
 # Casting tests
 backend_test.exclude('test_cast_FLOAT_to_FLOAT16_cpu')
 backend_test.exclude('test_cast_FLOAT_to_DOUBLE_cpu')

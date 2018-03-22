@@ -230,7 +230,6 @@ def test_padding():
 
 def test_pool_average(ndarray_1x1x4x4):
     x = ndarray_1x1x4x4
-
     node = onnx.helper.make_node('AveragePool', inputs=['x'], outputs=['y'],
                                  kernel_shape=(2, 2), strides=(2, 2))
     y = np.array([[13.5, 15.5],
@@ -247,7 +246,6 @@ def test_pool_average(ndarray_1x1x4x4):
     assert np.array_equal(ng_results, [y])
 
 
-@pytest.mark.xfail(reason='nans in result probably ngraph++ problem')
 def test_pool_average_3d(ndarray_1x1x4x4):
     x = np.broadcast_to(ndarray_1x1x4x4, (1, 1, 4, 4, 4))
     node = onnx.helper.make_node('AveragePool', inputs=['x'], outputs=['y'],
@@ -258,7 +256,6 @@ def test_pool_average_3d(ndarray_1x1x4x4):
                   [[13.5, 15.5],
                    [21.5, 23.5]]], dtype=np.float32).reshape(1, 1, 2, 2, 2)
     ng_results = convert_and_calculate(node, [x], [y])
-
     assert np.array_equal(ng_results, [y])
 
 
@@ -274,7 +271,6 @@ def test_pool_max(ndarray_1x1x4x4):
     assert np.array_equal(ng_results, [y])
 
 
-@pytest.mark.skip(reason='Needs refactoring to ngraph++')
 def test_pool_global_max(ndarray_1x1x4x4):
     node = onnx.helper.make_node('GlobalMaxPool', inputs=['x'], outputs=['y'])
 
@@ -285,7 +281,6 @@ def test_pool_global_max(ndarray_1x1x4x4):
     assert np.array_equal(ng_results, [y])
 
 
-@pytest.mark.skip(reason='Needs refactoring to ngraph++')
 def test_pool_global_average(ndarray_1x1x4x4):
     node = onnx.helper.make_node('GlobalAveragePool', inputs=['x'], outputs=['y'])
 
@@ -296,7 +291,6 @@ def test_pool_global_average(ndarray_1x1x4x4):
     assert np.array_equal(ng_results, [y])
 
 
-@pytest.mark.skip(reason='Needs refactoring to ngraph++')
 def test_pool_global_average_3d(ndarray_1x1x4x4):
     x = np.broadcast_to(ndarray_1x1x4x4, (1, 1, 4, 4, 4))
 

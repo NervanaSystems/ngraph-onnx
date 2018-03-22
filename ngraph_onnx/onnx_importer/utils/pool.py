@@ -17,7 +17,7 @@
 from __future__ import division
 from __future__ import print_function
 
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 from ngraph_onnx import TYPE_CHECKING
 
@@ -26,7 +26,6 @@ import ngraph as ng
 import logging
 
 from ngraph_onnx.onnx_importer.utils.conv import get_pads, get_strides, get_kernel_shape
-from ngraph_onnx.onnx_importer.utils.decorators import refactoring_required
 
 if TYPE_CHECKING:
     from ngraph_onnx.onnx_importer.model_wrappers import NodeWrapper
@@ -39,7 +38,7 @@ def get_op_type(onnx_node):  # type: (NodeWrapper) -> str
     Parse ONNX pooling operation attributes and produce an ngraph compatible pool_params dict.
 
     :param onnx_node: wrapped ONNX node for a pooling operation op
-    :return: dict of pool_params for ng.pooling
+    :return: type of poling op
     """
     if onnx_node.op_type in ['AveragePool', 'GlobalAveragePool']:
         pooling_op = 'avg'
@@ -72,33 +71,36 @@ def reduce_extra_dims(spatial_dims_count, param_shape, onnx_node):
     return param_shape
 
 
-def make_pooling_op(onnx_node, ng_inputs, custom_pool_params=None):
-    # type: (NodeWrapper, List[NgraphNode], Dict) -> NgraphNode
+def make_pooling_op(onnx_node, ng_inputs, kernel_shape=None):
+    # type: (NodeWrapper, List[NgraphNode], List[int]) -> NgraphNode
     """
     Create an ngraph pooling Op based on an ONNX node.
 
     :param onnx_node: wrapped ONNX node for a pooling op
     :param ng_inputs: ngraph TensorOp input tensors
-    :param custom_pool_params: optional pool_params overriding values based on onnx_node
+    :param kernel_shape: kernel shape for this op
     :return: ngraph pooling op
     """
     x = ng_inputs[0]
 
-    strides = get_strides(onnx_node)
-    padding_above, padding_below = get_pads(onnx_node)
-    kernel_shape = get_kernel_shape(onnx_node)
     op_type = get_op_type(onnx_node)
 
     # We assume data are in [D1,...,DN] format thus we subtract [N,C] dimensions.
     spatial_dims = len(x.shape) - 2  # get spatial dimensions
 
+    if kernel_shape is None:
+        kernel_shape = get_kernel_shape(onnx_node)
+    kernel_shape = reduce_extra_dims(spatial_dims, kernel_shape, onnx_node)
+
+    strides = get_strides(onnx_node, kernel_shape)
+    padding_above, padding_below = get_pads(onnx_node, kernel_shape)
+
     strides = reduce_extra_dims(spatial_dims, strides, onnx_node)
     padding_above = reduce_extra_dims(spatial_dims, padding_above, onnx_node)
     padding_below = reduce_extra_dims(spatial_dims, padding_below, onnx_node)
-    kernel_shape = reduce_extra_dims(spatial_dims, kernel_shape, onnx_node)
 
     if op_type == 'avg':
-        ng_op = ng.avg_pool(x, kernel_shape, strides, padding_above, padding_below, False)
+        ng_op = ng.avg_pool(x, kernel_shape, strides, padding_above, padding_below, zero_pad=False)
     elif op_type == 'max':
         ng_op = ng.max_pool(x, kernel_shape, strides, padding_above, padding_below)
     else:
@@ -107,7 +109,6 @@ def make_pooling_op(onnx_node, ng_inputs, custom_pool_params=None):
     return ng_op
 
 
-@refactoring_required
 def make_global_pooling_op(onnx_node, ng_inputs):
     # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """
@@ -119,16 +120,6 @@ def make_global_pooling_op(onnx_node, ng_inputs):
     :param ng_inputs: ngraph TensorOp input tensors
     :return: ngraph pooling op
     """
-    x = ng_inputs[0]
+    kernel_shape = list(ng_inputs[0].shape)
 
-    if len(x.axes) == 4:  # ONNX input axes order NCHW
-        _, _, kernel_h, kernel_w = x.axes.lengths
-        pool_params = {'R': kernel_h, 'S': kernel_w}
-    elif len(x.axes) == 5:  # ONNX input axes order NCHWD
-        _, _, kernel_h, kernel_w, kernel_d = x.axes.lengths
-        pool_params = {'R': kernel_h, 'S': kernel_w, 'T': kernel_d}
-    else:
-        raise NotImplementedError('%s node (%s): only 2D and 3D pooling ops are supported.',
-                                  onnx_node.op_type, onnx_node.name)
-
-    return make_pooling_op(onnx_node, ng_inputs, custom_pool_params=pool_params)
+    return make_pooling_op(onnx_node, ng_inputs, kernel_shape)
