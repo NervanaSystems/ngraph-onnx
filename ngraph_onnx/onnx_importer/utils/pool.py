@@ -71,15 +71,14 @@ def reduce_extra_dims(spatial_dims_count, param_shape, onnx_node):
     return param_shape
 
 
-def make_pooling_op(onnx_node, ng_inputs, is_global=False, custom_pool_params=None):
-    # type: (NodeWrapper, List[NgraphNode], bool, Dict) -> NgraphNode
+def make_pooling_op(onnx_node, ng_inputs, kernel_shape=None):
+    # type: (NodeWrapper, List[NgraphNode], List[int]) -> NgraphNode
     """
     Create an ngraph pooling Op based on an ONNX node.
 
     :param onnx_node: wrapped ONNX node for a pooling op
     :param ng_inputs: ngraph TensorOp input tensors
-    :param is_global: is it a global pooling op?
-    :param custom_pool_params: optional pool_params overriding values based on onnx_node
+    :param kernel_shape: kernel shape for this op
     :return: ngraph pooling op
     """
     x = ng_inputs[0]
@@ -89,11 +88,9 @@ def make_pooling_op(onnx_node, ng_inputs, is_global=False, custom_pool_params=No
     # We assume data are in [D1,...,DN] format thus we subtract [N,C] dimensions.
     spatial_dims = len(x.shape) - 2  # get spatial dimensions
 
-    if(is_global):
-        kernel_shape = reduce_extra_dims(spatial_dims, list(x.shape), onnx_node)
-    else:
+    if kernel_shape is None:
         kernel_shape = get_kernel_shape(onnx_node)
-        kernel_shape = reduce_extra_dims(spatial_dims, kernel_shape, onnx_node)
+    kernel_shape = reduce_extra_dims(spatial_dims, kernel_shape, onnx_node)
 
     strides = get_strides(onnx_node, kernel_shape)
     padding_above, padding_below = get_pads(onnx_node, kernel_shape)
@@ -103,10 +100,26 @@ def make_pooling_op(onnx_node, ng_inputs, is_global=False, custom_pool_params=No
     padding_below = reduce_extra_dims(spatial_dims, padding_below, onnx_node)
 
     if op_type == 'avg':
-        ng_op = ng.avg_pool(x, kernel_shape, strides, padding_above, padding_below, False)
+        ng_op = ng.avg_pool(x, kernel_shape, strides, padding_above, padding_below, zero_pad=False)
     elif op_type == 'max':
         ng_op = ng.max_pool(x, kernel_shape, strides, padding_above, padding_below)
     else:
         raise NotImplementedError('%s node (%s): Unsupported pooling type.',
                                   onnx_node.op_type, onnx_node.name)
     return ng_op
+
+
+def make_global_pooling_op(onnx_node, ng_inputs):
+    # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
+    """
+    Create a ngraph global pooling operation.
+
+    This is equivalent to pooling with kernel size equal to the spatial dimension of input tensor.
+
+    :param onnx_node: wrapped ONNX node for a pooling op
+    :param ng_inputs: ngraph TensorOp input tensors
+    :return: ngraph pooling op
+    """
+    kernel_shape = list(ng_inputs[0].shape)
+
+    return make_pooling_op(onnx_node, ng_inputs, kernel_shape)
