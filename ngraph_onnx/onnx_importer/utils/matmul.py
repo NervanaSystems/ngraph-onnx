@@ -48,8 +48,8 @@ def has_matmul_compatible_shapes(shape_a, shape_b):  # noqa: C901
     There is a great article with clear description of broadcasting rules:
     https://eli.thegreenplace.net/2015/broadcasting-arrays-in-numpy/#id2
 
-    :param node_a: First tensor we want to multiply.
-    :param node_b: Second tensor we want to multiply.
+    :param shape_a: First tensor we want to multiply.
+    :param shape_b: Second tensor we want to multiply.
     """
     shape_a = list(shape_a)
     shape_b = list(shape_b)

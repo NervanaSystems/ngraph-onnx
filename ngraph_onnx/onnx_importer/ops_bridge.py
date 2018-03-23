@@ -22,8 +22,7 @@ from typing import Tuple, List
 
 import numpy as np
 from functools import reduce
-from ngraph.utils.types import get_dtype, make_constant_node
-
+from ngraph.utils.types import get_dtype
 from ngraph_onnx import TYPE_CHECKING
 
 from ngraph.impl import Node as NgraphNode
@@ -32,12 +31,12 @@ import ngraph as ng
 from ngraph_onnx.onnx_importer.utils.binary import broadcast_for_binary_operation
 from ngraph_onnx.onnx_importer.utils.conv import make_convolution_op
 from ngraph_onnx.onnx_importer.utils.decorators import refactoring_required
-from ngraph_onnx.onnx_importer.utils.misc import split_pads_into_pairs
 from ngraph_onnx.onnx_importer.utils.matmul import has_matmul_compatible_shapes
-from ngraph_onnx.onnx_importer.utils.pool import make_pooling_op, make_global_pooling_op
+from ngraph_onnx.onnx_importer.utils.misc import split_pads_into_pairs
+from ngraph_onnx.onnx_importer.utils.pool import make_pooling_op
 from ngraph_onnx.onnx_importer.utils.reduction import make_reduction_op, get_reduction_axes
 from ngraph_onnx.onnx_importer.utils.reshape import transpose, infer_dimensions, \
-    flatten_innermost_empty_dims
+    flatten_innermost_empty_dims, reorder_axes, make_slice_op
 
 if TYPE_CHECKING:
     from ngraph_onnx.onnx_importer.model_wrappers import NodeWrapper
@@ -363,7 +362,7 @@ def Gemm(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngra
     #  blob/17075f44c9071600beccfc62c92b22d1cd957bfd/onnx_tf/backend.py#L711
     # They have hardcoded flatten input `A` before transposition.
     #
-    # Firstly, we check wheter input data have incompatible shapes and then try flatten input data.
+    # Firstly, we check whether input data have incompatible shapes and then try flatten input data.
     if not has_matmul_compatible_shapes(input_a.shape, input_b.shape):
         input_a = flatten_innermost_empty_dims(input_a)
         input_b = flatten_innermost_empty_dims(input_b)
@@ -433,47 +432,54 @@ def GlobalAveragePool(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphN
 
 
 # Reshape ops
-@refactoring_required
 def Flatten(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
-    """Flatten the input tensor into a 2D matrix."""
-    data = ng_inputs[0]
-    axis = onnx_node.get_attribute_value('axis', 1)
+    """Flatten the input tensor into a 2D matrix.
 
-    if axis < 0 or axis > len(data.axes):
+    Flattening happens at axis specified by 'axis' attribute.
+    First dimension of output tensor is the product of [d_0, ... d_{axis-1}] dimensions of input tensor.
+    The last dimension is the product of the rest of input tensor dimensions: [d_{axis}, ..., d_n]
+    """
+    input_node = ng_inputs[0]
+    axis = onnx_node.get_attribute_value('axis', 1)
+    input_shape = list(input_node.shape)
+
+    if axis < 0 or axis > len(input_shape):
         raise ValueError('Flatten node (%s): %d is not a valid value for `axis`.',
                          onnx_node.name, axis)
 
-    return None  # tmp
-    # return cast_to_pos_axes(ng.flatten_at(data, axis))
+    first_dim = 1
+    last_dim = 1
+
+    for index in range(len(input_shape)):
+        last_dim = last_dim * input_shape[index]
+        if index < axis:
+            first_dim = last_dim
+
+    last_dim = int(last_dim / first_dim)
+    # the order in which we iterate over input tensor dimensions while reshaping it.
+    input_order = list(range(len(input_shape)))
+    output_shape = [first_dim, last_dim]
+
+    return ng.reshape(input_node, input_order, output_shape)
 
 
-@refactoring_required
 def Transpose(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Transpose the input tensor similar to numpy.transpose.
 
     By default, reverse the dimensions, but if `perm` attribute is specified
     permute the axes according to the values given.
     """
-    # data = ng_inputs[0]
+    input_node = ng_inputs[0]
     permute_axes = onnx_node.get_attribute_value('perm')
-
-    if permute_axes:
-        pass
-        # input_template = ''.join([ascii_letters[i] for i in range(len(data.axes))])
-        # output_template = ''.join([ascii_letters[i] for i in permute_axes])
-        # ng_op = reorder_axes(data, input_template, output_template)
+    if permute_axes is None:
+        return transpose(input_node)
     else:
-        pass
-        # ng_op = ng.Transpose(data)
-
-    return None  # tmp
-    # return cast_to_pos_axes(ng_op)
+        return reorder_axes(input_node, permute_axes)
 
 
-@refactoring_required
 def Slice(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Produce a slice of the input tensor along multiple axes."""
-    x = ng_inputs[0]
+    input_node = ng_inputs[0]
 
     starts = onnx_node.get_attribute_value('starts')
     ends = onnx_node.get_attribute_value('ends')
@@ -481,53 +487,84 @@ def Slice(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngr
         raise ValueError('Slice node (%s): attributes `starts` and `ends` must be set '
                          'and of equal length.', onnx_node.name)
 
-    axes = onnx_node.get_attribute_value('axes', list(range(len(starts))))
-    slices_count = max(len(axes), *starts)
-    if slices_count > len(x.axes):
-        raise ValueError('Slice node (%s): specifies %d slices, there are only %d input axes.',
-                         onnx_node.name, slices_count, len(x.axes))
+    axes = onnx_node.get_attribute_value('axes')
+    if axes is None:
+        axes = list(range(len(starts)))
+    else:
+        for axis in axes:
+            if axis < 0 or axis > len(input_node.shape) - 1:
+                raise ValueError('Slice node (%s): specified axes are out of node\' dimensions '
+                                 'bounds', onnx_node.name)
 
-    # slices = [slice(starts[axes.index(axis_number)], ends[axes.index(axis_number)])
-    #           if (axis_number in axes) else slice(None) for axis_number in range(len(x.axes))]
-
-    return None  # tmp
-    # return cast_to_pos_axes(ng.tensor_slice(x, slices))
+    return make_slice_op(input_node, axes, starts, ends)
 
 
-@refactoring_required
 def Concat(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Concatenate a list of tensors into a single tensor."""
-    axis = onnx_node.get_attribute_value('axis', 0)
+    axis = onnx_node.get_attribute_value('axis')
+    if axis is None:
+        raise ValueError('Concat node (%s): requires "axis" attribute', onnx_node.name)
 
     if len(ng_inputs) < 2:
         raise ValueError('Concat node (%s): requires at least 2 inputs, %d given.',
                          onnx_node.name, len(ng_inputs))
 
-    unique_input_ranks = {len(node.axes) for node in ng_inputs}
+    unique_input_ranks = {len(node.shape) for node in ng_inputs}
     if len(unique_input_ranks) != 1:
         raise ValueError('Concat node (%s): input tensors must be of equal rank.', onnx_node.name)
 
-    if axis >= unique_input_ranks.pop():
+    if axis >= unique_input_ranks.pop() or axis < 0:
         raise ValueError('Concat node (%s): `axis` attribute is out of range.', onnx_node.name)
 
-    ng_axis = ng_inputs[0].axes[axis]
-    return ng.concat_along_axis(ng_inputs, ng_axis)
+    return ng.concat(ng_inputs, axis)
 
 
-@refactoring_required
 def Squeeze(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Remove single-dimensional entries from the shape of a tensor."""
     data = ng_inputs[0]
     axes_to_squeeze = onnx_node.get_attribute_value('axes')
+    if axes_to_squeeze is None:
+        raise ValueError('Squeeze node (%s): the "axes" attribute is mandatory.', onnx_node.name)
 
-    if max(axes_to_squeeze) >= len(data.axes):
-        raise ValueError('Squeeze node (%s): `axes` attribute value %d is out of range.',
-                         onnx_node.name, max(axes_to_squeeze))
+    for axis in axes_to_squeeze:
+        if axis < 0 or axis >= len(data.shape):
+            raise ValueError('Squeeze node (%s): `axes` attribute value %d is out of range.',
+                             onnx_node.name, axis)
+        if data.shape[axis] > 1:
+            raise ValueError('Squeeze node (%s): can only remove single-dimensional axes: '
+                             'shape[%d] = %d', onnx_node.name, axis, data.shape[axis])
 
-    slices = [0 if index in axes_to_squeeze else
-              slice(None) for index, axis in enumerate(data.axes)]
+    input_order = list(range(len(data.shape)))
+    out_shape = [data.shape[i] for i in range(len(data.shape)) if i not in axes_to_squeeze]
 
-    return ng.tensor_slice(data, slices)
+    return ng.reshape(data, input_order, out_shape)
+
+
+def Unsqueeze(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
+    """Insert single-dimensional entries to the shape of a tensor.
+
+    :param onnx_node: The ONNX node we create operation for.
+    :param ng_inputs: nGraph node which provide data.
+    :return: nGraph node with applied unsqueeze operation on it's data.
+    """
+    data = ng_inputs[0]
+    axes = onnx_node.get_attribute_value('axes')
+    if axes is None:
+        raise ValueError('Unsqueeze node (%s): the "axes" attribute is mandatory.', onnx_node.name)
+
+    input_order = list(range(len(data.shape)))
+    out_shape = list(data.shape)
+    axes.sort()
+    for axis in axes:
+        # this condition forbids adding new dimensions greater than len(out_shape), i.e:
+        # if we have input tensor of shape (3,4,5) and we provide 'axes' attribute with value
+        # [10], then such input is considered invalid.
+        if axis < 0 or axis > len(out_shape):
+            raise ValueError('Unsqueeze node (%s): `axes` attribute value %d is out of range.',
+                             onnx_node.name, axis)
+        out_shape.insert(axis, 1)
+
+    return ng.reshape(data, input_order, out_shape)
 
 
 def Reshape(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
@@ -549,35 +586,38 @@ def Reshape(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> N
     return ng.reshape(data, input_order, output_shape)
 
 
-@refactoring_required
-def Split(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Tuple[NgraphNode]
+def Split(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Tuple[NgraphNode, ...]
     """Split a tensor into a list of tensors."""
     data = ng_inputs[0]
     count_outputs = len(onnx_node.get_output_names())
-    axis_to_split = onnx_node.get_attribute_value('axis')
-    if axis_to_split < 0:
-        axis_to_split = len(data.axes) + axis_to_split
-    len_axis_to_split = data.axes[axis_to_split].length
+    axis_to_split = onnx_node.get_attribute_value('axis', 0)
+
+    if axis_to_split < 0 or axis_to_split >= len(data.shape):
+        raise ValueError('Split node (%s) provided split axis is out of input tensor dimensions'
+                         ' range.', onnx_node.name)
+
+    len_axis_to_split = data.shape[axis_to_split]
     len_parts = onnx_node.get_attribute_value('split')
 
-    if not len_parts:
+    if len_parts is None:
         if len_axis_to_split % count_outputs:
             raise ValueError('Split node (%s): Tensor cannot be split into %d equal parts, along '
                              'axis of length %d', onnx_node.name, count_outputs, len_axis_to_split)
         len_parts = [int(len_axis_to_split / count_outputs)] * count_outputs
+    elif sum(len_parts) != len_axis_to_split:
+        raise ValueError('Split node (%s): provided lengths of split parts does not sum up to '
+                         'length of axis we split on: %d != %d', onnx_node.name, sum(len_parts),
+                         len_axis_to_split)
 
     outputs = []
     start_index = 0
+
     for len_part in len_parts:
         end_index = start_index + len_part
-        output_axes = [ng.make_axis(length=len_part, name=data.axes[i].name) if i == axis_to_split
-                       else data.axes[i] for i in range(len(data.axes))]
-        slices = [slice(start_index, end_index) if i == axis_to_split else
-                  slice(None) for i in range(len(data.axes))]
-        outputs.append(ng.tensor_slice(data, slices, axes=ng.make_axes(output_axes)))
+        outputs.append(make_slice_op(data, [axis_to_split], [start_index], [end_index]))
         start_index = end_index
 
-    return tuple(outputs)  # type: ignore
+    return tuple(outputs)
 
 
 # Misc
