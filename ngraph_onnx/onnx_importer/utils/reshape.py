@@ -144,8 +144,8 @@ def make_slice_op(node, axes, starts, ends):
     lower_bounds = [0] * len(node.shape)
     upper_bounds = list(node.shape)
 
-    for idx, axe in enumerate(axes):
-        lower_bounds[axe] = get_valid_array_idx(starts[idx], node.shape[axe])
-        upper_bounds[axe] = get_valid_array_idx(ends[idx], node.shape[axe])
+    for idx, axis in enumerate(axes):
+        lower_bounds[axis] = get_valid_array_idx(starts[idx], node.shape[axis])
+        upper_bounds[axis] = get_valid_array_idx(ends[idx], node.shape[axis])
 
     return ng.slice(node, lower_bounds, upper_bounds)
