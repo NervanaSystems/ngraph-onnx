@@ -54,6 +54,8 @@ backend_test.exclude('test_operator_flatten')
 backend_test.exclude('test_operator_maxpool')
 backend_test.exclude('test_operator_permute2')
 backend_test.exclude('test_operator_view')
+backend_test.exclude('test_depthtospace_cpu')
+backend_test.exclude('test_depthtospace_example_cpu')
 
 
 backend_test.exclude('test_ConstantPad2d')
@@ -84,12 +86,6 @@ backend_test.exclude('test_reshape_negative_dim_cpu')
 backend_test.exclude('test_reshape_one_dim_cpu')
 backend_test.exclude('test_reshape_reduced_dims_cpu')
 backend_test.exclude('test_reshape_reordered_dims_cpu')
-
-# Softmax tests
-backend_test.exclude('test_softmax_axis_0_cpu')
-backend_test.exclude('test_softmax_axis_1_cpu')
-backend_test.exclude('test_softmax_default_axis_cpu')
-backend_test.exclude('test_softmax_large_number_cpu')
 
 # Casting tests
 backend_test.exclude('test_cast_FLOAT_to_FLOAT16_cpu')

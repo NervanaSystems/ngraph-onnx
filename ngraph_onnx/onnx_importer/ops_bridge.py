@@ -633,9 +633,7 @@ def Softmax(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> N
     axis = onnx_node.get_attribute_value('axis', 1)
     if axis == -1:  # Use last dimension
         axis = len(input_.shape) - 1
-    exp = ng.exp(input_)
-    sumexp = ng.sum(exp, {axis})
-    return exp / ng.broadcast(sumexp, exp.shape, 0)
+    return ng.softmax(input_, range(axis, len(input_.shape)))
 
 
 def BatchNormalization(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
