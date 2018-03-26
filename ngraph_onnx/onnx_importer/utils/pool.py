@@ -17,7 +17,7 @@
 from __future__ import division
 from __future__ import print_function
 
-from typing import Dict, List, Tuple
+from typing import List
 
 from ngraph_onnx import TYPE_CHECKING
 
@@ -100,7 +100,7 @@ def make_pooling_op(onnx_node, ng_inputs, kernel_shape=None):
     padding_below = reduce_extra_dims(spatial_dims, padding_below, onnx_node)
 
     if op_type == 'avg':
-        ng_op = ng.avg_pool(x, kernel_shape, strides, padding_above, padding_below, zero_pad=False)
+        ng_op = ng.avg_pool(x, kernel_shape, strides, padding_below, padding_above, include_pad=False)
     elif op_type == 'max':
         ng_op = ng.max_pool(x, kernel_shape, strides, padding_above, padding_below)
     else:
