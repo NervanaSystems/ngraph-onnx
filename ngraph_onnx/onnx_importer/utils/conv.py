@@ -134,8 +134,8 @@ def get_dilations(onnx_node):  # type: (NodeWrapper) -> List[int]
     return dilations
 
 
-def make_convolution_op(onnx_node, ng_inputs, transpose=False):
-    # type: (NodeWrapper, List[NgraphNode], bool) -> NgraphNode
+def make_convolution_op(onnx_node, ng_inputs):
+    # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """
     Create an ngraph convolution Op based on an ONNX node.
 
@@ -161,6 +161,6 @@ def make_convolution_op(onnx_node, ng_inputs, transpose=False):
     dilation = get_dilations(onnx_node)
     padding_above, padding_below = get_pads(onnx_node)
 
-    conv = ng.convolution(x, weights, strides, dilation, padding_above, padding_below)
+    conv = ng.convolution(x, weights, strides, dilation, padding_below, padding_above)
 
     return conv + bias
