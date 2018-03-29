@@ -220,13 +220,15 @@ def ReduceProd(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -
 @refactoring_required
 def ArgMin(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Compute the indices of the min elements of the input tensor along the provided axes."""
-    return make_reduction_op(ng.argmin, onnx_node, ng_inputs[0])
+    return None  # tmp
+    # return make_reduction_op(ng.argmin, onnx_node, ng_inputs[0])
 
 
 @refactoring_required
 def ArgMax(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Compute the indices of the max elements of the input tensor along the provided axes."""
-    return make_reduction_op(ng.argmax, onnx_node, ng_inputs[0])
+    return None  # tmp
+    # return make_reduction_op(ng.argmax, onnx_node, ng_inputs[0])
 
 
 # Binary Ops
