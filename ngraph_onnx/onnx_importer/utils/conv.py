@@ -159,7 +159,7 @@ def make_convolution_op(onnx_node, ng_inputs):
 
     strides = get_strides(onnx_node)
     dilation = get_dilations(onnx_node)
-    padding_above, padding_below = get_pads(onnx_node)
+    padding_below, padding_above = get_pads(onnx_node)
 
     conv = ng.convolution(x, weights, strides, dilation, padding_below, padding_above)
 
