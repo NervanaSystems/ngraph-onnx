@@ -93,7 +93,7 @@ def make_pooling_op(onnx_node, ng_inputs, kernel_shape=None):
     kernel_shape = reduce_extra_dims(spatial_dims, kernel_shape, onnx_node)
 
     strides = get_strides(onnx_node, kernel_shape)
-    padding_above, padding_below = get_pads(onnx_node, kernel_shape)
+    padding_below, padding_above = get_pads(onnx_node, kernel_shape)
 
     strides = reduce_extra_dims(spatial_dims, strides, onnx_node)
     padding_above = reduce_extra_dims(spatial_dims, padding_above, onnx_node)
@@ -103,7 +103,7 @@ def make_pooling_op(onnx_node, ng_inputs, kernel_shape=None):
         ng_op = ng.avg_pool(x, kernel_shape, strides, padding_below, padding_above,
                             include_padding=False)
     elif op_type == 'max':
-        ng_op = ng.max_pool(x, kernel_shape, strides, padding_above, padding_below)
+        ng_op = ng.max_pool(x, kernel_shape, strides, padding_below, padding_above)
     else:
         raise NotImplementedError('%s node (%s): Unsupported pooling type.',
                                   onnx_node.op_type, onnx_node.name)
