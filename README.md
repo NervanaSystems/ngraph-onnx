@@ -1,6 +1,6 @@
-# ngraph-onnx
+# ngraph-onnx [![Build Status](https://travis-ci.org/NervanaSystems/ngraph-onnx.svg?branch=master)](https://travis-ci.org/NervanaSystems/ngraph-onnx)
 
-nGraph™ Backend for ONNX.
+nGraph Backend for ONNX.
 
 This repository contains tools to run [ONNX](http://onnx.ai/) models using the [Intel® nGraph™ library](https://github.com/NervanaSystems/ngraph) as a backend.
 
