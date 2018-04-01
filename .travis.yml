@@ -6,7 +6,7 @@ services:
   - docker
 
 before_install:
-  - docker build -t test_ngraph_onnx .ci/travis/ubuntu
+  - docker build -t test_ngraph_onnx -f .ci/travis/ubuntu/Dockerfile .
 
 install: true
 
