@@ -34,8 +34,7 @@ WORKDIR /root/ngraph/python
 RUN NGRAPH_CPP_BUILD_PATH=/root/ngraph_dist python3 setup.py bdist_wheel
 
 # Test nGraph-ONNX
-WORKDIR /root
-RUN git clone https://github.com/NervanaSystems/ngraph-onnx.git
+COPY . /root/ngraph-onnx
 WORKDIR /root/ngraph-onnx
 RUN pip install tox
 CMD TOX_INSTALL_NGRAPH_FROM=`find /root/ngraph/python/dist/ -name 'ngraph*.whl'` tox
