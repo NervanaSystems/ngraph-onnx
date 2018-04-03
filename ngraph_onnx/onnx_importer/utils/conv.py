@@ -29,7 +29,6 @@ from ngraph.impl import Node as NgraphNode
 import ngraph as ng
 
 from ngraph.utils.types import get_dtype
-from ngraph_onnx.onnx_importer.utils.misc import verify_symmetric_padding
 
 log = logging.getLogger(__file__)
 

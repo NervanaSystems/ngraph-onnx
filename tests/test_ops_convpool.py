@@ -210,7 +210,6 @@ def test_2d_conv_transpose():
                                    dtype=np.float32))
 
 
-@pytest.mark.skip(reason='Needs refactoring to ngraph++')
 def test_padding():
     node = onnx.helper.make_node('Pad', inputs=['x'], outputs=['y'], pads=[1, 1, 1, 1])
     x = np.ones((2, 2), dtype=np.float32)

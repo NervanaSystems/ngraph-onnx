@@ -394,7 +394,6 @@ def ConvTranspose(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]
     # return cast_to_pos_axes(make_convolution_op(onnx_node, ng_inputs, transpose=True))
 
 
-@refactoring_required
 def Pad(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Add padding to the input tensor."""
     pads = onnx_node.get_attribute_value('pads')
@@ -402,14 +401,13 @@ def Pad(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngrap
     mode = onnx_node.get_attribute_value('mode', constant)  # 'constant', 'reflect' or 'edge'
     value = onnx_node.get_attribute_value('value', 0)
 
-    if mode != constant or value != 0:
-        raise NotImplementedError('Pad node (%s): only constant padding with value=0 '
-                                  'is supported.', onnx_node.name)
+    if mode != constant:
+        raise NotImplementedError('Pad node (%s): only constant padding is supported.', onnx_node.name)
 
     # Split paddings into pairs for each axis
-    pads = [pad for pad in split_pads_into_pairs(pads)]
-    return None  # tmp
-    # return cast_to_pos_axes(ng.pad(ng_inputs[0], pads))
+    pading_below, pading_above = split_pads_into_pairs(pads)
+    return ng.pad(ng_inputs[0], ng.constant(value,
+                  dtype=get_dtype(ng_inputs[0].get_element_type())), pading_below, pading_above)
 
 
 # Pooling
