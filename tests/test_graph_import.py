@@ -39,4 +39,5 @@ def test_simple_graph():
 
     runtime = ng.runtime(manager_name=pytest.config.getoption('backend', default='CPU'))
     computation = runtime.computation(ng_model['output'], *ng_model['inputs'])
+    assert np.array_equal(computation(1, 2, 3), np.array([6.0], dtype=np.float32))
     assert np.array_equal(computation(4, 5, 6), np.array([15.0], dtype=np.float32))
