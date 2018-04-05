@@ -105,15 +105,17 @@ backend_test.exclude('test_Conv2d_groups_thnn_cpu')
 backend_test.exclude('test_Conv3d_groups_cpu')
 
 # big models tests
-backend_test.exclude('test_bvlc_alexnet')
+# passing
 backend_test.exclude('test_resnet50')
-backend_test.exclude('test_vgg16')
-backend_test.exclude('test_vgg19')
+
+# failing
+backend_test.exclude('test_bvlc_alexnet')
 backend_test.exclude('test_densenet121')
 backend_test.exclude('test_inception_v1')
 backend_test.exclude('test_inception_v2')
 backend_test.exclude('test_shufflenet')
 backend_test.exclude('test_squeezenet')
-
+backend_test.exclude('test_vgg16')
+backend_test.exclude('test_vgg19')
 
 globals().update(backend_test.enable_report().test_cases)
