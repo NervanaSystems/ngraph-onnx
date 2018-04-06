@@ -186,6 +186,15 @@ def Elu(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngrap
     return (ng.maximum(x, 0) + alpha * (ng.exp(ng.negative(ng.maximum(ng.negative(x), 0))) - 1))
 
 
+def Softmax(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
+    """Compute softmax normalized values for each layer in the batch of the given input."""
+    input_ = ng_inputs[0]
+    axis = onnx_node.get_attribute_value('axis', 1)
+    if axis == -1:  # Use last dimension
+        axis = len(input_.shape) - 1
+    return ng.softmax(input_, range(axis, len(input_.shape)))
+
+
 @refactoring_required
 def Softplus(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Apply Softplus function, f(x) = ln(exp(x) + 1) to the input tensor elementwise."""
@@ -644,15 +653,6 @@ def Constant(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> 
     """Produce a constant tensor."""
     value_tensor = onnx_node.get_attribute_value('value')
     return ng.constant(value_tensor.to_array())
-
-
-def Softmax(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
-    """Compute softmax normalized values for each layer in the batch of the given input."""
-    input_ = ng_inputs[0]
-    axis = onnx_node.get_attribute_value('axis', 1)
-    if axis == -1:  # Use last dimension
-        axis = len(input_.shape) - 1
-    return ng.softmax(input_, range(axis, len(input_.shape)))
 
 
 def BatchNormalization(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
