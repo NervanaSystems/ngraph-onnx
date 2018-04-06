@@ -117,3 +117,24 @@ def test_reciprocal(input_data):
     node = onnx.helper.make_node('Reciprocal', inputs=['x'], outputs=['y'])
     ng_results = convert_and_calculate(node, [input_data], [expected_output])
     assert np.allclose(ng_results, [expected_output])
+
+
+def test_hardsigmoid():
+    def hardsigmoid(data, alpha=float(0.2), beta=float(0.5)):
+        return np.clip(alpha * data + beta, 0, 1)
+
+    np.random.seed(133391)
+    alpha = np.random.rand()
+    beta = np.random.rand()
+    data = np.random.rand(3, 4, 5).astype(np.float32)
+
+    expected = hardsigmoid(data, alpha, beta)
+    node = onnx.helper.make_node('HardSigmoid', inputs=['x'], outputs=['y'], alpha=alpha,
+                                 beta=beta)
+    ng_results = convert_and_calculate(node, [data], [expected])
+    assert np.allclose(ng_results, [expected])
+
+    expected = hardsigmoid(data)
+    node = onnx.helper.make_node('HardSigmoid', inputs=['x'], outputs=['y'])
+    ng_results = convert_and_calculate(node, [data], [expected])
+    assert np.allclose(ng_results, [expected])

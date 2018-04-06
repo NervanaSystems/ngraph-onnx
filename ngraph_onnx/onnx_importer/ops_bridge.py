@@ -195,6 +195,20 @@ def Softmax(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> N
     return ng.softmax(input_, range(axis, len(input_.shape)))
 
 
+def HardSigmoid(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
+    """Apply f(x) = max(0, min(1, alpha * x + beta)) function to tensor element-wise.
+
+    :param onnx_node: The ONNX node representing this operation.
+    :param ng_inputs: The input tensors.
+    :return: The tensor with applied HardSigmoid operation.
+    """
+    data = ng_inputs[0]
+    data_type = get_dtype(data.get_element_type()).type
+    alpha = onnx_node.get_attribute_value('alpha', float(0.2))
+    beta = onnx_node.get_attribute_value('beta', float(0.5))
+    return ng.maximum(data_type(0), ng.minimum(data_type(1), alpha * data + beta))
+
+
 @refactoring_required
 def Softplus(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Apply Softplus function, f(x) = ln(exp(x) + 1) to the input tensor elementwise."""
