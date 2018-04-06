@@ -58,7 +58,6 @@ backend_test.exclude('test_depthtospace_cpu')
 backend_test.exclude('test_depthtospace_example_cpu')
 
 
-backend_test.exclude('test_ConstantPad2d')
 backend_test.exclude('test_Embedding')
 backend_test.exclude('test_GLU')
 backend_test.exclude('test_Linear')
@@ -66,19 +65,19 @@ backend_test.exclude('test_LogSoftmax')
 backend_test.exclude('test_MaxPool1d')
 backend_test.exclude('test_PReLU')
 backend_test.exclude('test_PixelShuffle')
-backend_test.exclude('test_ReflectionPad2d')
-backend_test.exclude('test_ReplicationPad2d')
 backend_test.exclude('test_Softmin')
 backend_test.exclude('test_Softplus')
 backend_test.exclude('test_Softsign')
-backend_test.exclude('test_ZeroPad')
-backend_test.exclude('test_constant_pad')
-backend_test.exclude('test_edge_pad')
 backend_test.exclude('test_log_softmax')
 backend_test.exclude('test_matmul_3d')
 backend_test.exclude('test_matmul_4d')
-backend_test.exclude('test_reflect_pad')
 backend_test.exclude('test_default_axes')
+
+# Pad tests
+backend_test.exclude('test_edge_pad_cpu')
+backend_test.exclude('test_reflect_pad_cpu')
+backend_test.exclude('test_ReflectionPad2d_cpu')
+backend_test.exclude('test_ReplicationPad2d_cpu')
 
 # Reshape tests
 backend_test.exclude('test_reshape_extended_dims_cpu')

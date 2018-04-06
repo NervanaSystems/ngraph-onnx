@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ******************************************************************************
-from typing import Sequence, List, Tuple
+from typing import Sequence, Tuple
 
 from ngraph_onnx import TYPE_CHECKING
 
@@ -21,7 +21,7 @@ if TYPE_CHECKING:
     from ngraph_onnx.onnx_importer.model_wrappers import NodeWrapper
 
 
-def split_pads_into_pairs(pads):  # type: (Sequence[int]) -> List[Tuple[int, int]]
+def split_pads_into_pairs(pads):  # type: (Sequence[int]) -> Tuple[Sequence[int], ...]
     """
     Convert ONNX padding format to ngraph padding format.
 
@@ -29,26 +29,9 @@ def split_pads_into_pairs(pads):  # type: (Sequence[int]) -> List[Tuple[int, int
     :return: ngraph format: [(x1_begin, x1_end), (x2_begin, x2_end), ...]
     """
     if not pads:
-        return []
+        return ()
 
     first_end_pad_index = int(len(pads) / 2)
     begin_pads = pads[:first_end_pad_index]
     end_pads = pads[first_end_pad_index:]
-    return list(zip(begin_pads, end_pads))
-
-
-def verify_symmetric_padding(onnx_node, pads):
-    # type: (NodeWrapper, Sequence[int]) -> bool
-    """
-    Check if the `pads` value of an ONNX node contains only symmetric padding pairs.
-
-    :param onnx_node: an ONNX node
-    :param pads: the value for `pads` already extracted or calculated base on `auto_pad`
-    :return: True if padding is symmetric, otherwise raises a NotImplementedError
-    """
-    for pad_left, pad_right in split_pads_into_pairs(pads):
-        if pad_left != pad_right:
-            raise NotImplementedError('%s node (%s): asymmetric padding is not supported '
-                                      'by ngraph.', onnx_node.op_type, onnx_node.name)
-
-    return True
+    return (begin_pads, end_pads)
