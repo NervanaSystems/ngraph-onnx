@@ -138,3 +138,80 @@ def test_hardsigmoid():
     node = onnx.helper.make_node('HardSigmoid', inputs=['x'], outputs=['y'])
     ng_results = convert_and_calculate(node, [data], [expected])
     assert np.allclose(ng_results, [expected])
+
+
+def test_softmax():
+    def softmax_2d(x):
+        max_x = np.max(x, axis=1).reshape((-1, 1))
+        exp_x = np.exp(x - max_x)
+        return exp_x / np.sum(exp_x, axis=1).reshape((-1, 1))
+
+    np.random.seed(133391)
+    data = np.random.randn(3, 4, 5).astype(np.float32)
+
+    node = onnx.helper.make_node('Softmax', inputs=['x'], outputs=['y'], axis=0)
+    expected = softmax_2d(data.reshape(1, 60)).reshape(3, 4, 5)
+    ng_results = convert_and_calculate(node, [data], [expected])
+    assert np.allclose(ng_results, [expected])
+
+    node = onnx.helper.make_node('Softmax', inputs=['x'], outputs=['y'], axis=1)
+    expected = softmax_2d(data.reshape(3, 20)).reshape(3, 4, 5)
+    ng_results = convert_and_calculate(node, [data], [expected])
+    assert np.allclose(ng_results, [expected])
+
+    # default axis is 1
+    node = onnx.helper.make_node('Softmax', inputs=['x'], outputs=['y'])
+    ng_results = convert_and_calculate(node, [data], [expected])
+    assert np.allclose(ng_results, [expected])
+
+    node = onnx.helper.make_node('Softmax', inputs=['x'], outputs=['y'], axis=2)
+    expected = softmax_2d(data.reshape(12, 5)).reshape(3, 4, 5)
+    ng_results = convert_and_calculate(node, [data], [expected])
+    assert np.allclose(ng_results, [expected])
+
+    node = onnx.helper.make_node('Softmax', inputs=['x'], outputs=['y'], axis=-1)
+    expected = softmax_2d(data.reshape(12, 5)).reshape(3, 4, 5)
+    ng_results = convert_and_calculate(node, [data], [expected])
+    assert np.allclose(ng_results, [expected])
+
+    with pytest.raises(ValueError):
+        node = onnx.helper.make_node('Softmax', inputs=['x'], outputs=['y'], axis=3)
+        ng_results = convert_and_calculate(node, [data], [expected])
+
+
+def test_logsoftmax():
+    def logsoftmax_2d(x):
+        max_x = np.max(x, axis=1).reshape((-1, 1))
+        exp_x = np.exp(x - max_x)
+        return x - max_x - np.log(np.sum(exp_x, axis=1).reshape((-1, 1)))
+
+    np.random.seed(133391)
+    data = np.random.randn(3, 4, 5).astype(np.float32)
+
+    node = onnx.helper.make_node('LogSoftmax', inputs=['x'], outputs=['y'], axis=0)
+    expected = logsoftmax_2d(data.reshape(1, 60)).reshape(3, 4, 5)
+    ng_results = convert_and_calculate(node, [data], [expected])
+    assert np.allclose(ng_results, [expected])
+
+    node = onnx.helper.make_node('LogSoftmax', inputs=['x'], outputs=['y'], axis=1)
+    expected = logsoftmax_2d(data.reshape(3, 20)).reshape(3, 4, 5)
+    ng_results = convert_and_calculate(node, [data], [expected])
+    assert np.allclose(ng_results, [expected])
+
+    # default axis is 1
+    node = onnx.helper.make_node('LogSoftmax', inputs=['x'], outputs=['y'])
+    ng_results = convert_and_calculate(node, [data], [expected])
+    assert np.allclose(ng_results, [expected])
+
+    node = onnx.helper.make_node('LogSoftmax', inputs=['x'], outputs=['y'], axis=2)
+    expected = logsoftmax_2d(data.reshape(12, 5)).reshape(3, 4, 5)
+    ng_results = convert_and_calculate(node, [data], [expected])
+    assert np.allclose(ng_results, [expected])
+
+    with pytest.raises(ValueError):
+        node = onnx.helper.make_node('LogSoftmax', inputs=['x'], outputs=['y'], axis=-1)
+        ng_results = convert_and_calculate(node, [data], [expected])
+
+    with pytest.raises(ValueError):
+        node = onnx.helper.make_node('LogSoftmax', inputs=['x'], outputs=['y'], axis=3)
+        ng_results = convert_and_calculate(node, [data], [expected])

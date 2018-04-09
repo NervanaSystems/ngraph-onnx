@@ -187,12 +187,36 @@ def Elu(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngrap
 
 
 def Softmax(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
-    """Compute softmax normalized values for each layer in the batch of the given input."""
-    input_ = ng_inputs[0]
+    """Compute softmax normalized values for each layer in the batch of the given input.
+
+    :param onnx_node: The ONNX node representing this operation.
+    :param ng_inputs: The input tensors.
+    :return: The tensor with applied Softmax operation.
+    """
+    data = ng_inputs[0]
     axis = onnx_node.get_attribute_value('axis', 1)
-    if axis == -1:  # Use last dimension
-        axis = len(input_.shape) - 1
-    return ng.softmax(input_, range(axis, len(input_.shape)))
+    # negative values are interpreted as i-th index from the end.
+    if axis < 0:
+        axis = len(data.shape) + axis
+    if axis < 0 or axis >= len(data.shape):
+        raise ValueError('Softmax node (%s): provided axis attribute is out of input tensor'
+                         ' dimensions range.', onnx_node.name)
+    return ng.softmax(data, range(axis, len(data.shape)))
+
+
+def LogSoftmax(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
+    """Compute logarithm of softmax values for each layer in the batch of the given input.
+
+    :param onnx_node: The ONNX node representing this operation.
+    :param ng_inputs: The input tensors.
+    :return: The tensor with applied LogSoftmax operation.
+    """
+    data = ng_inputs[0]
+    axis = onnx_node.get_attribute_value('axis', 1)
+    if axis < 0 or axis >= len(data.shape):
+        raise ValueError('LogSoftmax node (%s): provided axis attribute is out of input tensor'
+                         ' dimensions range.', onnx_node.name)
+    return ng.log(ng.softmax(data, range(axis, len(data.shape))))
 
 
 def HardSigmoid(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
