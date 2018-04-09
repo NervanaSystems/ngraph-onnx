@@ -233,9 +233,13 @@ def HardSigmoid(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) 
     return ng.maximum(data_type(0), ng.minimum(data_type(1), alpha * data + beta))
 
 
-@refactoring_required
 def Softplus(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
-    """Apply Softplus function, f(x) = ln(exp(x) + 1) to the input tensor elementwise."""
+    """Apply Softplus function, f(x) = ln(exp(x) + 1) to the input tensor element-wise.
+
+    :param onnx_node: The ONNX node representing this operation.
+    :param ng_inputs: The input tensors.
+    :return: The tensor with applied Softplus operation.
+    """
     return ng.log((ng.exp(ng_inputs[0]) + 1))
 
 

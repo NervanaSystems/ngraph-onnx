@@ -215,3 +215,16 @@ def test_logsoftmax():
     with pytest.raises(ValueError):
         node = onnx.helper.make_node('LogSoftmax', inputs=['x'], outputs=['y'], axis=3)
         ng_results = convert_and_calculate(node, [data], [expected])
+
+
+def test_softplus():
+    def softplus(x):
+        return np.log(np.exp(x) + 1)
+
+    np.random.seed(133391)
+    data = np.random.randn(3, 4, 5).astype(np.float32)
+
+    node = onnx.helper.make_node('Softplus', inputs=['x'], outputs=['y'])
+    expected = softplus(data)
+    ng_results = convert_and_calculate(node, [data], [expected])
+    assert np.allclose(ng_results, [expected])
