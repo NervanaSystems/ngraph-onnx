@@ -745,13 +745,7 @@ def BatchNormalization(onnx_node, ng_inputs):  # type: (NodeWrapper, List[Ngraph
         raise NotImplementedError('BatchNormalization node (%s): only `spatial` mode is currently '
                                   'supported.', onnx_node.name)
 
-    mean = ng.broadcast(mean, x.shape, axis=1)
-    scale = ng.broadcast(scale, x.shape, axis=1)
-    var = ng.broadcast(var, x.shape, axis=1)
-    bias = ng.broadcast(bias, x.shape, axis=1)
-    epsilon = ng.broadcast(ng.constant(epsilon, dtype=get_dtype(x.get_element_type())),
-                           x.shape, axis=1)
-    return (scale * ((x - mean) * (1 / (ng.sqrt(var + epsilon)))) + bias)
+    return ng.batch_norm(epsilon, scale, bias, x, mean, var, False)
 
 
 def Shape(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
