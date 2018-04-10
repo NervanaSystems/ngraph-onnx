@@ -36,7 +36,7 @@ from ngraph_onnx.onnx_importer.utils.misc import split_pads_into_pairs
 from ngraph_onnx.onnx_importer.utils.pool import make_pooling_op, make_global_pooling_op
 from ngraph_onnx.onnx_importer.utils.reduction import make_reduction_op, get_reduction_axes
 from ngraph_onnx.onnx_importer.utils.reshape import transpose, infer_dimensions, \
-    flatten_innermost_empty_dims, reorder_axes, make_slice_op
+    flatten_innermost_empty_dims, reorder_axes, make_slice_op, flatten
 
 if TYPE_CHECKING:
     from ngraph_onnx.onnx_importer.model_wrappers import NodeWrapper
@@ -527,20 +527,7 @@ def Flatten(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> N
         raise ValueError('Flatten node (%s): %d is not a valid value for `axis`.',
                          onnx_node.name, axis)
 
-    first_dim = 1
-    last_dim = 1
-
-    for index in range(len(input_shape)):
-        last_dim = last_dim * input_shape[index]
-        if index < axis:
-            first_dim = last_dim
-
-    last_dim = int(last_dim / first_dim)
-    # the order in which we iterate over input tensor dimensions while reshaping it.
-    input_order = list(range(len(input_shape)))
-    output_shape = [first_dim, last_dim]
-
-    return ng.reshape(input_node, input_order, output_shape)
+    return flatten(input_node, axis)
 
 
 def Transpose(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode

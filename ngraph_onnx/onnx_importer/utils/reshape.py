@@ -149,3 +149,30 @@ def make_slice_op(node, axes, starts, ends):
         upper_bounds[axis] = get_valid_array_idx(ends[idx], node.shape[axis])
 
     return ng.slice(node, lower_bounds, upper_bounds)
+
+
+def flatten(node, axis):  # type: (NgraphNode, int) -> NgraphNode
+    """Flatten the input tensor into a 2D matrix.
+
+    Flattening happens at axis specified by 'axis' attribute.
+    First dimension of output tensor is the product of [d_0, ... d_{axis-1}] dimensions of input tensor.
+    The last dimension is the product of the rest of input tensor dimensions: [d_{axis}, ..., d_n]
+
+    :param node: The tensor to be flattened.
+    :param axis: The axis dividing shape.
+    :return: The new node being a 2D matrix representing flattened input node.
+    """
+    shape = list(node.shape)
+    first_dim = 1
+    last_dim = 1
+    for index in range(len(shape)):
+        last_dim = last_dim * shape[index]
+        if index < axis:
+            first_dim = last_dim
+
+    last_dim = int(last_dim / first_dim)
+    # the order in which we iterate over input tensor dimensions while reshaping it.
+    input_order = list(range(len(shape)))
+    output_shape = [first_dim, last_dim]
+
+    return ng.reshape(node, input_order, output_shape)
