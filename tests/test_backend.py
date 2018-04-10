@@ -102,17 +102,27 @@ backend_test.exclude('test_Conv2d_groups_thnn_cpu')
 backend_test.exclude('test_Conv3d_groups_cpu')
 
 # big models tests
-# passing
+# Passing
 backend_test.exclude('test_resnet50')
 
-# failing
-backend_test.exclude('test_bvlc_alexnet')
+# Failing
+
+# Validation Error: Input index 3 must be set to consumed for operator BatchNormalization
 backend_test.exclude('test_densenet121')
-backend_test.exclude('test_inception_v1')
 backend_test.exclude('test_inception_v2')
 backend_test.exclude('test_shufflenet')
+
+# NotImplementedError: 'Dropout'
 backend_test.exclude('test_squeezenet')
+
+# NotImplementedError: 'LRN'
+backend_test.exclude('test_bvlc_alexnet')
 backend_test.exclude('test_vgg16')
+
+# Validation Error: Input size 2 not in range [min=1, max=1].
+backend_test.exclude('test_inception_v1')
+
+# ValueError: Gemm node: input "A" and "B" data shapes are incompatible
 backend_test.exclude('test_vgg19')
 
 globals().update(backend_test.enable_report().test_cases)
