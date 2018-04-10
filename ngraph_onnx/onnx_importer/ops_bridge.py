@@ -219,6 +219,26 @@ def LogSoftmax(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -
     return ng.log(ng.softmax(data, range(axis, len(data.shape))))
 
 
+@refactoring_required
+def Hardmax(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
+    """Compute the hardmax values for each layer in the batch of the given input.
+
+    :param onnx_node: The ONNX node representing this operation.
+    :param ng_inputs: The input tensors.
+    :return: The tensor with applied hardmax operation.
+    """
+    data = ng_inputs[0]
+    axis = onnx_node.get_attribute_value('axis', 1)
+    if axis < 0 or axis >= len(data.shape):
+        raise ValueError('Hardmax node (%s): provided axis attribute is out of input tensor'
+                         ' dimensions range.', onnx_node.name)
+    # coerce to 2D tensor if needed
+    if len(data.shape) > 2 or axis != 1:
+        data = flatten(data, axis)
+    # Need support for nGraph ArgMax operation.
+    pass
+
+
 def HardSigmoid(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Apply f(x) = max(0, min(1, alpha * x + beta)) function to tensor element-wise.
 

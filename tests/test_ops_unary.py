@@ -119,6 +119,55 @@ def test_reciprocal(input_data):
     assert np.allclose(ng_results, [expected_output])
 
 
+@pytest.mark.skip(reason='Need nGraph support for ArgMin/ArgMax')
+@pytest.mark.parametrize('axis, dim1, dim2', [
+    (0, 1, 60),
+    (1, 3, 20),
+    (2, 12, 5),
+])
+def test_hardmax(axis, dim1, dim2):
+    def hardmax_2d(data):
+        return np.eye(data.shape[1], dtype=data.dtype)[np.argmax(data, axis=1)]
+
+    np.random.seed(133391)
+    data = np.random.rand(3, 4, 5).astype(np.float32)
+    expected = hardmax_2d(data.reshape(dim1, dim2)).reshape(3, 4, 5)
+    node = onnx.helper.make_node('Hardmax', inputs=['x'], outputs=['y'], axis=axis)
+    ng_results = convert_and_calculate(node, [data], [expected])
+    assert np.allclose(ng_results, [expected])
+
+
+@pytest.mark.skip(reason='Need nGraph support for ArgMin/ArgMax')
+def test_hardmax_special_cases():
+    def hardmax_2d(data):
+        return np.eye(data.shape[1], dtype=data.dtype)[np.argmax(data, axis=1)]
+
+    np.random.seed(133391)
+    data = np.random.rand(3, 4, 5).astype(np.float32)
+
+    # default axis=1
+    expected = hardmax_2d(data.reshape(3, 20)).reshape(3, 4, 5)
+    node = onnx.helper.make_node('Hardmax', inputs=['x'], outputs=['y'])
+    ng_results = convert_and_calculate(node, [data], [expected])
+    assert np.allclose(ng_results, [expected])
+
+    with pytest.raises(ValueError):
+        node = onnx.helper.make_node('Hardmax', inputs=['x'], outputs=['y'], axis=-1)
+        ng_results = convert_and_calculate(node, [data], [expected])
+
+    with pytest.raises(ValueError):
+        node = onnx.helper.make_node('Hardmax', inputs=['x'], outputs=['y'], axis=3)
+        ng_results = convert_and_calculate(node, [data], [expected])
+
+    # For multiple occurrences of the maximal values, the first occurrence is selected
+    # for one-hot output
+    data = np.array([[3, 3, 3, 1]]).astype(np.float32)
+    expected = np.array([[1, 0, 0, 0]]).astype(np.float32)
+    node = onnx.helper.make_node('Hardmax', inputs=['x'], outputs=['y'])
+    ng_results = convert_and_calculate(node, [data], [expected])
+    assert np.allclose(ng_results, [expected])
+
+
 def test_hardsigmoid():
     def hardsigmoid(data, alpha=float(0.2), beta=float(0.5)):
         return np.clip(alpha * data + beta, 0, 1)
