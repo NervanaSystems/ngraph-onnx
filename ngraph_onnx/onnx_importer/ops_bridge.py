@@ -243,6 +243,16 @@ def Softplus(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> 
     return ng.log((ng.exp(ng_inputs[0]) + 1))
 
 
+def Softsign(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
+    """Apply Softsign function, f(x) = x / (1 + |x|) to the input tensor element-wise.
+
+    :param onnx_node: The ONNX node representing this operation.
+    :param ng_inputs: The input tensors.
+    :return: The tensor with applied Softsign operation.
+    """
+    return ng_inputs[0] / (1 + ng.abs(ng_inputs[0]))
+
+
 # Reduction Ops
 def ReduceSum(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Compute the sum of the input tensor's elements along the provided axes.

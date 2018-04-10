@@ -228,3 +228,16 @@ def test_softplus():
     expected = softplus(data)
     ng_results = convert_and_calculate(node, [data], [expected])
     assert np.allclose(ng_results, [expected])
+
+
+def test_softsign():
+    def softsign(x):
+        return x / (1 + np.abs(x))
+
+    np.random.seed(133391)
+    data = np.random.randn(3, 4, 5).astype(np.float32)
+
+    node = onnx.helper.make_node('Softsign', inputs=['x'], outputs=['y'])
+    expected = softsign(data)
+    ng_results = convert_and_calculate(node, [data], [expected])
+    assert np.allclose(ng_results, [expected])
