@@ -147,6 +147,18 @@ def PRelu(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngr
         return ng.maximum(ng.broadcast(slope, x.shape, 1) * x, x)
 
 
+def ThresholdedRelu(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
+    """Apply the Thresholded Relu function to the input tensor elementwise.
+
+    f(x) = 0 for x <= alpha, f(x) = x for x > alpha
+    """
+    x = ng_inputs[0]
+    alpha = onnx_node.get_attribute_value('alpha', 1.0)
+    x_map = ng.convert(ng.greater(x, alpha), get_dtype(x.get_element_type()))
+    x = x * x_map
+    return x
+
+
 def Selu(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Apply the scaled exponential linear unit function to the input tensor elementwise.
 
