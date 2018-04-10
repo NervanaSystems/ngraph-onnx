@@ -137,7 +137,14 @@ def PRelu(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngr
     The slope parameter is passed to the node as its second input.
     """
     x, slope = ng_inputs
-    return ng.maximum(slope * x, x)
+    if len(slope.shape) == 0:
+        return ng.maximum(slope * x, x)
+    elif slope.shape[0] == 1:
+        slope = ng.broadcast(slope, [x.shape[0], 1])
+        slope = ng.reshape(slope, [0, 1], [x.shape[0]])
+        return ng.maximum(ng.broadcast(slope, x.shape, 0) * x, x)
+    else:
+        return ng.maximum(ng.broadcast(slope, x.shape, 1) * x, x)
 
 
 def Selu(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
