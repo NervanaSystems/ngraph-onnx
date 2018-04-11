@@ -32,24 +32,42 @@ You can verify whether you have version `>=2.6.1` installed using the command:
 #### nGraph
 
 The other requirement is of course nGraph and nGraph's Python bindings.
-You can follow these instructions to build an ngraph Python wheel containing both:
+You can follow these instructions to build an ngraph Python wheel containing both.
 
-https://github.com/NervanaSystems/ngraph/blob/master/python/README.md
+##### nGraph build process on Ubuntu 16.04
 
-nGraph build process on Ubuntu 16.04:
+Prepare System:
 
     # apt update
     # apt install python3 python3-pip python3-dev
     # apt install build-essential cmake curl clang-3.9 git zlib1g zlib1g-dev libtinfo-dev
+
+Build ngraph and install it into `$HOME/ngraph_dist`:
+
     $ git clone https://github.com/NervanaSystems/ngraph.git
+    $ mkdir ngraph/build
+    $ cd ngraph/build
+    $ cmake ../ -DNGRAPH_USE_PREBUILT_LLVM=TRUE
+    $ make -j 8
+    $ make install
+
+Build Python package (Binary wheel) for ngraph:
+
     $ cd ngraph/python
-    $ ./build_python3_wheel.sh
+    $ git clone --recursive -b allow-nonconstructible-holders https://github.com/jagerman/pybind11.git
+    $ export PYBIND_HEADERS_PATH=$PWD/pybind11
+    $ export NGRAPH_CPP_BUILD_PATH=$HOME/ngraph_dist
+    $ python3 setup.py bdist_wheel
+
+For additional information how to build ngraph Python bindings see:
+
+https://github.com/NervanaSystems/ngraph/blob/master/python/README.md
 
 Once the Python binary wheel file (`ngraph-*.whl`) is prepared you can install it using pip.
 
 For example:
 
-    (your_venv) $ pip install -U build/dist/ngraph-0.1.0-cp35-cp35m-linux_x86_64.whl
+    (your_venv) $ pip install -U dist/ngraph-0.2.0-cp35-cp35m-linux_x86_64.whl
 
 You can check that ngraph is properly installed in your Python shell:
 
