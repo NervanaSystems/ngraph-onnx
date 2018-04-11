@@ -26,12 +26,11 @@ RUN make -j 8
 RUN make install
 
 # Build nGraph Wheel
-RUN mkdir /root/ngraph/python/build
-WORKDIR /root/ngraph/python/build
-RUN cmake -DNGRAPH_INSTALL_PREFIX=/root/ngraph_dist ..
-RUN make -j 8
+RUN git clone --recursive -b allow-nonconstructible-holders https://github.com/jagerman/pybind11.git
 WORKDIR /root/ngraph/python
-RUN NGRAPH_CPP_BUILD_PATH=/root/ngraph_dist python3 setup.py bdist_wheel
+ENV PYBIND_HEADERS_PATH /root/ngraph/python/pybind11
+ENV NGRAPH_CPP_BUILD_PATH /root/ngraph_dist
+RUN python3 setup.py bdist_wheel
 
 # Test nGraph-ONNX
 COPY . /root/ngraph-onnx
