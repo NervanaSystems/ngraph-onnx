@@ -36,7 +36,7 @@ from ngraph_onnx.onnx_importer.utils.misc import split_pads_into_pairs
 from ngraph_onnx.onnx_importer.utils.pool import make_pooling_op, make_global_pooling_op
 from ngraph_onnx.onnx_importer.utils.reduction import make_reduction_op, get_reduction_axes
 from ngraph_onnx.onnx_importer.utils.reshape import transpose, infer_dimensions, \
-    flatten_innermost_empty_dims, reorder_axes, make_slice_op
+    flatten_innermost_empty_dims, reorder_axes, make_slice_op, flatten
 
 if TYPE_CHECKING:
     from ngraph_onnx.onnx_importer.model_wrappers import NodeWrapper
@@ -186,10 +186,91 @@ def Elu(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngrap
     return (ng.maximum(x, 0) + alpha * (ng.exp(ng.negative(ng.maximum(ng.negative(x), 0))) - 1))
 
 
+def Softmax(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
+    """Compute softmax normalized values for each layer in the batch of the given input.
+
+    :param onnx_node: The ONNX node representing this operation.
+    :param ng_inputs: The input tensors.
+    :return: The tensor with applied Softmax operation.
+    """
+    data = ng_inputs[0]
+    axis = onnx_node.get_attribute_value('axis', 1)
+    # negative values are interpreted as i-th index from the end.
+    if axis < 0:
+        axis = len(data.shape) + axis
+    if axis < 0 or axis >= len(data.shape):
+        raise ValueError('Softmax node (%s): provided axis attribute is out of input tensor'
+                         ' dimensions range.', onnx_node.name)
+    return ng.softmax(data, range(axis, len(data.shape)))
+
+
+def LogSoftmax(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
+    """Compute logarithm of softmax values for each layer in the batch of the given input.
+
+    :param onnx_node: The ONNX node representing this operation.
+    :param ng_inputs: The input tensors.
+    :return: The tensor with applied LogSoftmax operation.
+    """
+    data = ng_inputs[0]
+    axis = onnx_node.get_attribute_value('axis', 1)
+    if axis < 0 or axis >= len(data.shape):
+        raise ValueError('LogSoftmax node (%s): provided axis attribute is out of input tensor'
+                         ' dimensions range.', onnx_node.name)
+    return ng.log(ng.softmax(data, range(axis, len(data.shape))))
+
+
 @refactoring_required
+def Hardmax(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
+    """Compute the hardmax values for each layer in the batch of the given input.
+
+    :param onnx_node: The ONNX node representing this operation.
+    :param ng_inputs: The input tensors.
+    :return: The tensor with applied hardmax operation.
+    """
+    data = ng_inputs[0]
+    axis = onnx_node.get_attribute_value('axis', 1)
+    if axis < 0 or axis >= len(data.shape):
+        raise ValueError('Hardmax node (%s): provided axis attribute is out of input tensor'
+                         ' dimensions range.', onnx_node.name)
+    # coerce to 2D tensor if needed
+    if len(data.shape) > 2 or axis != 1:
+        data = flatten(data, axis)
+    # Need support for nGraph ArgMax operation.
+    pass
+
+
+def HardSigmoid(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
+    """Apply f(x) = max(0, min(1, alpha * x + beta)) function to tensor element-wise.
+
+    :param onnx_node: The ONNX node representing this operation.
+    :param ng_inputs: The input tensors.
+    :return: The tensor with applied HardSigmoid operation.
+    """
+    data = ng_inputs[0]
+    data_type = get_dtype(data.get_element_type()).type
+    alpha = onnx_node.get_attribute_value('alpha', float(0.2))
+    beta = onnx_node.get_attribute_value('beta', float(0.5))
+    return ng.maximum(data_type(0), ng.minimum(data_type(1), alpha * data + beta))
+
+
 def Softplus(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
-    """Apply Softplus function, f(x) = ln(exp(x) + 1) to the input tensor elementwise."""
+    """Apply Softplus function, f(x) = ln(exp(x) + 1) to the input tensor element-wise.
+
+    :param onnx_node: The ONNX node representing this operation.
+    :param ng_inputs: The input tensors.
+    :return: The tensor with applied Softplus operation.
+    """
     return ng.log((ng.exp(ng_inputs[0]) + 1))
+
+
+def Softsign(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
+    """Apply Softsign function, f(x) = x / (1 + |x|) to the input tensor element-wise.
+
+    :param onnx_node: The ONNX node representing this operation.
+    :param ng_inputs: The input tensors.
+    :return: The tensor with applied Softsign operation.
+    """
+    return ng_inputs[0] / (1 + ng.abs(ng_inputs[0]))
 
 
 # Reduction Ops
@@ -466,20 +547,7 @@ def Flatten(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> N
         raise ValueError('Flatten node (%s): %d is not a valid value for `axis`.',
                          onnx_node.name, axis)
 
-    first_dim = 1
-    last_dim = 1
-
-    for index in range(len(input_shape)):
-        last_dim = last_dim * input_shape[index]
-        if index < axis:
-            first_dim = last_dim
-
-    last_dim = int(last_dim / first_dim)
-    # the order in which we iterate over input tensor dimensions while reshaping it.
-    input_order = list(range(len(input_shape)))
-    output_shape = [first_dim, last_dim]
-
-    return ng.reshape(input_node, input_order, output_shape)
+    return flatten(input_node, axis)
 
 
 def Transpose(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
@@ -644,15 +712,6 @@ def Constant(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> 
     """Produce a constant tensor."""
     value_tensor = onnx_node.get_attribute_value('value')
     return ng.constant(value_tensor.to_array())
-
-
-def Softmax(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
-    """Compute softmax normalized values for each layer in the batch of the given input."""
-    input_ = ng_inputs[0]
-    axis = onnx_node.get_attribute_value('axis', 1)
-    if axis == -1:  # Use last dimension
-        axis = len(input_.shape) - 1
-    return ng.softmax(input_, range(axis, len(input_.shape)))
 
 
 def BatchNormalization(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
