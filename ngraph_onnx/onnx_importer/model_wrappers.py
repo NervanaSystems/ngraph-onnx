@@ -299,11 +299,7 @@ class NodeWrapper(WrapperBaseClass):
         output_node_names = self._proto.output
         output_nodes = make_ng_nodes(self)
         for output_name, node in zip(output_node_names, output_nodes):
-            # Don't set new name in cases when node operation returns exactly its only input node.
-            # However still update nodes dictionary, as not to loose any information.
-            # This happens when running reductions (max, sum, etc) on one input node.
-            if len(self.get_ng_inputs()) == 1 and node is not self.get_ng_inputs()[0]:
-                node.name = output_name
+            node.name = output_name
             output_nodes_dict.update({output_name: node})
             self._graph.ng_node_cache_set(output_name, node)
 
