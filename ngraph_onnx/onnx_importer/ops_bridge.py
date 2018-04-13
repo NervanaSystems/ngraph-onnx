@@ -760,9 +760,9 @@ def BatchNormalization(onnx_node, ng_inputs):  # type: (NodeWrapper, List[Ngraph
 
 def Shape(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Return input shape."""
-    return ng.constant(ng_inputs[0].shape, dtype=int)
+    return ng.constant(ng_inputs[0].shape, dtype=np.int64)
 
 
 def Size(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Return input size."""
-    return ng.constant(flatten(ng_inputs[0], 0).shape[1], dtype=int)
+    return ng.constant(flatten(ng_inputs[0], 0).shape[1], dtype=np.int64)
