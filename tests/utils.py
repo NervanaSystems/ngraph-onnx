@@ -26,7 +26,7 @@ from ngraph_onnx.onnx_importer.importer import import_onnx_model
 
 
 def get_transformer():
-    return ng.runtime(manager_name=pytest.config.getoption('backend', default='CPU'))
+    return ng.runtime(backend_name=pytest.config.getoption('backend', default='CPU'))
 
 
 def convert_and_calculate(onnx_node, data_inputs, data_outputs):

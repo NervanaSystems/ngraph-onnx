@@ -29,7 +29,7 @@ from ngraph_onnx.onnx_importer.importer import import_onnx_model
 
 @lru_cache(maxsize=1)
 def get_transformer():
-    return ng.runtime(manager_name=pytest.config.getoption('backend', default='CPU'))
+    return ng.runtime(backend_name=pytest.config.getoption('backend', default='CPU'))
 
 
 def make_onnx_model_for_matmul_op(input_left, input_right):
