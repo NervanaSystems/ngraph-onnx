@@ -695,6 +695,7 @@ def Split(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Tup
     axis_to_split = onnx_node.get_attribute_value('axis', 0)
 
     if axis_to_split < 0:
+        # Cover Python negative indexing
         axis_to_split = len(data.shape) + axis_to_split
     elif axis_to_split >= len(data.shape):
         raise ValueError('Split node (%s) provided split axis is out of input tensor dimensions'
@@ -760,9 +761,11 @@ def BatchNormalization(onnx_node, ng_inputs):  # type: (NodeWrapper, List[Ngraph
 
 def Shape(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Return input shape."""
+    # Dtype int64 is required for ONNX unit tests.
     return ng.constant(ng_inputs[0].shape, dtype=np.int64)
 
 
 def Size(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Return input size."""
+    # Dtype int64 is required for ONNX unit tests.
     return ng.constant(flatten(ng_inputs[0], 0).shape[1], dtype=np.int64)
