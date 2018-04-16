@@ -17,9 +17,9 @@
 from __future__ import print_function, division
 
 import onnx
-import ngraph as ng
 import numpy as np
-import pytest
+
+from tests.utils import get_transformer
 from onnx.helper import make_node, make_graph, make_tensor_value_info, make_model
 
 from ngraph_onnx.onnx_importer.importer import import_onnx_model
@@ -37,7 +37,7 @@ def test_simple_graph():
 
     ng_model = import_onnx_model(model)[0]
 
-    runtime = ng.runtime(backend_name=pytest.config.getoption('backend', default='CPU'))
+    runtime = get_transformer()
     computation = runtime.computation(ng_model['output'], *ng_model['inputs'])
     assert np.array_equal(computation(1, 2, 3), np.array([6.0], dtype=np.float32))
     assert np.array_equal(computation(4, 5, 6), np.array([15.0], dtype=np.float32))

@@ -17,19 +17,13 @@
 from __future__ import print_function, division
 
 import pytest
-from cachetools.func import lru_cache
 
 import onnx
 
-import ngraph as ng
 import numpy as np
 from onnx.helper import make_node, make_graph, make_tensor_value_info, make_model
 from ngraph_onnx.onnx_importer.importer import import_onnx_model
-
-
-@lru_cache(maxsize=1)
-def get_transformer():
-    return ng.runtime(backend_name=pytest.config.getoption('backend', default='CPU'))
+from tests.utils import get_transformer
 
 
 def make_onnx_model_for_matmul_op(input_left, input_right):

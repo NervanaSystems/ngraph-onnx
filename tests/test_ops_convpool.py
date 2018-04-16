@@ -19,11 +19,10 @@ from __future__ import print_function, division
 import onnx
 import pytest
 
-import ngraph as ng
 import numpy as np
 from onnx.helper import make_node, make_graph, make_tensor_value_info, make_model
 from ngraph_onnx.onnx_importer.importer import import_onnx_model
-from tests.utils import convert_and_calculate
+from tests.utils import convert_and_calculate, get_transformer
 
 
 @pytest.fixture
@@ -58,10 +57,6 @@ def import_and_compute_conv(x, weights, transpose=False, **attributes):
     ng_model = import_onnx_model(onnx_model)[0]
     computation = get_transformer().computation(ng_model['output'], *ng_model['inputs'])
     return computation(x, weights)
-
-
-def get_transformer():
-    return ng.runtime(backend_name=pytest.config.getoption('backend', default='CPU'))
 
 
 def test_2d_conv():
