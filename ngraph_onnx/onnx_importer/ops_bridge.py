@@ -411,22 +411,26 @@ def Not(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngrap
 # Variadic Ops
 def Sum(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Calculate element-wise sum of the input tensors."""
-    return reduce(ng.add, ng_inputs, ng.constant(0, get_dtype(ng_inputs[0].get_element_type())))
+    initial_value_node = ng.constant(0, get_dtype(ng_inputs[0].get_element_type()))
+    return reduce(ng.add, ng_inputs, initial_value_node)
 
 
 def Min(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Calculate element-wise min of the input tensors."""
-    return reduce(ng.minimum, ng_inputs, ng.constant(np.inf, get_dtype(ng_inputs[0].get_element_type())))
+    initial_value_node = ng.constant(np.inf, get_dtype(ng_inputs[0].get_element_type()))
+    return reduce(ng.minimum, ng_inputs, initial_value_node)
 
 
 def Max(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Calculate element-wise max of the input tensors."""
-    return reduce(ng.maximum, ng_inputs, ng.constant(-np.inf, get_dtype(ng_inputs[0].get_element_type())))
+    initial_value_node = ng.constant(-np.inf, get_dtype(ng_inputs[0].get_element_type()))
+    return reduce(ng.maximum, ng_inputs, initial_value_node)
 
 
 def Mean(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Calculate element-wise mean of the input tensors."""
-    sum_node = reduce(ng.add, ng_inputs, ng.constant(0, get_dtype(ng_inputs[0].get_element_type())))
+    initial_value_node = ng.constant(0, get_dtype(ng_inputs[0].get_element_type()))
+    sum_node = reduce(ng.add, ng_inputs, initial_value_node)
     count_array = np.full(sum_node.shape, len(ng_inputs),
                           dtype=get_dtype(sum_node.get_element_type()))
     return sum_node / ng.constant(count_array)
