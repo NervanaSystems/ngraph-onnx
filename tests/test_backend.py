@@ -32,7 +32,6 @@ backend_test = onnx.backend.test.BackendTest(NgraphBackend, __name__)
 
 
 # Need refactoring to ngraph++
-backend_test.exclude('test_clip')
 backend_test.exclude('test_gather')
 backend_test.exclude('test_hardmax')
 backend_test.exclude('test_pow')
@@ -40,15 +39,13 @@ backend_test.exclude('test_shape')
 backend_test.exclude('test_size')
 backend_test.exclude('test_top_k')
 backend_test.exclude('test_Upsample_nearest_scale_2d')
-backend_test.exclude('test_operator_chunk')
-backend_test.exclude('test_operator_clip')
-backend_test.exclude('test_operator_flatten')
-backend_test.exclude('test_operator_maxpool')
-backend_test.exclude('test_operator_permute2')
-backend_test.exclude('test_operator_view')
+
 backend_test.exclude('test_depthtospace_cpu')
 backend_test.exclude('test_depthtospace_example_cpu')
 
+backend_test.exclude('test_split_equal_parts')
+backend_test.exclude('test_split_variable_parts')
+backend_test.exclude('test_upsample')
 
 backend_test.exclude('test_Embedding')
 backend_test.exclude('test_GLU')

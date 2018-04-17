@@ -217,6 +217,10 @@ def test_unsqueeze():
     (onnx.helper.make_node('Split', inputs=['x'], outputs=['y', 'z'], axis=0),
      [np.array([[0, 1, 2, 3]]), np.array([[4, 5, 6, 7]])]),
 
+    # Default, split along axis=0 into 2 equal parts
+    (onnx.helper.make_node('Split', inputs=['x'], outputs=['y', 'z']),
+     [np.array([[0, 1, 2, 3]]), np.array([[4, 5, 6, 7]])]),
+
     # Split into 2 equal parts along axis=1
     (onnx.helper.make_node('Split', inputs=['x'], outputs=['a', 'b'], axis=1),
      [np.array([[0, 1], [4, 5]]), np.array([[2, 3], [6, 7]])]),
@@ -229,7 +233,42 @@ def test_unsqueeze():
     (onnx.helper.make_node('Split', inputs=['x'], outputs=['a', 'b'], axis=1, split=(3, 1)),
      [np.array([[0, 1, 2], [4, 5, 6]]), np.array([[3], [7]])]),
 ])
-def test_split(node, expected_output):
+def test_split_2d(node, expected_output):
     data = np.arange(8).reshape(2, 4)
     ng_results = convert_and_calculate(node, [data], expected_output)
     assert all_arrays_equal(ng_results, expected_output)
+
+
+def test_split_1d():
+    # 1D
+    data = np.array([1., 2., 3., 4., 5., 6.]).astype(np.float32)
+
+    node = onnx.helper.make_node('Split', inputs=['input'], outputs=['z', 'w'], axis=0)
+    expected_outputs = [np.array([1., 2., 3.]).astype(np.float32),
+                        np.array([4., 5., 6.]).astype(np.float32)]
+    ng_results = convert_and_calculate(node, [data], expected_outputs)
+    assert all_arrays_equal(ng_results, expected_outputs)
+
+    node = onnx.helper.make_node('Split', inputs=['input'], outputs=['y', 'z', 'w'], axis=0,
+                                 split=[2, 3, 1])
+    expected_outputs = [np.array([1., 2.]).astype(np.float32),
+                        np.array([3., 4., 5.]).astype(np.float32),
+                        np.array([6.]).astype(np.float32)]
+    ng_results = convert_and_calculate(node, [data], expected_outputs)
+    assert all_arrays_equal(ng_results, expected_outputs)
+
+    # Default values
+    data = np.array([1., 2., 3., 4., 5., 6.]).astype(np.float32)
+
+    node = onnx.helper.make_node('Split', inputs=['input'], outputs=['y', 'z', 'w'])
+    expected_outputs = [np.array([1., 2.]).astype(np.float32),
+                        np.array([3., 4.]).astype(np.float32),
+                        np.array([5., 6.]).astype(np.float32)]
+    ng_results = convert_and_calculate(node, [data], expected_outputs)
+    assert all_arrays_equal(ng_results, expected_outputs)
+
+    node = onnx.helper.make_node('Split', inputs=['input'], outputs=['y', 'z'], split=[2, 4])
+    expected_outputs = [np.array([1., 2.]).astype(np.float32),
+                        np.array([3., 4., 5., 6.]).astype(np.float32)]
+    ng_results = convert_and_calculate(node, [data], expected_outputs)
+    assert all_arrays_equal(ng_results, expected_outputs)

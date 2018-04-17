@@ -73,6 +73,17 @@ def Ceil(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngra
     return ng.ceiling(ng_inputs[0])
 
 
+def Clip(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
+    """Limit input tensor values within specified interval."""
+    data = ng_inputs[0]
+    data_elem_dtype = get_dtype(data.get_element_type())
+    max_value = onnx_node.get_attribute_value('max', np.finfo(data_elem_dtype).max)
+    min_value = onnx_node.get_attribute_value('min', np.finfo(data_elem_dtype).min)
+
+    return ng.minimum(ng.maximum(data, ng.constant(min_value, data_elem_dtype)),
+                      ng.constant(max_value, data_elem_dtype))
+
+
 def Exp(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Calculate the exponential of the input tensor elementwise."""
     return ng.exp(ng_inputs[0])

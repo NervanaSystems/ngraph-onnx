@@ -44,7 +44,7 @@ class NgraphBackend(Backend):
         # type: (onnx.ModelProto, str, Dict) -> NgraphBackendRep
         """Prepare backend representation of ONNX model."""
         super(NgraphBackend, cls).prepare(onnx_model, device, **kwargs)
-        ng_model = import_onnx_model(onnx_model)[0]
+        ng_model = import_onnx_model(onnx_model)
         return NgraphBackendRep(ng_model, device)
 
     @classmethod
@@ -75,14 +75,14 @@ class NgraphBackend(Backend):
 class NgraphBackendRep(BackendRep):
     """A handle which Backend returns after preparing to execute a model repeatedly."""
 
-    def __init__(self, ng_model, device='CPU'):  # type: (Dict, str) -> None
+    def __init__(self, ng_model, device='CPU'):  # type: (List[Dict], str) -> None
         super(NgraphBackendRep, self).__init__()
         self.device = device
         self.model = ng_model
         self.runtime = ng.runtime()
-        self.computation = self.runtime.computation(ng_model['output'], *ng_model['inputs'])
+        self.computations = [self.runtime.computation(model['output'], *model['inputs']) for
+                             model in ng_model]
 
     def run(self, inputs, **kwargs):  # type: (List[np.ndarray], Dict) -> List[np.ndarray]
         """Execute computation on the backend representation of model."""
-        outputs = self.computation(*inputs)
-        return [outputs]
+        return [computation(*inputs) for computation in self.computations]

@@ -107,6 +107,38 @@ def test_ceil(input_data):
     assert np.array_equal(ng_results, [expected_output])
 
 
+@pytest.mark.parametrize('min_value, max_value', [
+    (np.finfo(np.float32).min, np.finfo(np.float32).max),
+    (0., np.finfo(np.float32).max),
+    (-0.5, 0.5),
+])
+def test_clip(min_value, max_value):
+    np.random.seed(133391)
+    data = (np.float32(-100.) +
+            np.random.randn(3, 4, 5).astype(np.float32) * np.float32(200.))
+
+    node = onnx.helper.make_node('Clip', inputs=['x'], outputs=['y'],
+                                 min=float(min_value), max=float(max_value))
+    expected = np.clip(data, min_value, max_value)
+    ng_results = convert_and_calculate(node, [data], [expected])
+    assert np.allclose(ng_results, [expected])
+
+
+def test_clip_default():
+    np.random.seed(133391)
+    data = -100. + np.random.randn(3, 4, 5).astype(np.float32) * 200.0
+
+    node = onnx.helper.make_node('Clip', inputs=['x'], outputs=['y'], min=0.)
+    expected = np.clip(data, np.float32(0.), np.finfo(np.float32).max)
+    ng_results = convert_and_calculate(node, [data], [expected])
+    assert np.allclose(ng_results, [expected])
+
+    node = onnx.helper.make_node('Clip', inputs=['x'], outputs=['y'], max=0.)
+    expected = np.clip(data, np.finfo(np.float32).min, np.float32(0.))
+    ng_results = convert_and_calculate(node, [data], [expected])
+    assert np.allclose(ng_results, [expected])
+
+
 @pytest.mark.parametrize('input_data', [
     np.array([-4.2, 1, 5.99, -10.01]),
     np.array([[-4.5, 0.99, 5.01, -10.00], [-4.5, 0.5, 5.1, 10.01]]),
