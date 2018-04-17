@@ -43,7 +43,7 @@ def reorder_axes(node, axes_order):  # type: (NgraphNode, List[int]) -> NgraphNo
             except IndexError as e:
                 raise ng.exceptions.UserInputError('Node (%s): provided axes indices are out '
                                                    'of range.', node.name)
-    return ng.reshape(node, axes_order, out_shape)
+    return ng.reshape(node, out_shape, axes_order)
 
 
 def transpose(node):  # type: (NgraphNode) -> NgraphNode
@@ -104,13 +104,11 @@ def flatten_innermost_empty_dims(node):  # type: (NgraphNode) -> NgraphNode
     if len(shape) < 2:
         return node
 
-    input_order = list(range(len(node.shape)))
-
     if shape[-1] == 1:
         output_shape = list(shape)
         while len(output_shape) > 1 and output_shape[-1] == 1:
             output_shape.pop()
-        return ng.reshape(node, input_order, output_shape)
+        return ng.reshape(node, output_shape)
     else:
         return node
 
@@ -171,8 +169,6 @@ def flatten(node, axis):  # type: (NgraphNode, int) -> NgraphNode
             first_dim = last_dim
 
     last_dim = int(last_dim / first_dim)
-    # the order in which we iterate over input tensor dimensions while reshaping it.
-    input_order = list(range(len(shape)))
     output_shape = [first_dim, last_dim]
 
-    return ng.reshape(node, input_order, output_shape)
+    return ng.reshape(node, output_shape)
