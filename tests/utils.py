@@ -25,8 +25,8 @@ import ngraph as ng
 from ngraph_onnx.onnx_importer.importer import import_onnx_model
 
 
-def get_transformer():
-    return ng.runtime(manager_name=pytest.config.getoption('backend', default='CPU'))
+def get_runtime():
+    return ng.runtime(backend_name=pytest.config.getoption('backend', default='CPU'))
 
 
 def convert_and_calculate(onnx_node, data_inputs, data_outputs):
@@ -39,7 +39,7 @@ def convert_and_calculate(onnx_node, data_inputs, data_outputs):
     :param data_outputs: list of numpy ndarrays with expected output data
     :return: list of numpy ndarrays with computed output
     """
-    transformer = get_transformer()
+    transformer = get_runtime()
     input_tensors = [make_tensor_value_info(name, onnx.TensorProto.FLOAT, value.shape)
                      for name, value in zip(onnx_node.input, data_inputs)]
     output_tensors = [make_tensor_value_info(name, onnx.TensorProto.FLOAT, value.shape)

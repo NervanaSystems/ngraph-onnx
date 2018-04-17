@@ -17,19 +17,13 @@
 from __future__ import print_function, division
 
 import pytest
-from cachetools.func import lru_cache
 
 import onnx
 
-import ngraph as ng
 import numpy as np
 from onnx.helper import make_node, make_graph, make_tensor_value_info, make_model
 from ngraph_onnx.onnx_importer.importer import import_onnx_model
-
-
-@lru_cache(maxsize=1)
-def get_transformer():
-    return ng.runtime(manager_name=pytest.config.getoption('backend', default='CPU'))
+from tests.utils import get_runtime
 
 
 def make_onnx_model_for_matmul_op(input_left, input_right):
@@ -47,7 +41,7 @@ def import_and_compute_matmul(input_left, input_right):
     input_data_left = np.array(input_left)
     input_data_right = np.array(input_right)
     onnx_model = make_onnx_model_for_matmul_op(input_data_left, input_data_right)
-    transformer = get_transformer()
+    transformer = get_runtime()
     ng_model = import_onnx_model(onnx_model)[0]
     computation = transformer.computation(ng_model['output'], *ng_model['inputs'])
     return computation(input_data_left, input_data_right)
@@ -95,7 +89,7 @@ def import_and_compute_gemm(input_a, input_b, input_c, **kwargs):
         del kwargs['trans_b']
 
     onnx_model = make_onnx_model_for_gemm_op(input_a, input_b, input_c, **kwargs)
-    transformer = get_transformer()
+    transformer = get_runtime()
     ng_model = import_onnx_model(onnx_model)[0]
     computation = transformer.computation(ng_model['output'], *ng_model['inputs'])
     return computation(input_a, input_b, input_c)

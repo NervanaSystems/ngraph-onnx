@@ -120,7 +120,7 @@ After importing the ONNX model, you can use it to generate and call a computatio
 # Using an ngraph runtime (CPU backend) create a callable computation
 >>> import ngraph as ng
 >>> ng_model = ng_models[0]
->>> runtime = ng.runtime(manager_name='CPU')
+>>> runtime = ng.runtime(backend_name='CPU')
 >>> resnet = runtime.computation(ng_model['output'], *ng_model['inputs'])
 
 # Load an image (or create a mock as in this example)
