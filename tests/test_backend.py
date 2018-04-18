@@ -35,8 +35,6 @@ backend_test = onnx.backend.test.BackendTest(NgraphBackend, __name__)
 backend_test.exclude('test_gather')
 backend_test.exclude('test_hardmax')
 backend_test.exclude('test_pow')
-backend_test.exclude('test_shape')
-backend_test.exclude('test_size')
 backend_test.exclude('test_top_k')
 backend_test.exclude('test_Upsample_nearest_scale_2d')
 
@@ -48,7 +46,6 @@ backend_test.exclude('test_split_variable_parts')
 backend_test.exclude('test_upsample')
 
 backend_test.exclude('test_Embedding')
-backend_test.exclude('test_GLU')
 backend_test.exclude('test_Linear')
 backend_test.exclude('test_MaxPool1d')
 backend_test.exclude('test_PixelShuffle')
@@ -66,13 +63,6 @@ backend_test.exclude('test_edge_pad_cpu')
 backend_test.exclude('test_reflect_pad_cpu')
 backend_test.exclude('test_ReflectionPad2d_cpu')
 backend_test.exclude('test_ReplicationPad2d_cpu')
-
-# Reshape tests
-backend_test.exclude('test_reshape_extended_dims_cpu')
-backend_test.exclude('test_reshape_negative_dim_cpu')
-backend_test.exclude('test_reshape_one_dim_cpu')
-backend_test.exclude('test_reshape_reduced_dims_cpu')
-backend_test.exclude('test_reshape_reordered_dims_cpu')
 
 # Casting tests
 backend_test.exclude('test_cast_FLOAT_to_FLOAT16_cpu')
