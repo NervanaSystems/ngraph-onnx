@@ -52,6 +52,6 @@ def make_reduction_op(ng_op_type, onnx_node, ng_input):
         # flatten reduced axes
         for idx in reduction_axes:
             output_shape[idx] = 1
-        op_node = ng.reshape(op_node, list(range(len(op_node.shape))), output_shape)
+        op_node = ng.reshape(op_node, output_shape)
 
     return op_node

@@ -152,7 +152,7 @@ def PRelu(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngr
         return ng.maximum(slope * x, x)
     elif slope.shape[0] == 1:
         slope = ng.broadcast(slope, [x.shape[0], 1])
-        slope = ng.reshape(slope, [0, 1], [x.shape[0]])
+        slope = ng.reshape(slope, [x.shape[0]])
         return ng.maximum(ng.broadcast(slope, x.shape, 0) * x, x)
     else:
         return ng.maximum(ng.broadcast(slope, x.shape, 1) * x, x)
@@ -636,10 +636,8 @@ def Squeeze(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> N
             raise ValueError('Squeeze node (%s): can only remove single-dimensional axes: '
                              'shape[%d] = %d', onnx_node.name, axis, data.shape[axis])
 
-    input_order = list(range(len(data.shape)))
     out_shape = [data.shape[i] for i in range(len(data.shape)) if i not in axes_to_squeeze]
-
-    return ng.reshape(data, input_order, out_shape)
+    return ng.reshape(data, out_shape)
 
 
 def Unsqueeze(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
@@ -654,7 +652,6 @@ def Unsqueeze(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) ->
     if axes is None:
         raise ValueError('Unsqueeze node (%s): the "axes" attribute is mandatory.', onnx_node.name)
 
-    input_order = list(range(len(data.shape)))
     out_shape = list(data.shape)
     axes.sort()
     for axis in axes:
@@ -666,7 +663,7 @@ def Unsqueeze(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) ->
                              onnx_node.name, axis)
         out_shape.insert(axis, 1)
 
-    return ng.reshape(data, input_order, out_shape)
+    return ng.reshape(data, out_shape)
 
 
 def Reshape(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
@@ -682,10 +679,8 @@ def Reshape(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> N
     if output_shape == data.shape:
         return data
 
-    input_order = list(range(len(data.shape)))
     output_shape = infer_dimensions(onnx_node.name, data.shape, output_shape)
-
-    return ng.reshape(data, input_order, output_shape)
+    return ng.reshape(data, output_shape)
 
 
 def Split(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Tuple[NgraphNode, ...]
