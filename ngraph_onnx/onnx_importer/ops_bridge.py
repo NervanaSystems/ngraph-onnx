@@ -462,7 +462,11 @@ def MatMul(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ng
 
 
 def Gemm(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
-    """Calculate general matrix multiplication Y = alpha * (A @ B) + beta * C."""
+    """Calculate general matrix multiplication Y = alpha * (A @ B) + beta * C.
+
+    Support is currently limited to 2D matrices only. Higher dimensional tensors will
+    be flattened to 2D before multiplication.
+    """
     input_a, input_b, input_c = ng_inputs
     alpha = onnx_node.get_attribute_value('alpha', 1)  # Scalar multiplier for A @ B
     beta = onnx_node.get_attribute_value('beta', 1)  # Scalar multiplier for input tensor C
@@ -481,8 +485,8 @@ def Gemm(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngra
     #
     # Firstly, we check whether input data have incompatible shapes and then try flatten input data.
     if not has_matmul_compatible_shapes(input_a.shape, input_b.shape):
-        input_a = flatten_innermost_empty_dims(input_a)
-        input_b = flatten_innermost_empty_dims(input_b)
+        input_a = flatten(input_a, 1)  # Flatten ND tensors to 2D matrices
+        input_b = flatten(input_b, -1)
         if not has_matmul_compatible_shapes(input_a.shape, input_b.shape):
             raise ValueError('Gemm node (%s): input "A" and "B" data shapes are incompatible to '
                              'multiply with each other.', onnx_node.name)
@@ -494,6 +498,14 @@ def Gemm(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngra
                          ' was not requested!', onnx_node.name)
 
     return alpha * a_dot_b + beta * input_c
+
+
+def Dropout(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
+    """Dropout [inference only].
+
+    For inference Dropout is a simple data pass through.
+    """
+    return ng.reshape(ng_inputs[0], ng_inputs[0].shape)
 
 
 # Convolution ops

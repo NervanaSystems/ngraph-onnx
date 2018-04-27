@@ -163,6 +163,8 @@ def flatten(node, axis):  # type: (NgraphNode, int) -> NgraphNode
     shape = list(node.shape)
     first_dim = 1
     last_dim = 1
+    if axis < 0:
+        axis = len(shape) + axis
     for index in range(len(shape)):
         last_dim = last_dim * shape[index]
         if index < axis:
