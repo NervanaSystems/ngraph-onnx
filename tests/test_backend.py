@@ -81,6 +81,11 @@ backend_test.exclude('test_Conv2d_groups_cpu')
 backend_test.exclude('test_Conv2d_groups_thnn_cpu')
 backend_test.exclude('test_Conv3d_groups_cpu')
 
+# BatchNorm with shapes to other than 4
+backend_test.exclude('test_BatchNorm1d_3d_input')
+backend_test.exclude('test_BatchNorm3d')
+backend_test.exclude('test_BatchNorm3d_momentum')
+
 # big models tests
 # Passing
 backend_test.exclude('test_resnet50')
