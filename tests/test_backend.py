@@ -84,6 +84,8 @@ backend_test.exclude('test_Conv3d_groups_cpu')
 # big models tests
 # Passing
 backend_test.exclude('test_resnet50')
+backend_test.exclude('test_vgg19')
+backend_test.exclude('test_squeezenet')
 
 # Failing
 
@@ -92,17 +94,15 @@ backend_test.exclude('test_densenet121')
 backend_test.exclude('test_inception_v2')
 backend_test.exclude('test_shufflenet')
 
-# NotImplementedError: 'Dropout'
-backend_test.exclude('test_squeezenet')
-
-# NotImplementedError: 'LRN'
+# RuntimeError: Convolution data batch and filter input channel counts do not match.
+# Reason: Groups in convolution are unsupported.
 backend_test.exclude('test_bvlc_alexnet')
-backend_test.exclude('test_vgg16')
 
 # Validation Error: Input size 2 not in range [min=1, max=1].
 backend_test.exclude('test_inception_v1')
 
-# ValueError: Gemm node: input "A" and "B" data shapes are incompatible
-backend_test.exclude('test_vgg19')
+# NotImplementedError: 'LRN'
+backend_test.exclude('test_vgg16')
+
 
 globals().update(backend_test.enable_report().test_cases)
