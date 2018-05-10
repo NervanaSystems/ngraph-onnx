@@ -126,7 +126,7 @@ def Tanh(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngra
 
 def Relu(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Apply the Relu function, f(x) = max(0, x) to the input tensor elementwise."""
-    return ng.maximum(ng_inputs[0], 0)
+    return ng.relu(ng_inputs[0])
 
 
 def LeakyRelu(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
