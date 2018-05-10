@@ -42,7 +42,7 @@ create_base_img()
 
 
 create_test_img()
-}
+{
     echo -----------------------Build Test image-----------------------------------
     BASE_IMAGE=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep -m 1 base_ngraph-onnx)
     docker build --build-arg BASE_IMAGE=$BASE_IMAGE -t test_ngraph-onnx -f .ci/jenkins/test_ngraph-onnx.dockerfile .
