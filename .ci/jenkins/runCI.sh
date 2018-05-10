@@ -23,7 +23,14 @@ cd $BASEDIR && cd ../..
 
 print_help()
 {
-    echo No help text written yet
+    echo Available commands:
+    echo --create-base-img  Creates Base Image unless there is one already
+    echo --create-test-img  Creates Test Image unless there is one already
+    echo --run-test-img     Runs Test Image which automatically executes tox
+    echo --remove-test-img  Removes Test Image
+    echo --remove-base-img  Removes Base Image
+    echo --help             Prints this help
+
 }
 
 
@@ -57,8 +64,8 @@ create_test_img()
 run_test_img()
 {
     echo ------------------------Run test image------------------------------------
-    if docker ps -a | grep ngraph-onnx_jenkins; then
-        docker rm ngraph-onnx_jenkins --force > /dev/null
+    if docker ps -a | grep ngraph-onnx_jenkins > /dev/null; then
+        docker rm ngraph-onnx_jenkins --force
     fi
     docker run --name ngraph-onnx_jenkins test_ngraph-onnx
     return $?
@@ -108,10 +115,10 @@ else
     --run-test-img)
         run_test_img
         ;;
-    --remove-test-image)
+    --remove-test-img)
         remove_test_image
         ;;
-    --remove-base-image)
+    --remove-base-img)
         remove_base_image
         ;;
     --help)
