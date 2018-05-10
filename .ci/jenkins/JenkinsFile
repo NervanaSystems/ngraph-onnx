@@ -7,9 +7,19 @@ node ('ci'){
         sh('git reset --hard $ghprbActualCommit')
     }
 
-    stage 'Run sh Script'
     dir ("$WORKSPACE/$BUILD_NUMBER/ngraph-onnx") {
-        sh('.ci/jenkins/runCI.sh')
+
+    stage 'Create Base Image'
+        sh('.ci/jenkins/runCI.sh --create-base-img')
+
+    stage 'Create Test Image'
+        sh('.ci/jenkins/runCI.sh --create-test-img')
+
+    stage 'Run Tests'
+        sh('.ci/jenkins/runCI.sh --run-test-img')
+
+    stage 'Remove Test image'
+        sh('.ci/jenkins/runCI.sh --remove-test-img')
     }
 
     stage 'Cleanup'
