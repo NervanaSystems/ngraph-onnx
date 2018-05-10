@@ -57,8 +57,8 @@ create_test_img()
 run_test_img()
 {
     echo ------------------------Run test image------------------------------------
-    if docker ps | grep ngraph-onnx_jenkins; then
-        docker rm ngraph-onnx_jenkins 
+    if docker ps -a | grep ngraph-onnx_jenkins; then
+        docker rm ngraph-onnx_jenkins --force > /dev/null
     fi
     docker run --name ngraph-onnx_jenkins test_ngraph-onnx
     return $?
@@ -84,20 +84,41 @@ if [ "$#" -eq 0 ]; then
         echo Testing returned success
     else
         echo Something went wrong
+    fi
 
-    echo Do you want me to remove the test image?
+    echo Do you want me to remove the test image? y/n
     read decission
-    if [ $decission -eq "y" ] || [ $decission -eq "yes" ]; then
+    if [ $decission = "y" ] || [ $decission = "yes" ]; then
         remove_test_image
-        echo Would you like to remove base image as well?
+        echo Would you like to remove base image as well? y/n
         read decission
-        if [ $decission -eq "y" ] || [ $decission -eq "yes" ]; then
+        if [ $decission = "y" ] || [ $decission = "yes" ]; then
             remove_base_image
         fi
     fi
-fi
-exit $?
 
 else
-    echo Non automatic execution needs coding
+    case $1 in
+    --create-base-img)
+        create_base_img
+        ;;
+    --create-test-img)
+        create_test_img
+        ;;
+    --run-test-img)
+        run_test_img
+        ;;
+    --remove-test-image)
+        remove_test_image
+        ;;
+    --remove-base-image)
+        remove_base_image
+        ;;
+    --help)
+        print_help
+        ;;
+    *)
+        print_help
+        ;;
+    esac
 fi
