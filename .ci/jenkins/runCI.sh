@@ -23,7 +23,7 @@ cd $BASEDIR && cd ../..
 
 print_help()
 {
-    echo Available commands:
+    echo Available commands (please use one at a time):
     echo --create-base-img  Creates Base Image unless there is one already
     echo --create-test-img  Creates Test Image unless there is one already
     echo --run-test-img     Runs Test Image which automatically executes tox
