@@ -57,6 +57,9 @@ create_test_img()
 run_test_img()
 {
     echo ------------------------Run test image------------------------------------
+    if docker ps | grep ngraph-onnx_jenkins; then
+        docker rm ngraph-onnx_jenkins 
+    fi
     docker run --name ngraph-onnx_jenkins test_ngraph-onnx
     return $?
 }
@@ -78,19 +81,23 @@ remove_base_image()
 #Main
 if [ "$#" -eq 0 ]; then
     if create_base_img && create_test_img && run_test_img; then
-        echo Testing returned success, do you want me to remove the test image?
+        echo Testing returned success
+    else
+        echo Something went wrong
+
+    echo Do you want me to remove the test image?
+    read decission
+    if [ $decission -eq "y" ] || [ $decission -eq "yes" ]; then
+        remove_test_image
+        echo Would you like to remove base image as well?
         read decission
         if [ $decission -eq "y" ] || [ $decission -eq "yes" ]; then
-            remove_test_image
-            echo Would you like to remove base image as well?
-            read decission
-            if [ $decission -eq "y" ] || [ $decission -eq "yes" ]; then
-                remove_base_image
-            fi
+            remove_base_image
         fi
     fi
-    exit $?
+fi
+exit $?
 
 else
-    echo No automatic execution needs coding
+    echo Non automatic execution needs coding
 fi
