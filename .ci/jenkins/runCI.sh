@@ -71,8 +71,19 @@ remove_base_image()
 }
 
 #Main
-if [ "$#" -eq 0]; then
-    create_base_img && create_test_img && run_test_img
+if [ "$#" -eq 0 ]; then
+    if create_base_img && create_test_img && run_test_img; then
+        echo Testing returned success, do you want me to remove the test image?
+        read decission
+        if [ $decission -eq "y" ] || [ $decission -eq "yes" ]; then
+            remove_test_image()
+            echo Would you like to remove base image as well?
+            read decission
+            if [ $decission -eq "y" ] || [ $decission -eq "yes" ]; then
+                remove_base_image()
+            fi
+        fi
+    fi
     exit $?
 
 else
