@@ -16,29 +16,65 @@
 # limitations under the License.
 # ******************************************************************************
 
+# This is to set workdir to ngraph-onnx no matter where this sh is started from
 SCRIPT=$(readlink -f "$0")
 BASEDIR=$(dirname "$SCRIPT")
-
-# This is to set workdir to ngraph-onnx no matter where this sh is started from
 cd $BASEDIR && cd ../..
 
-if docker images --format "{{.Repository}}:{{.Tag}}" | grep -m 1 base_ngraph-onnx; then
-   echo Base image found so proceeding to build ngraph and onnx
+print_help()
+{
+    echo No help text written yet
+}
+
+
+create_base_img()
+{
+    if docker images --format "{{.Repository}}:{{.Tag}}" | grep -m 1 base_ngraph-onnx; then
+        echo Base image found so no need to build it again
+        return $?
+    else
+        echo No base image found so need to create one
+        echo -----------------------Build Base image------------------------------------
+        docker build --build-arg http_proxy=$http_proxy --build-arg https_proxy=$https_proxy -t base_ngraph-onnx -f .ci/jenkins/base_ngraph-onnx.dockerfile .
+        return $?
+    fi
+}
+
+
+create_test_img()
+}
+    echo -----------------------Build Test image-----------------------------------
+    BASE_IMAGE=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep -m 1 base_ngraph-onnx)
+    docker build --build-arg BASE_IMAGE=$BASE_IMAGE -t test_ngraph-onnx -f .ci/jenkins/test_ngraph-onnx.dockerfile .
+    return $?
+}
+
+run_test_img()
+{
+    echo ------------------------Run test image------------------------------------
+    docker run --name ngraph-onnx_jenkins test_ngraph-onnx
+    return $?
+}
+
+remove_test_image()
+{
+    echo ---------------------Remove test image------------------------------------
+    docker rm ngraph-onnx_jenkins --force && docker rmi test_ngraph-onnx --force
+    return $?
+}
+
+remove_base_image()
+{
+    echo ---------------------Remove base image------------------------------------
+    docker rmi base_ngraph-onnx --force
+    return $?
+}
+
+#Main
+if [ "$#" -eq 0]; then
+    create_base_img && create_test_img && run_test_img
+    exit $?
+
 else
-   echo No base image found so need to create one
-   docker build --build-arg http_proxy=$http_proxy --build-arg https_proxy=$https_proxy -t base_ngraph-onnx -f .ci/jenkins/base_ngraph-onnx.dockerfile .
+    echo No automatic execution needs coding
 fi
-
-echo -----------------------Build Test image-----------------------------------
-docker build --build-arg BASE_IMAGE=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep -m 1 base_ngraph-onnx) -t test_ngraph-onnx -f .ci/jenkins/test_ngraph-onnx.dockerfile .
-
-echo ------------------------Run test image------------------------------------
-docker run --name ngraph-onnx_jenkins test_ngraph-onnx
-
-TEST_RES=$?
-
-echo ------------------------Cleanup Docker------------------------------------
-docker rm ngraph-onnx_jenkins --force
-docker rmi test_ngraph-onnx --force
-
-exit $TEST_RES

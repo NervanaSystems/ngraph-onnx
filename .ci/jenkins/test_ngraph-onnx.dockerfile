@@ -35,4 +35,4 @@ RUN python3 setup.py bdist_wheel
 COPY . /root/ngraph-onnx
 WORKDIR /root/ngraph-onnx
 RUN pip install tox
-CMD cd /root/ngraph/python/dist/ && TOX_INSTALL_NGRAPH_FROM=`find /root/ngraph/python/dist/ -name 'ngraph*.whl'` tox
+CMD TOX_INSTALL_NGRAPH_FROM=`find /root/ngraph/python/dist/ -name 'ngraph*.whl'` tox
