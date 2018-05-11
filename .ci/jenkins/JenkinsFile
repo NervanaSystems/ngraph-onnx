@@ -1,0 +1,28 @@
+node ('ci'){
+    stage 'Clone Ngraph-Onnx repo'
+    dir ("$WORKSPACE/$BUILD_NUMBER") {
+        sh('git clone https://github.com/NervanaSystems/ngraph-onnx.git')
+    }
+     dir ("$WORKSPACE/$BUILD_NUMBER/ngraph-onnx") {
+        sh('git reset --hard $ghprbActualCommit')
+    }
+
+    dir ("$WORKSPACE/$BUILD_NUMBER/ngraph-onnx") {
+
+    stage 'Create Base Image'
+        sh('.ci/jenkins/runCI.sh --create-base-img')
+
+    stage 'Create Test Image'
+        sh('.ci/jenkins/runCI.sh --create-test-img')
+
+    stage 'Run Tests'
+        sh('.ci/jenkins/runCI.sh --run-test-img')
+
+    stage 'Remove Test image'
+        sh('.ci/jenkins/runCI.sh --remove-test-img')
+    }
+
+    stage 'Cleanup'
+    sh('rm -rf "${WORKSPACE}/${BUILD_NUMBER}"')
+    sh('rm -rf "${WORKSPACE}/${BUILD_NUMBER}@tmp"')
+}
