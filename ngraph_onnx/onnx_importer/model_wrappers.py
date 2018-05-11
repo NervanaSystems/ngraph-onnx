@@ -299,7 +299,10 @@ class NodeWrapper(WrapperBaseClass):
         output_node_names = self._proto.output
         output_nodes = make_ng_nodes(self)
         for output_name, node in zip(output_node_names, output_nodes):
-            node.name = output_name
+            # Node name equals to unique name only when it just has been created above.
+            # Otherwise it names are different this means that node is already present in graph.
+            if node.name == node.get_unique_name():
+                node.name = output_name
             output_nodes_dict.update({output_name: node})
             self._graph.ng_node_cache_set(output_name, node)
 
