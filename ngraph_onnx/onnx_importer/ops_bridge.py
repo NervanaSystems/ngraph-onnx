@@ -691,7 +691,7 @@ def Reshape(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> N
     if output_shape == data.shape:
         return data
 
-    output_shape = infer_dimensions(onnx_node.name, list(data.shape), list(output_shape))
+    output_shape = infer_dimensions(onnx_node.name, data.shape, output_shape)
     return ng.reshape(data, output_shape)
 
 
