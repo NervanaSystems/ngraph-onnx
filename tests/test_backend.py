@@ -20,15 +20,18 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import onnx.backend.test
+import pytest
 
 from ngraph_onnx.onnx_importer.backend import NgraphBackend
+
+pytest_device = pytest.config.getoption('backend', default='CPU')
 
 # This is a pytest magic variable to load extra plugins
 # Uncomment the line below to enable the ONNX compatibility report
 # pytest_plugins = 'onnx.backend.test.report',
 
 # import all test cases at global scope to make them visible to python.unittest
-backend_test = onnx.backend.test.BackendTest(NgraphBackend, __name__)
+backend_test = onnx.backend.test.BackendTest(NgraphBackend, __name__, (pytest_device, ))
 
 
 # Need refactoring to ngraph++

@@ -39,6 +39,13 @@ from ngraph_onnx.onnx_importer.importer import import_onnx_model
 class NgraphBackend(Backend):
     """Takes an ONNX model with inputs, perform a computation, and then return the output."""
 
+    _supported_devices = [
+        'CPU',
+        'GPU',
+        'INTERPRETER',
+        'ARGON',
+    ]
+
     @classmethod
     def prepare(cls, onnx_model, device='CPU', **kwargs):
         # type: (onnx.ModelProto, str, Dict) -> NgraphBackendRep
@@ -50,7 +57,7 @@ class NgraphBackend(Backend):
     @classmethod
     def supports_device(cls, device):  # type: (str) -> bool
         """Check whether the backend supports a particular device."""
-        return device == 'CPU'
+        return device in cls._supported_devices
 
     @classmethod
     def run_model(cls, onnx_model, inputs, device='CPU', **kwargs):
@@ -69,7 +76,7 @@ class NgraphBackend(Backend):
 
         graph = make_graph([onnx_node], 'compute_graph', input_tensors, output_tensors)
         model = make_model(graph, producer_name='NgraphBackend')
-        return cls.prepare(model).run(inputs)
+        return cls.prepare(model, device).run(inputs)
 
 
 class NgraphBackendRep(BackendRep):
@@ -79,7 +86,7 @@ class NgraphBackendRep(BackendRep):
         super(NgraphBackendRep, self).__init__()
         self.device = device
         self.model = ng_model
-        self.runtime = ng.runtime()
+        self.runtime = ng.runtime(backend_name=device)
         self.computations = [self.runtime.computation(model['output'], *model['inputs']) for
                              model in ng_model]
 
