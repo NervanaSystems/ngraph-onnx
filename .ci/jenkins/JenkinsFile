@@ -1,4 +1,4 @@
-node ('ci'){
+node ('onnx_ci'){
     stage 'Clone Ngraph-Onnx repo'
     dir ("$WORKSPACE/$BUILD_NUMBER") {
         sh('git clone https://github.com/NervanaSystems/ngraph-onnx.git')
