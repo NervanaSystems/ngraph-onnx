@@ -505,7 +505,7 @@ def Dropout(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> N
 
     For inference Dropout is a simple data pass through.
     """
-    return ng.reshape(ng_inputs[0], ng_inputs[0].shape)
+    return ng_inputs[0]
 
 
 # Convolution ops
