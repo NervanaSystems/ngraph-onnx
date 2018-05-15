@@ -486,7 +486,7 @@ def Gemm(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngra
     # Firstly, we check whether input data have incompatible shapes and then try flatten input data.
     if not has_matmul_compatible_shapes(input_a.shape, input_b.shape):
         input_a = flatten(input_a, 1)  # Flatten ND tensors to 2D matrices
-        input_b = flatten(input_b, -1)
+        input_b = flatten(input_b, 1)
         if not has_matmul_compatible_shapes(input_a.shape, input_b.shape):
             raise ValueError('Gemm node (%s): input "A" and "B" data shapes are incompatible to '
                              'multiply with each other.', onnx_node.name)

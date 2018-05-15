@@ -17,6 +17,9 @@
 ARG BASE_IMAGE=base_ngraph-onnx
 FROM $BASE_IMAGE
 
+# Copy ngraph-onnx repo to image
+COPY . /root/ngraph-onnx
+
 # Install nGraph in /~/ngraph
 WORKDIR /root
 RUN git clone https://github.com/NervanaSystems/ngraph.git && mkdir /root/ngraph/build
@@ -32,7 +35,6 @@ ENV PYBIND_HEADERS_PATH=/root/ngraph/python/pybind11 NGRAPH_CPP_BUILD_PATH=/root
 RUN python3 setup.py bdist_wheel
 
 # Test nGraph-ONNX
-COPY . /root/ngraph-onnx
 WORKDIR /root/ngraph-onnx
 RUN pip install tox
 CMD TOX_INSTALL_NGRAPH_FROM=`find /root/ngraph/python/dist/ -name 'ngraph*.whl'` tox
