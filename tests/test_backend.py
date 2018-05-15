@@ -90,14 +90,11 @@ backend_test.exclude('test_densenet121')
 backend_test.exclude('test_inception_v2')
 backend_test.exclude('test_shufflenet')
 
-# RuntimeError: Convolution data batch and filter input channel counts do not match.
-# Reason: Groups in convolution are unsupported.
-backend_test.exclude('test_bvlc_alexnet')
-
 # Validation Error: Input size 2 not in range [min=1, max=1].
 backend_test.exclude('test_inception_v1')
 
 # NotImplementedError: 'LRN'
+backend_test.exclude('test_bvlc_alexnet')
 backend_test.exclude('test_vgg16')
 
 
