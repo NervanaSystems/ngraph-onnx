@@ -24,14 +24,21 @@ import pytest
 
 from ngraph_onnx.onnx_importer.backend import NgraphBackend
 
-pytest_device = pytest.config.getoption('backend', default='CPU')
+command_line_device = pytest.config.getoption('backend', default='CPU')
 
 # This is a pytest magic variable to load extra plugins
 # Uncomment the line below to enable the ONNX compatibility report
 # pytest_plugins = 'onnx.backend.test.report',
 
+obligatory_test_devices = [
+    'CPU',
+    'GPU',
+]
+if command_line_device not in obligatory_test_devices:
+    obligatory_test_devices.append(command_line_device)
+
 # import all test cases at global scope to make them visible to python.unittest
-backend_test = onnx.backend.test.BackendTest(NgraphBackend, __name__, (pytest_device, ))
+backend_test = onnx.backend.test.BackendTest(NgraphBackend, __name__, obligatory_test_devices)
 
 
 # Need refactoring to ngraph++
