@@ -157,8 +157,9 @@ def make_convolution_op(onnx_node, ng_inputs):
     strides = get_strides(onnx_node)
     dilation = get_dilations(onnx_node)
     padding_below, padding_above = get_pads(onnx_node)
-    # reference code: https://github.com/NervanaSystems/ngraph-mxnet/blob/fdd692/src/ngraph/ngraph_emitter.cc#L822-L856
     if groups != 1:
+        # Split one convolution op to N ops where N is the number of groups and concat results after computation.
+        # reference: https://github.com/NervanaSystems/ngraph-mxnet/blob/fdd692/src/ngraph/ngraph_emitter.cc#L822-L856
         data_shape = list(data.shape)
         weights_shape = list(weights.shape)
         convolutions_nodes = []
