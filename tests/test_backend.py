@@ -72,15 +72,6 @@ backend_test.exclude('test_cast_FLOAT16_to_DOUBLE_cpu')
 backend_test.exclude('test_cast_DOUBLE_to_FLOAT_cpu')
 backend_test.exclude('test_cast_DOUBLE_to_FLOAT16_cpu')
 
-# Convolution tests
-backend_test.exclude('test_Conv2d_depthwise_cpu')
-backend_test.exclude('test_Conv2d_depthwise_padded_cpu')
-backend_test.exclude('test_Conv2d_depthwise_strided_cpu')
-backend_test.exclude('test_Conv2d_depthwise_with_multiplier_cpu')
-backend_test.exclude('test_Conv2d_groups_cpu')
-backend_test.exclude('test_Conv2d_groups_thnn_cpu')
-backend_test.exclude('test_Conv3d_groups_cpu')
-
 # BatchNorm with shapes to other than 4
 backend_test.exclude('test_BatchNorm1d_3d_input')
 backend_test.exclude('test_BatchNorm3d')

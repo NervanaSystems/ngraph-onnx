@@ -20,6 +20,7 @@ from __future__ import print_function
 import logging
 
 from math import floor, ceil
+from copy import copy
 from typing import Tuple, List
 
 from ngraph_onnx import TYPE_CHECKING
@@ -143,24 +144,44 @@ def make_convolution_op(onnx_node, ng_inputs):
     :return: ngraph Op for convolution or deconvolution
     """
     if len(ng_inputs) == 3:
-        x, weights, bias = ng_inputs
+        data, weights, bias = ng_inputs
     elif len(ng_inputs) == 2:
-        x, weights = ng_inputs
-        bias = ng.constant(0, dtype=get_dtype(x.get_element_type()))
+        data, weights = ng_inputs
+        bias = ng.constant(0, dtype=get_dtype(data.get_element_type()))
     else:
         raise ValueError('Conv node (%s): unexpected number of input values: %d.',
                          onnx_node.name, len(ng_inputs))
 
     groups = onnx_node.get_attribute_value('group', 1)
-    if groups != 1:
-        log.warning('Conv node (%s): `group` attribute value %d is not supported.',
-                    onnx_node.name, groups)
 
     strides = get_strides(onnx_node)
     dilation = get_dilations(onnx_node)
     padding_below, padding_above = get_pads(onnx_node)
+    if groups != 1:
+        data_shape = list(data.shape)
+        weights_shape = list(weights.shape)
+        convolutions = []
+        for g in range(groups):
+            data_lower = len(data_shape) * [0]
+            data_upper = copy(data_shape)
 
-    conv = ng.convolution(x, weights, strides, dilation, padding_below, padding_above)
+            data_lower[1] = g * int((data_shape[1] / groups))
+            data_upper[1] = (g + 1) * int((data_shape[1] / groups))
+
+            data_slice = ng.slice(data, data_lower, data_upper)
+
+            weights_lower = len(weights_shape) * [0]
+            weights_upper = copy(weights_shape)
+
+            weights_lower[0] = g * int((weights_shape[0] / groups))
+            weights_upper[0] = max((g + 1) * int((weights_shape[0] / groups)), 1)
+
+            weights_slice = ng.slice(weights, weights_lower, weights_upper)
+            convolutions.append(ng.convolution(data_slice, weights_slice, strides,
+                                               dilation, padding_below, padding_above))
+        conv = ng.concat(convolutions, 1)
+    else:
+        conv = ng.convolution(data, weights, strides, dilation, padding_below, padding_above)
     if len(bias.shape) > 0:
         return conv + ng.broadcast(bias, conv.shape, 1)
     else:
