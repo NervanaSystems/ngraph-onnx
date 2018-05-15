@@ -157,29 +157,34 @@ def make_convolution_op(onnx_node, ng_inputs):
     strides = get_strides(onnx_node)
     dilation = get_dilations(onnx_node)
     padding_below, padding_above = get_pads(onnx_node)
+    # reference code: https://github.com/NervanaSystems/ngraph-mxnet/blob/fdd692/src/ngraph/ngraph_emitter.cc#L822-L856
     if groups != 1:
         data_shape = list(data.shape)
         weights_shape = list(weights.shape)
-        convolutions = []
-        for g in range(groups):
-            data_lower = len(data_shape) * [0]
-            data_upper = copy(data_shape)
+        convolutions_nodes = []
 
-            data_lower[1] = g * int((data_shape[1] / groups))
-            data_upper[1] = (g + 1) * int((data_shape[1] / groups))
+        # initial bounds for splice
+        data_lower_part = len(data_shape) * [0]
+        data_upper_part = copy(data_shape)
 
-            data_slice = ng.slice(data, data_lower, data_upper)
+        weights_lower_part = len(weights_shape) * [0]
+        weights_upper_part = copy(weights_shape)
 
-            weights_lower = len(weights_shape) * [0]
-            weights_upper = copy(weights_shape)
+        for group in range(groups):
+            # update bounds for splice
+            data_lower_part[1] = group * int((data_shape[1] / groups))
+            data_upper_part[1] = (group + 1) * int((data_shape[1] / groups))
 
-            weights_lower[0] = g * int((weights_shape[0] / groups))
-            weights_upper[0] = max((g + 1) * int((weights_shape[0] / groups)), 1)
+            sliced_data = ng.slice(data, data_lower_part, data_upper_part)
 
-            weights_slice = ng.slice(weights, weights_lower, weights_upper)
-            convolutions.append(ng.convolution(data_slice, weights_slice, strides,
-                                               dilation, padding_below, padding_above))
-        conv = ng.concat(convolutions, 1)
+            # update bounds for splice
+            weights_lower_part[0] = group * int((weights_shape[0] / groups))
+            weights_upper_part[0] = max((group + 1) * int((weights_shape[0] / groups)), 1)
+
+            sliced_weights = ng.slice(weights, weights_lower_part, weights_upper_part)
+            convolutions_nodes.append(ng.convolution(sliced_data, sliced_weights, strides,
+                                                     dilation, padding_below, padding_above))
+        conv = ng.concat(convolutions_nodes, axis=1)
     else:
         conv = ng.convolution(data, weights, strides, dilation, padding_below, padding_above)
     if len(bias.shape) > 0:
