@@ -35,16 +35,10 @@ from typing import Dict, List
 
 from ngraph_onnx.onnx_importer.importer import import_onnx_model
 
-
 class NgraphBackend(Backend):
     """Takes an ONNX model with inputs, perform a computation, and then return the output."""
 
-    _supported_devices = [
-        'CPU',
-        'GPU',
-        'INTERPRETER',
-        'ARGON',
-    ]
+    _supported_devices = []
 
     @classmethod
     def prepare(cls, onnx_model, device='CPU', **kwargs):
@@ -55,8 +49,14 @@ class NgraphBackend(Backend):
         return NgraphBackendRep(ng_model, device)
 
     @classmethod
+    def _get_supported_devices(cls):
+        cls._supported_devices = ng.impl.runtime.Backend.get_registered_devices()
+
+    @classmethod
     def supports_device(cls, device):  # type: (str) -> bool
         """Check whether the backend supports a particular device."""
+        if len(cls._supported_devices) == 0:
+            cls._get_supported_devices()
         return device in cls._supported_devices
 
     @classmethod
