@@ -18,6 +18,7 @@ from __future__ import print_function, division
 
 import onnx
 import numpy as np
+import ngraph as ng
 
 from tests.utils import get_runtime
 from onnx.helper import make_node, make_graph, make_tensor_value_info, make_model
@@ -41,3 +42,20 @@ def test_simple_graph():
     computation = runtime.computation(ng_model['output'], *ng_model['inputs'])
     assert np.array_equal(computation(1, 2, 3), np.array([6.0], dtype=np.float32))
     assert np.array_equal(computation(4, 5, 6), np.array([15.0], dtype=np.float32))
+
+
+def test_bad_data_shape():
+    A = ng.parameter(shape=[2, 2], name='A', dtype=np.float32)
+    B = ng.parameter(shape=[2, 2], name='B')
+    model = (A + B)
+    runtime = ng.runtime(backend_name='CPU')
+    computation = runtime.computation(model, A, B)
+
+    value_a = np.array([[1, 2]], dtype=np.float32)
+    value_b = np.array([[5, 6], [7, 8]], dtype=np.float32)
+    try:
+        computation(value_a, value_b)
+    except ValueError:
+        return
+
+    assert False, 'Bad shape uncaught!!!'
