@@ -19,4 +19,3 @@ import pytest
 def pytest_addoption(parser):
     parser.addoption('--backend', default='CPU',
                      choices=['INTERPRETER', 'CPU', 'GPU', 'ARGON'], help='Select from available backends')
-

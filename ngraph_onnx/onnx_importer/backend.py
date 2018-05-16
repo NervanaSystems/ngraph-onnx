@@ -39,18 +39,29 @@ from ngraph_onnx.onnx_importer.importer import import_onnx_model
 class NgraphBackend(Backend):
     """Takes an ONNX model with inputs, perform a computation, and then return the output."""
 
+    _supported_devices = []  # type: List[str]
+    # The device to be used instead of hardcoded by ONNX test Runner.
+    device_name = None  # type: str
+
     @classmethod
     def prepare(cls, onnx_model, device='CPU', **kwargs):
         # type: (onnx.ModelProto, str, Dict) -> NgraphBackendRep
         """Prepare backend representation of ONNX model."""
         super(NgraphBackend, cls).prepare(onnx_model, device, **kwargs)
         ng_model = import_onnx_model(onnx_model)
+        device = cls.device_name if cls.device_name else device
         return NgraphBackendRep(ng_model, device)
+
+    @classmethod
+    def _get_supported_devices(cls):  # type: () -> None
+        cls._supported_devices = ng.impl.runtime.Backend.get_registered_devices()
 
     @classmethod
     def supports_device(cls, device):  # type: (str) -> bool
         """Check whether the backend supports a particular device."""
-        return device == 'CPU'
+        if len(cls._supported_devices) == 0:
+            cls._get_supported_devices()
+        return device in cls._supported_devices
 
     @classmethod
     def run_model(cls, onnx_model, inputs, device='CPU', **kwargs):
@@ -69,7 +80,7 @@ class NgraphBackend(Backend):
 
         graph = make_graph([onnx_node], 'compute_graph', input_tensors, output_tensors)
         model = make_model(graph, producer_name='NgraphBackend')
-        return cls.prepare(model).run(inputs)
+        return cls.prepare(model, device).run(inputs)
 
 
 class NgraphBackendRep(BackendRep):
@@ -79,7 +90,7 @@ class NgraphBackendRep(BackendRep):
         super(NgraphBackendRep, self).__init__()
         self.device = device
         self.model = ng_model
-        self.runtime = ng.runtime()
+        self.runtime = ng.runtime(backend_name=self.device)
         self.computations = [self.runtime.computation(model['output'], *model['inputs']) for
                              model in ng_model]
 
