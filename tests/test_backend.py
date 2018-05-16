@@ -72,15 +72,6 @@ backend_test.exclude('test_cast_FLOAT16_to_DOUBLE_cpu')
 backend_test.exclude('test_cast_DOUBLE_to_FLOAT_cpu')
 backend_test.exclude('test_cast_DOUBLE_to_FLOAT16_cpu')
 
-# Convolution tests
-backend_test.exclude('test_Conv2d_depthwise_cpu')
-backend_test.exclude('test_Conv2d_depthwise_padded_cpu')
-backend_test.exclude('test_Conv2d_depthwise_strided_cpu')
-backend_test.exclude('test_Conv2d_depthwise_with_multiplier_cpu')
-backend_test.exclude('test_Conv2d_groups_cpu')
-backend_test.exclude('test_Conv2d_groups_thnn_cpu')
-backend_test.exclude('test_Conv3d_groups_cpu')
-
 # BatchNorm with shapes to other than 4
 backend_test.exclude('test_BatchNorm1d_3d_input')
 backend_test.exclude('test_BatchNorm3d')
@@ -99,14 +90,11 @@ backend_test.exclude('test_densenet121')
 backend_test.exclude('test_inception_v2')
 backend_test.exclude('test_shufflenet')
 
-# RuntimeError: Convolution data batch and filter input channel counts do not match.
-# Reason: Groups in convolution are unsupported.
-backend_test.exclude('test_bvlc_alexnet')
-
 # Validation Error: Input size 2 not in range [min=1, max=1].
 backend_test.exclude('test_inception_v1')
 
 # NotImplementedError: 'LRN'
+backend_test.exclude('test_bvlc_alexnet')
 backend_test.exclude('test_vgg16')
 
 

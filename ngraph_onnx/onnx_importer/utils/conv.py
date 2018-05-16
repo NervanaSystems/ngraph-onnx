@@ -20,6 +20,7 @@ from __future__ import print_function
 import logging
 
 from math import floor, ceil
+from copy import copy
 from typing import Tuple, List
 
 from ngraph_onnx import TYPE_CHECKING
@@ -143,24 +144,50 @@ def make_convolution_op(onnx_node, ng_inputs):
     :return: ngraph Op for convolution or deconvolution
     """
     if len(ng_inputs) == 3:
-        x, weights, bias = ng_inputs
+        data, weights, bias = ng_inputs
     elif len(ng_inputs) == 2:
-        x, weights = ng_inputs
-        bias = ng.constant(0, dtype=get_dtype(x.get_element_type()))
+        data, weights = ng_inputs
+        bias = ng.constant(0, dtype=get_dtype(data.get_element_type()))
     else:
         raise ValueError('Conv node (%s): unexpected number of input values: %d.',
                          onnx_node.name, len(ng_inputs))
 
     groups = onnx_node.get_attribute_value('group', 1)
-    if groups != 1:
-        log.warning('Conv node (%s): `group` attribute value %d is not supported.',
-                    onnx_node.name, groups)
 
     strides = get_strides(onnx_node)
     dilation = get_dilations(onnx_node)
     padding_below, padding_above = get_pads(onnx_node)
+    if groups != 1:
+        # Split one convolution op to N ops where N is the number of groups and concat results after computation.
+        # reference: https://github.com/NervanaSystems/ngraph-mxnet/blob/fdd692/src/ngraph/ngraph_emitter.cc#L822-L856
+        data_shape = list(data.shape)
+        weights_shape = list(weights.shape)
+        convolutions_nodes = []
 
-    conv = ng.convolution(x, weights, strides, dilation, padding_below, padding_above)
+        # initial bounds for splice
+        data_lower_part = len(data_shape) * [0]
+        data_upper_part = copy(data_shape)
+
+        weights_lower_part = len(weights_shape) * [0]
+        weights_upper_part = copy(weights_shape)
+
+        for group in range(groups):
+            # update bounds for splice
+            data_lower_part[1] = group * int((data_shape[1] / groups))
+            data_upper_part[1] = (group + 1) * int((data_shape[1] / groups))
+
+            sliced_data = ng.slice(data, data_lower_part, data_upper_part)
+
+            # update bounds for splice
+            weights_lower_part[0] = group * int((weights_shape[0] / groups))
+            weights_upper_part[0] = max((group + 1) * int((weights_shape[0] / groups)), 1)
+
+            sliced_weights = ng.slice(weights, weights_lower_part, weights_upper_part)
+            convolutions_nodes.append(ng.convolution(sliced_data, sliced_weights, strides,
+                                                     dilation, padding_below, padding_above))
+        conv = ng.concat(convolutions_nodes, axis=1)
+    else:
+        conv = ng.convolution(data, weights, strides, dilation, padding_below, padding_above)
     if len(bias.shape) > 0:
         return conv + ng.broadcast(bias, conv.shape, 1)
     else:
