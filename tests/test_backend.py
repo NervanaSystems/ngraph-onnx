@@ -62,7 +62,7 @@ backend_test.exclude('test_matmul_4d')
 backend_test.exclude('test_top_k')  # -> NC5-161
 backend_test.exclude('test_Upsample_nearest_scale_2d')  # -> NC5-162
 
-# Pad tests -> NGRAPG-1505
+# Pad tests -> NGRAPH-1505
 backend_test.exclude('test_edge_pad_cpu')
 backend_test.exclude('test_reflect_pad_cpu')
 backend_test.exclude('test_ReflectionPad2d_cpu')
@@ -74,13 +74,12 @@ backend_test.exclude('test_pow_bcast')
 backend_test.exclude('test_pow')
 backend_test.exclude('test_pow_example')
 
-# big models tests
-# Passing: comented for easy checks supported topologies
+# Passing topologies:
 # backend_test.exclude('test_resnet50')
 # backend_test.exclude('test_vgg19')
 # backend_test.exclude('test_squeezenet')
 
-# Failing
+# Failing topologies:
 
 # Validation Error: Input index 3 must be set to consumed for operator BatchNormalization
 backend_test.exclude('test_densenet121')
