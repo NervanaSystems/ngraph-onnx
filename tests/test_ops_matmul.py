@@ -125,6 +125,7 @@ def test_op_matmul():
     assert np.array_equal(import_and_compute_matmul(*data), np.matmul(*data))
 
 
+# -> NGRAPH-1838
 @pytest.mark.xfail(reason='ngraph ng.dot does not support matmul-style broadcasting')
 def test_op_matmul_3d():
     # 3d tensor @ 3d tensor
@@ -177,6 +178,7 @@ def test_gemm_transpositions():
     assert np.array_equal(import_and_compute_gemm(*data, **kwargs), numpy_gemm(*data, **kwargs))
 
 
+# -> NGRAPH-1838
 @pytest.mark.xfail(reason='Need add support for flattening to numpy_gemm')
 def test_gemm_flatten():
     # input_a.shape is (4,1,1)
