@@ -80,7 +80,7 @@ backend_test.exclude('test_pow_example')
 # backend_test.exclude('test_squeezenet')
 
 # Failing topologies:
-
+# Validation Errors -> ONNX 1.2.0
 # Validation Error: Input index 3 must be set to consumed for operator BatchNormalization
 backend_test.exclude('test_densenet121')
 backend_test.exclude('test_inception_v2')
