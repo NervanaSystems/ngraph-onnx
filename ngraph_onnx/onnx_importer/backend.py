@@ -40,8 +40,8 @@ class NgraphBackend(Backend):
     """Takes an ONNX model with inputs, perform a computation, and then return the output."""
 
     _supported_devices = []  # type: List[str]
-    # The device to be used instead of hardcoded by ONNX test Runner.
-    device_name = None  # type: str
+    # The backend to be used instead of hardcoded by ONNX test Runner.
+    backend_name = None  # type: str
 
     @classmethod
     def prepare(cls, onnx_model, device='CPU', **kwargs):
@@ -49,7 +49,7 @@ class NgraphBackend(Backend):
         """Prepare backend representation of ONNX model."""
         super(NgraphBackend, cls).prepare(onnx_model, device, **kwargs)
         ng_model = import_onnx_model(onnx_model)
-        device = cls.device_name if cls.device_name else device
+        device = cls.backend_name if cls.backend_name else device
         return NgraphBackendRep(ng_model, device)
 
     @classmethod
