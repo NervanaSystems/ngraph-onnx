@@ -17,7 +17,6 @@
 from __future__ import print_function, division
 
 import onnx
-import pytest
 from onnx.helper import make_node, make_graph, make_tensor_value_info
 
 from ngraph_onnx.onnx_importer.model_wrappers import NodeWrapper, GraphWrapper
@@ -25,7 +24,6 @@ from ngraph_onnx.onnx_importer.utils.conv import get_pads
 from ngraph_onnx.onnx_importer.utils.matmul import has_matmul_compatible_shapes
 
 
-@pytest.mark.skip(reason='Needs refactoring to ngraph++')
 def test_get_pads():
     def wrap_node(node):
         graph = make_graph([node], 'test_graph',
@@ -34,28 +32,22 @@ def test_get_pads():
                            [make_tensor_value_info('Z', onnx.TensorProto.FLOAT, ())])
         return NodeWrapper(node, GraphWrapper(graph))
 
-    node = wrap_node(make_node('Conv', ['X', 'Y'], ['Z'], pads=(1, 2, 3, 1, 2, 3)))
-    assert get_pads(node) == (1, 2, 3)
+    node = wrap_node(make_node('Conv', ['X', 'Y'], ['Z'], pads=(2, 3, 2, 3)))
+    assert get_pads(node) == ([2, 3], [2, 3])
 
-    with pytest.raises(NotImplementedError):
-        node = wrap_node(make_node('Conv', ['X', 'Y'], ['Z'], pads=(1, 1, 2, 4)))
-        assert get_pads(node) == (1, 1, 0)
+    node = wrap_node(make_node('Conv', ['X', 'Y'], ['Z'], pads=(1, 1, 2, 4)))
+    assert get_pads(node) == ([1, 1], [2, 4])
 
     node = wrap_node(make_node('Conv', ['X', 'Y'], ['Z'], auto_pad='VALID', kernel_shape=(5, 5)))
-    assert get_pads(node) == (0, 0, 0)
+    assert get_pads(node) == ([0, 0], [0, 0])
 
     node = wrap_node(make_node('Conv', ['X', 'Y'], ['Z'],
                                auto_pad='SAME_UPPER', kernel_shape=(5, 5)))
-    assert get_pads(node) == (2, 2, 0)
+    assert get_pads(node) == ([2, 2], [2, 2])
 
     node = wrap_node(make_node('Conv', ['X', 'Y'], ['Z'],
-                               auto_pad='SAME_UPPER', kernel_shape=(7, 7, 7)))
-    assert get_pads(node) == (3, 3, 3)
-
-    with pytest.raises(NotImplementedError):
-        node = wrap_node(make_node('Conv', ['X', 'Y'], ['Z'],
-                                   auto_pad='SAME_UPPER', kernel_shape=(6, 6)))
-        assert get_pads(node) == (2, 2, 0)
+                               auto_pad='SAME_UPPER', kernel_shape=(6, 6)))
+    assert get_pads(node) == ([2, 2], [3, 3])
 
 
 def test_matmul_compatible_shapes():
