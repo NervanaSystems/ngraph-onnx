@@ -168,7 +168,8 @@ def test_3d_conv():
                                    dtype=np.float32))
 
 
-@pytest.mark.skip(reason='Needs refactoring to ngraph++')
+# -> NGRAPH-1840
+@pytest.mark.xfail(reason='ngraph does not support Transposed Convolution yet')
 def test_2d_conv_transpose():
     # x should have shape N(batch) x C x H x W
     input_x = np.array(
