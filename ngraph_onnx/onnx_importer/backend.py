@@ -44,7 +44,7 @@ class NgraphBackend(Backend):
     backend_name = None  # type: str
 
     _ngraph_onnx_device_map = [
-        # (<ngraph_dev_name>, <onnx_dev_name>)
+        # (<ngraph_backend_name>, <onnx_dev_name>)
         ('CPU', 'CPU'),
         ('GPU', 'CUDA'),
         ('INTERPRETER', 'CPU'),
@@ -62,7 +62,8 @@ class NgraphBackend(Backend):
 
     @classmethod
     def _get_supported_devices(cls):  # type: () -> None
-        cls._ngraph_supported_devices = ng.impl.runtime.Backend.get_registered_devices()
+        if len(cls._ngraph_supported_devices) == 0:
+            cls._ngraph_supported_devices = ng.impl.runtime.Backend.get_registered_devices()
 
     @classmethod
     def _get_onnx_device_name(cls, ngraph_device_name):  # type: (str) -> Optional[str]
@@ -70,19 +71,18 @@ class NgraphBackend(Backend):
                      if ngraph_device_name == ng_device), None)
 
     @classmethod
-    def supports_device(cls, device):  # type: (str) -> bool
+    def support_ngraph_device(cls, ngraph_device_name):
+        cls._get_supported_devices()
+        return ngraph_device_name in cls._ngraph_supported_devices
+
+    @classmethod
+    def supports_device(cls, onnx_device_name):  # type: (str) -> bool
         """Check whether the backend supports a particular device."""
-        if len(cls._ngraph_supported_devices) == 0:
-            cls._get_supported_devices()
-        onnx_devcie_name = cls._get_onnx_device_name(cls.backend_name)
-        # Unknown device - there is no mapping for respective onnx device.
-        if not onnx_devcie_name:
-            return False
-        # Check whether:
-        # 1. The device is requested backend to run tests on.
+        # Check whether:h
+        # 1. There is mapping between onnx_device_name and requested nGraph backend tlo run tests on.
         # 2. Current nGraph version supports requested backend.
-        return (onnx_devcie_name == device and
-                cls.backend_name in cls._ngraph_supported_devices)
+        return (onnx_device_name == cls._get_onnx_device_name(cls.backend_name) and
+                cls.support_ngraph_device(cls.backend_name))
 
     @classmethod
     def run_model(cls, onnx_model, inputs, device='CPU', **kwargs):
