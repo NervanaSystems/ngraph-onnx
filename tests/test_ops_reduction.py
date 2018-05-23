@@ -199,7 +199,8 @@ def test_reduce_log_sum_exp():
                           logsumexp(data, keepdims=False, axis=(0, 1, 2)))
 
 
-@pytest.mark.skip(reason='Needs refactoring to ngraph++')
+# -> NGRAPH-1839
+@pytest.mark.xfail(reason='ngraph does not support argmin yet')
 def test_reduce_argmin():
     def argmin(ndarray, axis, keepdims=False):
         res = np.argmin(ndarray, axis=axis)
@@ -223,7 +224,8 @@ def test_reduce_argmin():
                           argmin(data, keepdims=False, axis=2))
 
 
-@pytest.mark.skip(reason='Needs refactoring to ngraph++')
+# -> NGRAPH-1839
+@pytest.mark.xfail(reason='ngraph dos not support argmax yet')
 def test_reduce_argmax():
     def argmax(ndarray, axis, keepdims=False):
         res = np.argmax(ndarray, axis=axis)

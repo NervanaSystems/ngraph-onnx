@@ -19,6 +19,7 @@ import numpy as np
 from typing import List
 
 from ngraph.impl import Node as NgraphNode
+from ngraph.impl import Shape
 
 import ngraph as ng
 
@@ -58,13 +59,15 @@ def transpose(node):  # type: (NgraphNode) -> NgraphNode
 
 
 def infer_dimensions(node_name, input_shape, output_shape):
-    # type: (str, List[int], List[int]) -> List[int]
+    # type: (str, Shape, Shape) -> List[int]
     """Infer `output_shape` dimension values.
 
     :param node_name: The input node name.
     :param input_shape: The input data shape.
     :param output_shape: The requested output shape for the input node data.
     """
+    input_shape = list(input_shape)
+    output_shape = list(output_shape)
     # If an output dimension is equal to zero its actual value is copied from the input shape
     # argument.
     for idx, dim in enumerate(output_shape):

@@ -36,59 +36,55 @@ backend_test = onnx.backend.test.BackendTest(NgraphBackend, __name__)
 
 
 # Need refactoring to ngraph++
-backend_test.exclude('test_gather')
-backend_test.exclude('test_hardmax')
-backend_test.exclude('test_pow')
-backend_test.exclude('test_top_k')
-backend_test.exclude('test_Upsample_nearest_scale_2d')
+# Casting tests -> NC5-159
+backend_test.exclude('test_cast_DOUBLE_to_FLOAT16_cpu')
+backend_test.exclude('test_cast_DOUBLE_to_FLOAT_cpu')
+backend_test.exclude('test_cast_FLOAT16_to_DOUBLE_cpu')
+backend_test.exclude('test_cast_FLOAT16_to_FLOAT_cpu')
+backend_test.exclude('test_cast_FLOAT_to_DOUBLE_cpu')
+backend_test.exclude('test_cast_FLOAT_to_FLOAT16_cpu')
 
-backend_test.exclude('test_depthtospace_cpu')
-backend_test.exclude('test_depthtospace_example_cpu')
-
-backend_test.exclude('test_split_equal_parts')
-backend_test.exclude('test_split_variable_parts')
-backend_test.exclude('test_upsample')
-
+# Gather tests -> NC5-160
 backend_test.exclude('test_Embedding')
-backend_test.exclude('test_Linear')
-backend_test.exclude('test_MaxPool1d')
-backend_test.exclude('test_PixelShuffle')
-backend_test.exclude('test_ReflectionPad2d')
-backend_test.exclude('test_ReplicationPad2d')
-backend_test.exclude('test_ZeroPad')
-backend_test.exclude('test_constant_pad')
-backend_test.exclude('test_edge_pad')
+backend_test.exclude('test_Embedding_sparse')
+backend_test.exclude('test_gather_0')
+backend_test.exclude('test_gather_1')
+
+# Hardmax tests -> NGRAPH-1839
+backend_test.exclude('test_hardmax_axis_0')
+backend_test.exclude('test_hardmax_axis_1')
+backend_test.exclude('test_hardmax_axis_2')
+backend_test.exclude('test_hardmax_default_axis')
+backend_test.exclude('test_hardmax_example')
+backend_test.exclude('test_hardmax_one_hot')
+
+# Matmul tests -> NGRAPH-1838
 backend_test.exclude('test_matmul_3d')
 backend_test.exclude('test_matmul_4d')
-backend_test.exclude('test_default_axes')
 
-# Pad tests
+# Misc tests
+backend_test.exclude('test_top_k')  # -> NC5-161
+backend_test.exclude('test_Upsample_nearest_scale_2d')  # -> NC5-162
+
+# Pad tests -> NGRAPH-1505
 backend_test.exclude('test_edge_pad_cpu')
 backend_test.exclude('test_reflect_pad_cpu')
 backend_test.exclude('test_ReflectionPad2d_cpu')
 backend_test.exclude('test_ReplicationPad2d_cpu')
 
-# Casting tests
-backend_test.exclude('test_cast_FLOAT_to_FLOAT16_cpu')
-backend_test.exclude('test_cast_FLOAT_to_DOUBLE_cpu')
-backend_test.exclude('test_cast_FLOAT16_to_FLOAT_cpu')
-backend_test.exclude('test_cast_FLOAT16_to_DOUBLE_cpu')
-backend_test.exclude('test_cast_DOUBLE_to_FLOAT_cpu')
-backend_test.exclude('test_cast_DOUBLE_to_FLOAT16_cpu')
+# Pow tests -> NC5-163
+backend_test.exclude('test_pow_bcast_axis0')
+backend_test.exclude('test_pow_bcast')
+backend_test.exclude('test_pow')
+backend_test.exclude('test_pow_example')
 
-# BatchNorm with shapes to other than 4
-backend_test.exclude('test_BatchNorm1d_3d_input')
-backend_test.exclude('test_BatchNorm3d')
-backend_test.exclude('test_BatchNorm3d_momentum')
+# Passing topologies:
+# backend_test.exclude('test_resnet50')
+# backend_test.exclude('test_vgg19')
+# backend_test.exclude('test_squeezenet')
 
-# big models tests
-# Passing
-backend_test.exclude('test_resnet50')
-backend_test.exclude('test_vgg19')
-backend_test.exclude('test_squeezenet')
-
-# Failing
-
+# Failing topologies:
+# Validation Errors -> ONNX 1.2.0
 # Validation Error: Input index 3 must be set to consumed for operator BatchNormalization
 backend_test.exclude('test_densenet121')
 backend_test.exclude('test_inception_v2')
@@ -97,7 +93,7 @@ backend_test.exclude('test_shufflenet')
 # Validation Error: Input size 2 not in range [min=1, max=1].
 backend_test.exclude('test_inception_v1')
 
-# NotImplementedError: 'LRN'
+# NotImplementedError: 'LRN' -> NGRAPH-1731
 backend_test.exclude('test_bvlc_alexnet')
 backend_test.exclude('test_vgg16')
 
