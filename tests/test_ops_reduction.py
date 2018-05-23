@@ -21,13 +21,13 @@ import numpy as np
 import pytest
 
 from scipy.misc import logsumexp
-from tests.utils import convert_and_calculate
+from tests.utils import run_node
 
 
 def import_and_compute(op_type, input_data, **node_attrs):
     data_inputs = [np.array(input_data)]
     node = onnx.helper.make_node(op_type, inputs=['x'], outputs=['y'], **node_attrs)
-    return convert_and_calculate(node, data_inputs, data_inputs).pop()
+    return run_node(node, data_inputs).pop()
 
 
 def test_reduce_max():

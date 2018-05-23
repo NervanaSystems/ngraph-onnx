@@ -20,14 +20,14 @@ import onnx
 
 import numpy as np
 
-from tests.utils import convert_and_calculate
+from tests.utils import run_node
 
 
 def import_and_compute(op_type, input_data_left, input_data_right, **node_attributes):
     input_data_left = np.array(input_data_left)
     input_data_right = np.array(input_data_right)
     node = onnx.helper.make_node(op_type, inputs=['x', 'y'], outputs=['z'], **node_attributes)
-    return convert_and_calculate(node, [input_data_left, input_data_right], [input_data_left])[0]
+    return run_node(node, [input_data_left, input_data_right])[0]
 
 
 def test_add():

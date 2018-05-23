@@ -22,7 +22,7 @@ import pytest
 import numpy as np
 from onnx.helper import make_node, make_graph, make_tensor_value_info, make_model
 from ngraph_onnx.onnx_importer.importer import import_onnx_model
-from tests.utils import convert_and_calculate, get_runtime
+from tests.utils import run_node, get_runtime
 
 
 @pytest.fixture
@@ -211,7 +211,7 @@ def test_padding():
     x = np.ones((2, 2), dtype=np.float32)
     y = np.pad(x, pad_width=1, mode='constant')
 
-    ng_results = convert_and_calculate(node, [x], [y])
+    ng_results = run_node(node, [x])
     assert np.array_equal(ng_results, [y])
 
     node = onnx.helper.make_node('Pad', inputs=['x'], outputs=['y'],
@@ -219,7 +219,7 @@ def test_padding():
     x = np.random.randn(1, 3, 4, 5).astype(np.float32)
     y = np.pad(x, pad_width=((0, 0), (0, 0), (1, 2), (3, 4)), mode='constant')
 
-    ng_results = convert_and_calculate(node, [x], [y])
+    ng_results = run_node(node, [x])
     assert np.array_equal(ng_results, [y])
 
 
@@ -229,7 +229,7 @@ def test_pool_average(ndarray_1x1x4x4):
                                  kernel_shape=(2, 2), strides=(2, 2))
     y = np.array([[13.5, 15.5],
                   [21.5, 23.5]], dtype=np.float32).reshape(1, 1, 2, 2)
-    ng_results = convert_and_calculate(node, [x], [y])
+    ng_results = run_node(node, [x])
     assert np.array_equal(ng_results, [y])
 
     node = onnx.helper.make_node('AveragePool', inputs=['x'], outputs=['y'],
@@ -237,7 +237,7 @@ def test_pool_average(ndarray_1x1x4x4):
     y = np.array([[11, 12.5, 14],
                   [17, 18.5, 20],
                   [23, 24.5, 26]], dtype=np.float32).reshape(1, 1, 3, 3)
-    ng_results = convert_and_calculate(node, [x], [y])
+    ng_results = run_node(node, [x])
     assert np.array_equal(ng_results, [y])
 
 
@@ -250,7 +250,7 @@ def test_pool_average_3d(ndarray_1x1x4x4):
 
                   [[13.5, 15.5],
                    [21.5, 23.5]]], dtype=np.float32).reshape(1, 1, 2, 2, 2)
-    ng_results = convert_and_calculate(node, [x], [y])
+    ng_results = run_node(node, [x])
     assert np.array_equal(ng_results, [y])
 
 
@@ -262,7 +262,7 @@ def test_pool_max(ndarray_1x1x4x4):
     y = np.array([[16, 18],
                   [24, 26]], dtype=np.float32).reshape(1, 1, 2, 2)
 
-    ng_results = convert_and_calculate(node, [x], [y])
+    ng_results = run_node(node, [x])
     assert np.array_equal(ng_results, [y])
 
 
@@ -272,7 +272,7 @@ def test_pool_global_max(ndarray_1x1x4x4):
     x = ndarray_1x1x4x4
     y = np.array([26], dtype=np.float32).reshape(1, 1, 1, 1)
 
-    ng_results = convert_and_calculate(node, [x], [y])
+    ng_results = run_node(node, [x])
     assert np.array_equal(ng_results, [y])
 
 
@@ -282,7 +282,7 @@ def test_pool_global_average(ndarray_1x1x4x4):
     x = ndarray_1x1x4x4
     y = np.array([18.5], dtype=np.float32).reshape(1, 1, 1, 1)
 
-    ng_results = convert_and_calculate(node, [x], [y])
+    ng_results = run_node(node, [x])
     assert np.array_equal(ng_results, [y])
 
 
@@ -291,5 +291,5 @@ def test_pool_global_average_3d(ndarray_1x1x4x4):
 
     node = onnx.helper.make_node('GlobalAveragePool', inputs=['x'], outputs=['y'])
     y = np.array([18.5], dtype=np.float32).reshape(1, 1, 1, 1, 1)
-    ng_results = convert_and_calculate(node, [x], [y])
+    ng_results = run_node(node, [x])
     assert np.array_equal(ng_results, [y])
