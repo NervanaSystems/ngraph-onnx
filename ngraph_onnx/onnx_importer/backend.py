@@ -39,10 +39,10 @@ from ngraph_onnx.onnx_importer.importer import import_onnx_model
 class NgraphBackend(Backend):
     """Takes an ONNX model with inputs, perform a computation, and then return the output."""
 
-    _ngraph_supported_devices = []  # type: List[str]
-    # The requested (nGraph) backend to be used instead of hardcoded by ONNX test Runner.
-    backend_name = None  # type: str
+    # The requested nGraph backend to use, defaults to CPU
+    backend_name = 'CPU'  # type: str
 
+    _ngraph_supported_devices = []  # type: List[str]
     _ngraph_onnx_device_map = [
         # (<ngraph_backend_name>, <onnx_device_name>)
         ('CPU', 'CPU'),
@@ -82,7 +82,7 @@ class NgraphBackend(Backend):
 
     @classmethod
     def supports_device(cls, onnx_device_name):  # type: (str) -> bool
-        """Check whether the requested nGraph backend supports a particular ONNX device.
+        """Check whether this NgraphBackend supports a particular ONNX device.
 
         During running ONNX backend tests this function is called on each item of ONNX defined
         devices list. Currently this list is hardcoded and contains only two entries:
