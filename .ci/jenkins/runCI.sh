@@ -74,8 +74,12 @@ run_test_img()
 remove_test_image()
 {
     echo ---------------------Remove test image------------------------------------
+    if docker images | grep test_ngraph-onnx; then
+    return 0
+    else
     docker rm ngraph-onnx_jenkins --force && docker rmi test_ngraph-onnx --force
     return $?
+    fi
 }
 
 remove_base_image()
