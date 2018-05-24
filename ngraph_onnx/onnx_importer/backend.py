@@ -125,7 +125,7 @@ class NgraphBackendRep(BackendRep):
 
     def __init__(self, ng_model, device='CPU'):  # type: (List[Dict], str) -> None
         super(NgraphBackendRep, self).__init__()
-        self.device = device
+        self.device = self._get_ngraph_device_name(device)
         self.model = ng_model
         self.runtime = ng.runtime(backend_name=self.device)
         self.computations = [self.runtime.computation(model['output'], *model['inputs']) for
@@ -134,3 +134,6 @@ class NgraphBackendRep(BackendRep):
     def run(self, inputs, **kwargs):  # type: (List[np.ndarray], Dict) -> List[np.ndarray]
         """Execute computation on the backend representation of model."""
         return [computation(*inputs) for computation in self.computations]
+
+    def _get_ngraph_device_name(self, onnx_device):  # type: (str) -> str
+        return 'GPU' if onnx_device == 'CUDA' else onnx_device
