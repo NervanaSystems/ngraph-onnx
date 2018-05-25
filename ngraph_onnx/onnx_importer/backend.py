@@ -118,8 +118,8 @@ class NgraphBackend(Backend):
         return cls.prepare(onnx_model, device, **kwargs).run(inputs)
 
     @classmethod
-    def run_node(cls, onnx_node, inputs, device='CPU'):
-        # type: (onnx.NodeProto, List[np.ndarray], str) -> List[np.ndarray]
+    def run_node(cls, onnx_node, inputs, opset=4, device='CPU'):
+        # type: (onnx.NodeProto, List[np.ndarray], int, str) -> List[np.ndarray]
         """Prepare and run a computation on an ONNX node."""
         input_tensors = [make_tensor_value_info(name, onnx.TensorProto.FLOAT, value.shape)
                          for name, value in zip(onnx_node.input, inputs)]
@@ -128,6 +128,7 @@ class NgraphBackend(Backend):
 
         graph = make_graph([onnx_node], 'compute_graph', input_tensors, output_tensors)
         model = make_model(graph, producer_name='NgraphBackend')
+        model.opset_import[0].version = opset
         return cls.prepare(model, device).run(inputs)
 
 
