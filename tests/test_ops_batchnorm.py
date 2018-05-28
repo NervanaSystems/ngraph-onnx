@@ -17,10 +17,11 @@
 from __future__ import print_function, division
 
 import onnx
+import pytest
 
 import numpy as np
 
-from tests.utils import convert_and_calculate
+from tests.utils import run_node
 
 
 def make_batch_norm_node(**node_attributes):
@@ -28,7 +29,8 @@ def make_batch_norm_node(**node_attributes):
                                  outputs=['Y'], **node_attributes)
 
 
-def test_batch_norm_test_mode():
+@pytest.mark.xfail(reason='ONNX 1.1.2 model checker bug. Already resolved at master')
+def test_batch_norm_test_node():
     data = np.arange(48).reshape(1, 3, 4, 4)
     scale = np.ones((3,)).astype(np.float32)  # Gamma
     bias = np.zeros((3,)).astype(np.float32)  # Beta
@@ -52,7 +54,7 @@ def test_batch_norm_test_mode():
            [0.97616386, 1.19308949, 1.41001511, 1.62694073]]]], dtype=np.float32)
 
     node = make_batch_norm_node(is_test=1, spatial=1)
-    result = convert_and_calculate(node, [data, scale, bias, mean, var], [expected_output])
+    result = run_node(node, [data, scale, bias, mean, var])
     assert np.isclose(result, expected_output).all()
 
     scale = np.broadcast_to(0.1, (3,)).astype(np.float32)  # Gamma
@@ -75,5 +77,5 @@ def test_batch_norm_test_mode():
            [1.09761643, 1.11930895, 1.14100146, 1.16269398]]]], dtype=np.float32)
 
     node = make_batch_norm_node(is_test=1, spatial=1)
-    result = convert_and_calculate(node, [data, scale, bias, mean, var], [expected_output])
+    result = run_node(node, [data, scale, bias, mean, var])
     assert np.isclose(result, expected_output).all()

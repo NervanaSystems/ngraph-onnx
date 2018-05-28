@@ -20,7 +20,7 @@ import numpy as np
 import onnx
 import pytest
 
-from tests.utils import convert_and_calculate, all_arrays_equal
+from tests.utils import run_node, all_arrays_equal
 
 
 def test_reshape():
@@ -28,7 +28,7 @@ def test_reshape():
     node = onnx.helper.make_node('Reshape', inputs=['x'], outputs=['y'], shape=(256, 10))
     expected_output = data.reshape(256, 10)
 
-    ng_results = convert_and_calculate(node, [data], [expected_output])
+    ng_results = run_node(node, [data])
     assert np.array_equal(ng_results, [expected_output])
 
 
@@ -42,7 +42,7 @@ def test_reshape():
 def test_flatten(axis, expected_output):
     data = np.arange(120).reshape(2, 3, 4, 5)
     node = onnx.helper.make_node('Flatten', inputs=['x'], outputs=['y'], axis=axis)
-    ng_results = convert_and_calculate(node, [data], [expected_output])
+    ng_results = run_node(node, [data])
     assert np.array_equal(ng_results, [expected_output])
 
 
@@ -51,7 +51,7 @@ def test_flatten_exception():
     node = onnx.helper.make_node('Flatten', inputs=['x'], outputs=['y'], axis=5)
 
     with pytest.raises(ValueError):
-        convert_and_calculate(node, [data], [data])
+        run_node(node, [data])
 
 
 def test_transpose():
@@ -59,12 +59,12 @@ def test_transpose():
 
     node = onnx.helper.make_node('Transpose', inputs=['x'], outputs=['y'])
     expected_output = data.T
-    ng_results = convert_and_calculate(node, [data], [expected_output])
+    ng_results = run_node(node, [data])
     assert np.array_equal(ng_results, [expected_output])
 
     node = onnx.helper.make_node('Transpose', inputs=['x'], outputs=['y'], perm=(3, 1, 0, 2))
     expected_output = np.transpose(data, axes=(3, 1, 0, 2))
-    ng_results = convert_and_calculate(node, [data], [expected_output])
+    ng_results = run_node(node, [data])
     assert np.array_equal(ng_results, [expected_output])
 
 
@@ -74,20 +74,20 @@ def test_slice():
     expected_output = np.array([[5, 6, 7]])
     node = onnx.helper.make_node('Slice', inputs=['x'], outputs=['y'],
                                  axes=[0, 1], starts=[1, 0], ends=[2, 3])
-    ng_results = convert_and_calculate(node, [data], [expected_output])
+    ng_results = run_node(node, [data])
     assert np.array_equal(ng_results, [expected_output])
 
     expected_output = np.array([[2, 3, 4]])
     node = onnx.helper.make_node('Slice', inputs=['x'], outputs=['y'], starts=[0, 1],
                                  ends=[-1, 1000])
-    ng_results = convert_and_calculate(node, [data], [expected_output])
+    ng_results = run_node(node, [data])
     assert np.array_equal(ng_results, [expected_output])
 
     node = onnx.helper.make_node('Slice', inputs=['x'], outputs=['y'], axes=[0, 1],
                                  starts=[0, 0], ends=[3, 10])
     data = np.random.randn(20, 10, 5).astype(np.float32)
     expected_output = data[0:3, 0:10]
-    ng_results = convert_and_calculate(node, [data], [expected_output])
+    ng_results = run_node(node, [data])
     assert np.array_equal(ng_results, [expected_output])
 
     # default axes
@@ -95,7 +95,7 @@ def test_slice():
                                  ends=[20, 10, 4])
     data = np.random.randn(20, 10, 5).astype(np.float32)
     expected_output = data[:, :, 3:4]
-    ng_results = convert_and_calculate(node, [data], [expected_output])
+    ng_results = run_node(node, [data])
     assert np.array_equal(ng_results, [expected_output])
 
     # end out of bounds
@@ -103,7 +103,7 @@ def test_slice():
                                  ends=[1000])
     data = np.random.randn(20, 10, 5).astype(np.float32)
     expected_output = data[:, 1:1000]
-    ng_results = convert_and_calculate(node, [data], [expected_output])
+    ng_results = run_node(node, [data])
     assert np.array_equal(ng_results, [expected_output])
 
     # negative value
@@ -111,7 +111,7 @@ def test_slice():
                                  ends=[-1])
     data = np.random.randn(20, 10, 5).astype(np.float32)
     expected_output = data[:, 0:-1]
-    ng_results = convert_and_calculate(node, [data], [expected_output])
+    ng_results = run_node(node, [data])
     assert np.array_equal(ng_results, [expected_output])
 
     # start ouf of bounds
@@ -119,7 +119,7 @@ def test_slice():
                                  ends=[1000])
     data = np.random.randn(20, 10, 5).astype(np.float32)
     expected_output = data[:, 1000:1000]
-    ng_results = convert_and_calculate(node, [data], [expected_output])
+    ng_results = run_node(node, [data])
     assert np.array_equal(ng_results, [expected_output])
 
 
@@ -128,14 +128,14 @@ def test_concat():
     b = np.array([[5, 6]])
     expected_output = np.concatenate((a, b), axis=0)
     node = onnx.helper.make_node('Concat', inputs=['x', 'y'], outputs=['z'], axis=0)
-    ng_results = convert_and_calculate(node, [a, b], [expected_output])
+    ng_results = run_node(node, [a, b])
     assert np.array_equal(ng_results, [expected_output])
 
     a = np.array([[1, 2], [3, 4]])
     b = np.array([[5, 6]]).T
     expected_output = np.concatenate((a, b), axis=1)
     node = onnx.helper.make_node('Concat', inputs=['x', 'y'], outputs=['z'], axis=1)
-    ng_results = convert_and_calculate(node, [a, b], [expected_output])
+    ng_results = run_node(node, [a, b])
     assert np.array_equal(ng_results, [expected_output])
 
     test_cases = {
@@ -158,7 +158,7 @@ def test_concat():
                 axis=i,
             )
             expected_output = np.concatenate(values, i)
-            ng_results = convert_and_calculate(node, [v for v in values], [expected_output])
+            ng_results = run_node(node, [v for v in values])
             assert np.array_equal(ng_results, [expected_output])
 
 
@@ -167,48 +167,47 @@ def test_squeeze():
     expected_output = data.reshape(2, 3)
 
     node = onnx.helper.make_node('Squeeze', inputs=['x'], outputs=['y'], axes=[0, 3])
-    ng_results = convert_and_calculate(node, [data], [expected_output])
+    ng_results = run_node(node, [data])
     assert np.array_equal(ng_results, [expected_output])
 
     data = np.random.randn(1, 3, 4, 5).astype(np.float32)
     expected_output = np.squeeze(data, axis=0)
     node = onnx.helper.make_node('Squeeze', inputs=['x'], outputs=['y'], axes=[0])
-    ng_results = convert_and_calculate(node, [data], [expected_output])
+    ng_results = run_node(node, [data])
     assert np.array_equal(ng_results, [expected_output])
 
 
 def test_squeeze_exceptions():
     data = np.random.randn(1, 3, 4, 5).astype(np.float32)
-    expected_output = np.squeeze(data, axis=0)
 
     node = onnx.helper.make_node('Squeeze', inputs=['x'], outputs=['y'], axes=[-1])
     with pytest.raises(ValueError):
-        convert_and_calculate(node, [data], [expected_output])
+        run_node(node, [data])
 
     node = onnx.helper.make_node('Squeeze', inputs=['x'], outputs=['y'], axes=[4])
     with pytest.raises(ValueError):
-        convert_and_calculate(node, [data], [expected_output])
+        run_node(node, [data])
 
     node = onnx.helper.make_node('Squeeze', inputs=['x'], outputs=['y'], axes=[1])
     with pytest.raises(ValueError):
-        convert_and_calculate(node, [data], [expected_output])
+        run_node(node, [data])
 
 
 def test_unsqueeze():
     data = np.random.randn(3, 4, 5).astype(np.float32)
     expected_output = np.expand_dims(data, axis=0)
     node = onnx.helper.make_node('Unsqueeze', inputs=['x'], outputs=['y'], axes=[0])
-    ng_results = convert_and_calculate(node, [data], [expected_output])
+    ng_results = run_node(node, [data])
     assert np.array_equal(ng_results, [expected_output])
 
     expected_output = np.reshape(data, [1, 3, 4, 5, 1])
     node = onnx.helper.make_node('Unsqueeze', inputs=['x'], outputs=['y'], axes=[0, 4])
-    ng_results = convert_and_calculate(node, [data], [expected_output])
+    ng_results = run_node(node, [data])
     assert np.array_equal(ng_results, [expected_output])
 
     expected_output = np.reshape(data, [1, 3, 1, 4, 5])
     node = onnx.helper.make_node('Unsqueeze', inputs=['x'], outputs=['y'], axes=[0, 2])
-    ng_results = convert_and_calculate(node, [data], [expected_output])
+    ng_results = run_node(node, [data])
     assert np.array_equal(ng_results, [expected_output])
 
 
@@ -235,7 +234,7 @@ def test_unsqueeze():
 ])
 def test_split_2d(node, expected_output):
     data = np.arange(8).reshape(2, 4)
-    ng_results = convert_and_calculate(node, [data], expected_output)
+    ng_results = run_node(node, [data])
     assert all_arrays_equal(ng_results, expected_output)
 
 
@@ -246,7 +245,7 @@ def test_split_1d():
     node = onnx.helper.make_node('Split', inputs=['input'], outputs=['z', 'w'], axis=0)
     expected_outputs = [np.array([1., 2., 3.]).astype(np.float32),
                         np.array([4., 5., 6.]).astype(np.float32)]
-    ng_results = convert_and_calculate(node, [data], expected_outputs)
+    ng_results = run_node(node, [data])
     assert all_arrays_equal(ng_results, expected_outputs)
 
     node = onnx.helper.make_node('Split', inputs=['input'], outputs=['y', 'z', 'w'], axis=0,
@@ -254,7 +253,7 @@ def test_split_1d():
     expected_outputs = [np.array([1., 2.]).astype(np.float32),
                         np.array([3., 4., 5.]).astype(np.float32),
                         np.array([6.]).astype(np.float32)]
-    ng_results = convert_and_calculate(node, [data], expected_outputs)
+    ng_results = run_node(node, [data])
     assert all_arrays_equal(ng_results, expected_outputs)
 
     # Default values
@@ -264,11 +263,11 @@ def test_split_1d():
     expected_outputs = [np.array([1., 2.]).astype(np.float32),
                         np.array([3., 4.]).astype(np.float32),
                         np.array([5., 6.]).astype(np.float32)]
-    ng_results = convert_and_calculate(node, [data], expected_outputs)
+    ng_results = run_node(node, [data])
     assert all_arrays_equal(ng_results, expected_outputs)
 
     node = onnx.helper.make_node('Split', inputs=['input'], outputs=['y', 'z'], split=[2, 4])
     expected_outputs = [np.array([1., 2.]).astype(np.float32),
                         np.array([3., 4., 5., 6.]).astype(np.float32)]
-    ng_results = convert_and_calculate(node, [data], expected_outputs)
+    ng_results = run_node(node, [data])
     assert all_arrays_equal(ng_results, expected_outputs)
