@@ -179,7 +179,6 @@ def test_squeeze():
 
 def test_squeeze_exceptions():
     data = np.random.randn(1, 3, 4, 5).astype(np.float32)
-    expected_output = np.squeeze(data, axis=0)
 
     node = onnx.helper.make_node('Squeeze', inputs=['x'], outputs=['y'], axes=[-1])
     with pytest.raises(ValueError):

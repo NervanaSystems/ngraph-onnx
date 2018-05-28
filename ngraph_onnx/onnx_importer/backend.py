@@ -42,7 +42,7 @@ class NgraphBackend(Backend):
     _ngraph_supported_devices = []  # type: List[str]
     # The requested (nGraph) backend to be used instead of hardcoded by ONNX test Runner.
     backend_name = None  # type: str
-    
+
     _ngraph_onnx_device_map = [
         # (<ngraph_backend_name>, <onnx_device_name>)
         ('CPU', 'CPU'),

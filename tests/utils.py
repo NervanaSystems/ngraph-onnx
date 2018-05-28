@@ -17,7 +17,6 @@
 from __future__ import print_function, division
 
 import numpy as np
-import onnx
 import pytest
 
 import ngraph as ng
