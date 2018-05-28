@@ -1,37 +1,77 @@
-node ('onnx_ci'){
+def Exception() {
+    currentBuild.result = 'FAILURE'
+}
+
+def CloneRepo() {
     try {
-        stage 'Clone Ngraph-Onnx repo'
-        dir ("$WORKSPACE/$BUILD_NUMBER") {
-            sh('git clone https://github.com/NervanaSystems/ngraph-onnx.git')
+        stage('Clone Repo') {
+            dir ("$WORKSPACE/$BUILD_NUMBER") {
+                sh('git clone https://github.com/NervanaSystems/ngraph-onnx.git')
+            }
+            dir ("$WORKSPACE/$BUILD_NUMBER/ngraph-onnx") {
+                sh('git reset --hard $ghprbActualCommit')
+            }
         }
-        dir ("$WORKSPACE/$BUILD_NUMBER/ngraph-onnx") {
-            sh('git reset --hard $ghprbActualCommit')
-        }
-
-        dir ("$WORKSPACE/$BUILD_NUMBER/ngraph-onnx") {
-
-            stage 'Create Base Image'
-            sh('.ci/jenkins/runCI.sh --create-base-img')
-
-            stage 'Create Test Image'
-            sh('.ci/jenkins/runCI.sh --create-test-img')
-
-            stage 'Run Tests'
-            sh('.ci/jenkins/runCI.sh --run-test-img')
-        }
+    } catch(e) {
+        Exception()
     }
+}
 
-    catch (e) {
-        echo "$e"
-        currentBuild.result = "FAILURE"
+def CreateBase() {
+    try {
+        stage('Create Base Image') {
+            dir ("$WORKSPACE/$BUILD_NUMBER/ngraph-onnx") {
+                sh('.ci/jenkins/runCI.sh --create-base-img')
+            }
+        }
+    } catch(e) {
+        Exception()
     }
+}
 
-    finally {
-        dir ("$WORKSPACE/$BUILD_NUMBER/ngraph-onnx") {
-            stage 'Cleanup'
+def CreateTest() {
+    try {
+        stage('Create Test Image') {
+            dir ("$WORKSPACE/$BUILD_NUMBER/ngraph-onnx") {
+                sh('.ci/jenkins/runCI.sh --create-test-img')
+            }
+        }
+    } catch(e) {
+        Exception()
+    }
+}
+
+def Execute() {
+    try {
+        stage('Execute Tests ') {
+            dir ("$WORKSPACE/$BUILD_NUMBER/ngraph-onnx") {
+                sh('.ci/jenkins/runCI.sh --run-test-img')
+            }
+        }
+    } catch(e) {
+        Exception()
+    }
+}
+
+def Cleanup() {
+    try {
+        stage('Cleanup') {
+            dir ("$WORKSPACE/$BUILD_NUMBER/ngraph-onnx") {
             sh('.ci/jenkins/runCI.sh --remove-test-img')
-        }
+            }
             sh('rm -rf "${WORKSPACE}/${BUILD_NUMBER}"')
             sh('rm -rf "${WORKSPACE}/${BUILD_NUMBER}@tmp"')
+            }
+    } catch(e) {
+        Exception()
     }
+}
+
+
+node ('onnx_ci') {
+    CloneRepo()
+    CreateBase()
+    CreateTest()
+    Execute()
+    Cleanup()
 }
