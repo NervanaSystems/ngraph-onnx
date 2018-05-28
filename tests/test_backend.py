@@ -72,7 +72,7 @@ backend_test.exclude('test_cast_DOUBLE_to_FLOAT_cpu')
 backend_test.exclude('test_cast_FLOAT_to_DOUBLE_cpu')
 backend_test.exclude('test_cast_FLOAT_to_FLOAT16_cpu')
 
-# Missing op 'ConvTranspose'
+# Missing op 'ConvTranspose' -> NGRAPH-1840
 backend_test.exclude('test_ConvTranspose2d_cpu')
 backend_test.exclude('test_ConvTranspose2d_no_bias_cpu')
 backend_test.exclude('test_operator_convtranspose_cpu')
@@ -81,7 +81,7 @@ backend_test.exclude('test_operator_convtranspose_cpu')
 backend_test.exclude('test_cos_cpu')
 backend_test.exclude('test_cos_example_cpu')
 
-# Missing op 'DepthToSpace'
+# Missing op 'DepthToSpace' -> NC5-176
 backend_test.exclude('test_depthtospace_cpu')
 backend_test.exclude('test_depthtospace_example_cpu')
 
@@ -94,7 +94,7 @@ backend_test.exclude('test_operator_lstm_cpu')
 backend_test.exclude('test_operator_rnn_cpu')
 backend_test.exclude('test_operator_rnn_single_layer_cpu')
 
-# Missing op 'GRU'
+# Missing op 'GRU' -> NC5-177
 backend_test.exclude('test_gru_defaults_cpu')
 backend_test.exclude('test_gru_seq_length_cpu')
 backend_test.exclude('test_gru_with_initial_bias_cpu')
@@ -107,13 +107,13 @@ backend_test.exclude('test_hardmax_default_axis_cpu')
 backend_test.exclude('test_hardmax_example_cpu')
 backend_test.exclude('test_hardmax_one_hot_cpu')
 
-# Missing op 'Identity'
+# Missing op 'Identity' -> NC5-178
 backend_test.exclude('test_identity_cpu')
 
-# Missing op 'InstanceNormalization'
+# Missing op 'InstanceNormalization' -> NC5-179
 backend_test.exclude('test_operator_symbolic_override_cpu')
 
-# Missing op 'LSTM'
+# Missing op 'LSTM' -> NC5-180
 backend_test.exclude('test_lstm_defaults_cpu')
 backend_test.exclude('test_lstm_with_initial_bias_cpu')
 backend_test.exclude('test_lstm_with_peepholes_cpu')
@@ -125,7 +125,7 @@ backend_test.exclude('test_pow_bcast_array_cpu')
 backend_test.exclude('test_pow_bcast_scalar_cpu')
 backend_test.exclude('test_pow_example_cpu')
 
-# Missing op 'ReduceL1'
+# Missing op 'ReduceL1' -> NC5-181
 backend_test.exclude('test_reduce_l1_default_axes_keepdims_example_cpu')
 backend_test.exclude('test_reduce_l1_default_axes_keepdims_random_cpu')
 backend_test.exclude('test_reduce_l1_do_not_keepdims_example_cpu')
@@ -133,7 +133,7 @@ backend_test.exclude('test_reduce_l1_do_not_keepdims_random_cpu')
 backend_test.exclude('test_reduce_l1_keep_dims_example_cpu')
 backend_test.exclude('test_reduce_l1_keep_dims_random_cpu')
 
-# Missing op 'ReduceL2'
+# Missing op 'ReduceL2' -> NC5-181
 backend_test.exclude('test_reduce_l2_default_axes_keepdims_example_cpu')
 backend_test.exclude('test_reduce_l2_default_axes_keepdims_random_cpu')
 backend_test.exclude('test_reduce_l2_do_not_keepdims_example_cpu')
@@ -141,13 +141,13 @@ backend_test.exclude('test_reduce_l2_do_not_keepdims_random_cpu')
 backend_test.exclude('test_reduce_l2_keep_dims_example_cpu')
 backend_test.exclude('test_reduce_l2_keep_dims_random_cpu')
 
-# Missing op 'ReduceLogSum'
+# Missing op 'ReduceLogSum' -> NC5-181
 backend_test.exclude('test_reduce_log_sum_asc_axes_cpu')
 backend_test.exclude('test_reduce_log_sum_cpu')
 backend_test.exclude('test_reduce_log_sum_default_cpu')
 backend_test.exclude('test_reduce_log_sum_desc_axes_cpu')
 
-# Missing op 'ReduceSumSquare'
+# Missing op 'ReduceSumSquare' -> NC5-181
 backend_test.exclude('test_reduce_sum_square_default_axes_keepdims_example_cpu')
 backend_test.exclude('test_reduce_sum_square_default_axes_keepdims_random_cpu')
 backend_test.exclude('test_reduce_sum_square_do_not_keepdims_example_cpu')
@@ -155,7 +155,7 @@ backend_test.exclude('test_reduce_sum_square_do_not_keepdims_random_cpu')
 backend_test.exclude('test_reduce_sum_square_keepdims_example_cpu')
 backend_test.exclude('test_reduce_sum_square_keepdims_random_cpu')
 
-# Missing op 'RNN'
+# Missing op 'RNN' -> NC5-182
 backend_test.exclude('test_rnn_seq_length_cpu')
 backend_test.exclude('test_simple_rnn_defaults_cpu')
 backend_test.exclude('test_simple_rnn_with_initial_bias_cpu')
@@ -168,16 +168,16 @@ backend_test.exclude('test_sin_example_cpu')
 backend_test.exclude('test_tan_cpu')
 backend_test.exclude('test_tan_example_cpu')
 
-# Missing op 'Tile'
+# Missing op 'Tile' -> NGRAPH-1909
 backend_test.exclude('test_operator_repeat_cpu')
 backend_test.exclude('test_operator_repeat_dim_overflow_cpu')
 backend_test.exclude('test_tile_cpu')
 backend_test.exclude('test_tile_precomputed_cpu')
 
-# Missing op 'TopK' -> NC5-161
+# Missing op 'TopK' -> NC5-161 -> NGRAPH-1910
 backend_test.exclude('test_top_k_cpu')
 
-# Missing op 'Upsample' -> NC5-162
+# Missing op 'Upsample' -> NGRAPH-1841
 backend_test.exclude('test_upsample_nearest_cpu')
 backend_test.exclude('test_Upsample_nearest_2d_cpu')
 backend_test.exclude('test_Upsample_nearest_scale_2d_cpu')
@@ -208,7 +208,7 @@ backend_test.exclude('test_matmul_3d_cpu')
 backend_test.exclude('test_matmul_4d_cpu')
 
 # Other problems
-# AssertionError msg='Not equal to tolerance'
+# AssertionError msg='Not equal to tolerance' -> NGRAPH-1733
 backend_test.exclude('test_reshape_extended_dims_cpu')
 backend_test.exclude('test_reshape_negative_dim_cpu')
 backend_test.exclude('test_reshape_one_dim_cpu')
