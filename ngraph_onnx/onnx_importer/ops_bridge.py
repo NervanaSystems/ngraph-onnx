@@ -21,6 +21,7 @@ import logging
 from typing import Tuple, List
 
 import numpy as np
+import onnx.mapping
 from functools import reduce
 from ngraph.utils.types import get_dtype
 from ngraph_onnx import TYPE_CHECKING
@@ -101,6 +102,14 @@ def Tan(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngrap
 def Ceil(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Apply f(x) = ceil(x) to the input tensor elementwise."""
     return ng.ceiling(ng_inputs[0])
+
+
+def Cast(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
+    """Limit input tensor values within specified interval."""
+    data = ng_inputs[0]
+    new_type = onnx.mapping.TENSOR_TYPE_TO_NP_TYPE[onnx_node.get_attribute_value('to')]
+
+    return ng.convert(data, new_type)
 
 
 def Clip(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
