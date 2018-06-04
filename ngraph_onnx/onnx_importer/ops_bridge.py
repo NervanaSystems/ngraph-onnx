@@ -107,7 +107,8 @@ def Ceil(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngra
 def Cast(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Limit input tensor values within specified interval."""
     data = ng_inputs[0]
-    new_type = onnx.mapping.TENSOR_TYPE_TO_NP_TYPE[onnx_node.get_attribute_value('to')]
+    onnx_code_type = onnx_node.get_attribute_value('to')
+    new_type = onnx.mapping.TENSOR_TYPE_TO_NP_TYPE[onnx_code_type]
 
     return ng.convert(data, new_type)
 
