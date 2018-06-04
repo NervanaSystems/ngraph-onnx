@@ -397,6 +397,12 @@ def Div(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngrap
     return ng.divide(left, right)
 
 
+def Pow(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
+    """Perform element-wise binary power."""
+    base, exponent = broadcast_for_binary_operation(onnx_node, ng_inputs)
+    return ng.power(base, exponent)
+
+
 # Logical ops
 def Equal(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Perform the `equal` logical operation elementwise on two input tensors."""
