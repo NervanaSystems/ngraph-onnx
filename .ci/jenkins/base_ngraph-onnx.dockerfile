@@ -31,6 +31,7 @@ RUN apt-get -y install autoconf automake libtool curl make g++ unzip
 WORKDIR /root
 RUN git clone https://github.com/google/protobuf.git
 WORKDIR /root/protobuf
+RUN git checkout v3.5.2
 RUN git submodule update --init --recursive
 RUN ./autogen.sh
 RUN ./configure
