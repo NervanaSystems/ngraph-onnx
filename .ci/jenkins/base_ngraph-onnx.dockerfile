@@ -27,23 +27,17 @@ RUN apt-get -y update --fix-missing && \
     apt -y autoremove && \
     apt clean all
 
+RUN apt-get -y install autoconf automake libtool curl make g++ unzip
 WORKDIR /root
 RUN git clone https://github.com/google/protobuf.git
 WORKDIR /root/protobuf
 RUN git submodule update --init --recursive
 RUN ./autogen.sh
 RUN ./configure
-RUN make
-RUN make check
-RUN make install
-RUN ldconfig # refresh shared library cache.
-WORKDIR /root
-RUN git clone https://github.com/NervanaSystems/ngraph.git
-RUN mkdir /root/ngraph/build
-WORKDIR /root/ngraph/build
-RUN cmake ../ -DNGRAPH_USE_PREBUILT_LLVM=TRUE
 RUN make -j 8
-RUN make install
+RUN make -j 8 check
+RUN make -j 8 install
+RUN ldconfig # refresh shared library cache.
 
 RUN pip install --upgrade pip setuptools wheel && pip3 install --upgrade pip setuptools wheel
 

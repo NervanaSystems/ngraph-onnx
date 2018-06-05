@@ -36,15 +36,15 @@ print_help()
 
 create_base_img()
 {
-    if docker images --format "{{.Repository}}:{{.Tag}}" | grep -m 1 base_ngraph-onnx; then
-        echo Base image found so no need to build it again
-        return $?
-    else
+    # if docker images --format "{{.Repository}}:{{.Tag}}" | grep -m 1 base_ngraph-onnx; then
+    #     echo Base image found so no need to build it again
+    #     return $?
+    # else
         echo No base image found so need to create one
         echo -----------------------Build Base image------------------------------------
         docker build --build-arg http_proxy=$http_proxy --build-arg https_proxy=$https_proxy -t base_ngraph-onnx -f .ci/jenkins/base_ngraph-onnx.dockerfile .
         return $?
-    fi
+    # fi
 }
 
 
