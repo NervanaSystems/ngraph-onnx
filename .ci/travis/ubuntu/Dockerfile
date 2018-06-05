@@ -14,9 +14,19 @@ RUN pip install --upgrade pip setuptools wheel
 RUN pip3 install --upgrade pip setuptools wheel
 
 # ONNX dependencies
-RUN apt-get -y install protobuf-compiler libprotobuf-dev
+RUN apt-get -y install autoconf automake libtool curl make g++ unzip
 
 # Install nGraph in /root/ngraph
+WORKDIR /root
+RUN git clone https://github.com/google/protobuf.git
+WORKDIR /root/protobuf
+RUN git submodule update --init --recursive
+RUN ./autogen.sh
+RUN ./configure
+RUN make
+RUN make check
+RUN make install
+RUN ldconfig # refresh shared library cache.
 WORKDIR /root
 RUN git clone https://github.com/NervanaSystems/ngraph.git
 RUN mkdir /root/ngraph/build

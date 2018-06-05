@@ -23,10 +23,22 @@ ENV http_proxy=${http_proxy} https_proxy=${https_proxy} HTTP_PROXY=${http_proxy}
 # nGraph dependencies
 RUN apt-get -y update --fix-missing && \
     apt-get -y install git build-essential cmake clang-3.9 git curl zlib1g zlib1g-dev libtinfo-dev \
-                       python python3 python-pip python3-pip python-dev python3-dev python-virtualenv \
-                       protobuf-compiler libprotobuf-dev && \
+                       python python3 python-pip python3-pip python-dev python3-dev python-virtualenv && \
     apt -y autoremove && \
     apt clean all
+
+RUN apt-get -y install autoconf automake libtool curl make g++ unzip
+WORKDIR /root
+RUN git clone https://github.com/google/protobuf.git
+WORKDIR /root/protobuf
+RUN git checkout v3.5.2
+RUN git submodule update --init --recursive
+RUN ./autogen.sh
+RUN ./configure
+RUN make -j 8
+RUN make -j 8 check
+RUN make -j 8 install
+RUN ldconfig # refresh shared library cache.
 
 RUN pip install --upgrade pip setuptools wheel && pip3 install --upgrade pip setuptools wheel
 
