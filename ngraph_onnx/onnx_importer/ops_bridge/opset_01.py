@@ -37,30 +37,12 @@ from ngraph_onnx.onnx_importer.utils.misc import split_pads_into_pairs
 from ngraph_onnx.onnx_importer.utils.pool import make_pooling_op, make_global_pooling_op
 from ngraph_onnx.onnx_importer.utils.reduction import make_reduction_op, get_reduction_axes
 from ngraph_onnx.onnx_importer.utils.reshape import transpose, infer_dimensions, \
-    flatten_innermost_empty_dims, reorder_axes, make_slice_op, flatten
+    reorder_axes, make_slice_op, flatten
 
 if TYPE_CHECKING:
     from ngraph_onnx.onnx_importer.model_wrappers import NodeWrapper
 
 logger = logging.getLogger(__name__)
-
-
-def make_ng_nodes(onnx_node):  # type: (NodeWrapper) -> Tuple[NgraphNode]
-    """Create ngraph output Ops for an ONNX node."""
-    op_type = onnx_node.op_type
-
-    try:
-        ng_node_factory = globals()[op_type]
-    except KeyError:
-        raise NotImplementedError('Unknown operation: %s', op_type)
-
-    ng_inputs = onnx_node.get_ng_inputs()
-    ng_outputs = ng_node_factory(onnx_node, ng_inputs)
-
-    if type(ng_outputs) != tuple:
-        ng_outputs = (ng_outputs,)
-
-    return ng_outputs
 
 
 # Unary Ops
