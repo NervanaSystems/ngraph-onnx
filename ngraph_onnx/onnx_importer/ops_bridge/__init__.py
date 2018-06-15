@@ -63,7 +63,7 @@ def get_node_factory(opset_version: int=None) -> ModuleType:
     opset_module_name = 'ngraph_onnx.onnx_importer.ops_bridge.opset_{:02d}'.format(opset_version)
     try:
         return import_module(opset_module_name)
-    except ModuleNotFoundError:
+    except ImportError:
         latest_opset = fallback_module.LATEST_SUPPORTED_OPSET_VERSION  # type: ignore
         logger.warning('ONNX `ai.onnx` opset version %s is not supported. '
                        'Falling back to latest supported version: %s',
