@@ -51,15 +51,15 @@ class ModelWrapper(WrapperBaseClass):
     """Wrapper for ONNX ModelProto objects."""
 
     def __init__(self, model_proto):  # type: (onnx.ModelProto) -> None
-        self.graph = GraphWrapper(model_proto.graph)
-
         # Parse op sets listed in model
         for opset in model_proto.opset_import:
             if opset.domain in ['ai.onnx', '']:
-                self.graph.node_factory = get_node_factory(opset.version)
+                self.node_factory = get_node_factory(opset.version)
             else:
                 raise NotImplementedError('Operator set for domain %s '
                                           'is not supported', opset.domain)
+
+        self.graph = GraphWrapper(model_proto.graph, self)
 
         super(ModelWrapper, self).__init__(model_proto, self.graph)
 
@@ -71,10 +71,10 @@ class GraphWrapper(WrapperBaseClass):
     Transforms objects defined in an ONNX graph to ngraph tensors and nodes.
     """
 
-    def __init__(self, onnx_proto_instance):  # type: (onnx.GraphProto) -> None
+    def __init__(self, onnx_proto_instance, model):  # type: (onnx.GraphProto, ModelWrapper) -> None
         super(GraphWrapper, self).__init__(onnx_proto_instance, self)
         self._ng_node_cache = {}  # type: Dict[str, NgraphNode]
-        self.node_factory = get_node_factory()
+        self.model = model
         self.node = [NodeWrapper(node, self) for node in self._proto.node]
         self.input = [ValueInfoWrapper(inpt, self) for inpt in self._proto.input]
         self.output = [ValueInfoWrapper(output, self) for output in self._proto.output]
@@ -307,7 +307,7 @@ class NodeWrapper(WrapperBaseClass):
             return output_nodes_dict
 
         output_node_names = self._proto.output
-        output_nodes = make_ng_nodes(self._graph.node_factory, self)
+        output_nodes = make_ng_nodes(self._graph.model.node_factory, self)
         for output_name, node in zip(output_node_names, output_nodes):
             # Node name equals to unique name only when it just has been created above.
             # Otherwise it names are different this means that node is already present in graph.

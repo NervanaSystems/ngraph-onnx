@@ -21,7 +21,10 @@ import logging
 
 import ngraph as ng
 
-from typing import List
+from typing import List, Optional
+
+from ngraph.exceptions import UserInputError
+from ngraph.utils.types import TensorShape
 
 from ngraph_onnx import TYPE_CHECKING
 
@@ -59,3 +62,71 @@ def broadcast_for_binary_operation(onnx_node, ng_inputs):  # type: (NodeWrapper,
     start_axis = onnx_node.get_attribute_value('axis')  # start of mutually equal shape
     right = ng.broadcast(right, left.shape, start_axis)
     return left, right
+
+
+def numpy_style_broadcast_for_binary_operation(onnx_node, ng_inputs):
+    # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
+    """
+    Cast shape of two nodes to make them compatible for an element-wise binary operation.
+
+    :param onnx_node: a wrapped ONNX node
+    :param ng_inputs: left and right node (inputs of the binary op)
+    :return: left and right node after broadcasting
+    """
+    left = ng_inputs[0]
+    right = ng_inputs[1]
+
+    dimensions_identical = left.shape == right.shape
+    if dimensions_identical:
+        return left, right
+
+    output_shape = numpy_style_broadcast_output_shape(left.shape, right.shape)
+    if output_shape is None:
+        raise UserInputError('%s node (%s): Unable to broadcast shapes %s and %s.',
+                             onnx_node.op_type, onnx_node.name, left.shape, right.shape)
+
+    if right.shape != output_shape:
+        right = ng.reshape(right, [dim for dim in right.shape if dim != 1])  # Squeeze
+        right = ng.broadcast(right, output_shape)
+
+    if left.shape != output_shape:
+        left = ng.reshape(left, [dim for dim in right.shape if dim != 1])
+        left = ng.broadcast(left, output_shape)
+
+    return left, right
+
+
+def numpy_style_broadcast_output_shape(shape_a, shape_b):
+    # type: (TensorShape, TensorShape) -> Optional[TensorShape]
+    """Calculate output shape of numpy-style broadcast operation.
+
+    :param shape_a: shape of first input tensor
+    :param shape_b: shape of the second input tensor
+    :return: shape of the output tensor
+    """
+    output_shape = []  # type: List[int]
+
+    shape_a = list(shape_a)
+    shape_b = list(shape_b)
+    rank_a = len(shape_a)
+    rank_b = len(shape_b)
+    max_rank = max(rank_a, rank_b)
+
+    # left-pad A's shape with 1s until it also has p dimensions
+    if rank_a < max_rank:
+        for idx in range(max_rank - rank_a):
+            shape_a.insert(0, 1)
+
+    # left-pad B's shape with 1s until is also has p dimensions
+    elif rank_b < max_rank:
+        for idx in range(max_rank - rank_b):
+            shape_b.insert(0, 1)
+
+    for idx in range(max_rank - 1, -1, -1):
+        idx_dim_a = shape_a[idx]
+        idx_dim_b = shape_b[idx]
+        if idx_dim_a != 1 and idx_dim_b != 1 and idx_dim_a != idx_dim_b:
+            return None
+        output_shape.insert(0, max(idx_dim_a, idx_dim_b))
+
+    return output_shape

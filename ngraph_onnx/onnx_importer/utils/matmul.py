@@ -16,6 +16,8 @@
 
 from ngraph.utils.types import TensorShape
 
+from ngraph_onnx.onnx_importer.utils.binary import numpy_style_broadcast_output_shape
+
 
 def _is_matrix(shape):  # type: (TensorShape) -> bool
     """Check if tensor is a 2D matrix.
@@ -86,24 +88,7 @@ def has_matmul_compatible_shapes(shape_a, shape_b):  # noqa: C901
             shape_a = shape_a[0:-2]
             shape_b = shape_b[0:-2]
 
-    # update ranks
-    rank_a = len(shape_a)
-    rank_b = len(shape_b)
-    max_dim = max(rank_a, rank_b)
-
-    # left-pad A's shape with 1s until it also has p dimensions
-    if rank_a < max_dim:
-        for idx in range(max_dim - rank_a):
-            shape_a.insert(0, 1)
-    # left-pad B's shape with 1s until is also has p dimensions
-    elif rank_b < max_dim:
-        for idx in range(max_dim - rank_b):
-            shape_b.insert(0, 1)
-
-    for idx in range(max_dim - 1, -1, -1):
-        idx_dim_a = shape_a[idx]
-        idx_dim_b = shape_b[idx]
-        if idx_dim_a != 1 and idx_dim_b != 1 and idx_dim_a != idx_dim_b:
-            return False
+    if numpy_style_broadcast_output_shape(shape_a, shape_b) is None:
+        return False
 
     return True

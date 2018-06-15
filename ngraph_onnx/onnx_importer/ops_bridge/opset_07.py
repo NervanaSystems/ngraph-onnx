@@ -14,4 +14,13 @@
 # limitations under the License.
 # ******************************************************************************
 
+import ngraph as ng
+
 from ngraph_onnx.onnx_importer.ops_bridge.opset_06 import *  # noqa
+from ngraph_onnx.onnx_importer.utils.binary import numpy_style_broadcast_for_binary_operation
+
+
+def Add(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
+    """Perform element-wise binary addition with numpy-style broadcasting."""
+    left, right = numpy_style_broadcast_for_binary_operation(onnx_node, ng_inputs)
+    return ng.add(left, right)
