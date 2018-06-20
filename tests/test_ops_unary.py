@@ -324,3 +324,12 @@ def test_softsign():
     expected = softsign(data)
     ng_results = run_node(node, [data])
     assert np.allclose(ng_results, [expected])
+
+
+def test_identity():
+    np.random.seed(133391)
+    input_data = np.random.randint(-100, 100, (2, 3, 4), dtype=np.int32)
+
+    node = onnx.helper.make_node('Identity', inputs=['x'], outputs=['y'])
+    ng_results = run_node(node, [input_data])
+    assert np.array_equal(ng_results, [input_data])
