@@ -65,16 +65,22 @@ class NgraphBackend(Backend):
                      if ngraph_device_name == ng_device), None)
 
     @classmethod
+    def _get_supported_devices(cls):  # type: () -> List[str]
+        return ng.impl.runtime.Backend.get_registered_devices()
+
+    @classmethod
     def supports_ngraph_device(cls, ngraph_device_name):  # type: (str) -> bool
         """Check whether particular nGraph device is supported by current nGraph library.
 
         :param ngraph_device_name: Name of nGraph device.
         :return: True if current nGraph library supports ngraph_device_name.
         """
-        try:
-            ng.runtime(backend_name=ngraph_device_name)
-        except RuntimeError:
-            return False
+        # Check whether the backend was already created and if not try to create it.
+        if ngraph_device_name not in cls._get_supported_devices():
+            try:
+                ng.runtime(backend_name=ngraph_device_name)
+            except RuntimeError:
+                return False
         return True
 
     @classmethod
