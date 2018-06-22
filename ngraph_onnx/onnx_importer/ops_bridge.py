@@ -778,6 +778,35 @@ def Split(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Tup
     return tuple(outputs)
 
 
+def DepthToSpace(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
+    """Rearranges (permutes) input tensor data from depth into blocks of spatial data.
+
+    Values from the depth dimension (assuming NCHW layout) are moved in spatial blocks to the
+    height and width dimensions.
+
+    :param onnx_node: The ONNX node representing this operation.
+    :param ng_inputs: The input tensors.
+    :return: Tensor with shape [N, C/(blocksize * blocksize), H * blocksize, W * blocksize].
+    """
+    data = ng_inputs[0]
+    block_size = onnx_node.get_attribute_value('blocksize')
+    if block_size is None:
+        raise ValueError('DepthToSpace node (%s): missing required attribute \"blocksize\"',
+                         onnx_node.name)
+    n, c, h, w = 1, 1, 1, 1
+    if len(data.shape) == 4:
+        n, c, h, w, = data.shape
+    elif len(data.shape) == 3:
+        c, h, w = data.shape
+    else:
+        raise ValueError('DepthToSpace node (%s): the provided tensor shape (%s) is not supported',
+                         onnx_node.name, str(data.shape))
+
+    tmp = ng.reshape(data, [n, block_size, block_size, c // (block_size ** 2), h, w])
+    tmp = reorder_axes(tmp, [0, 3, 4, 1, 5, 2])
+    return ng.reshape(tmp, [n, c // (block_size ** 2), h * block_size, w * block_size])
+
+
 # Misc
 def Constant(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Produce a constant tensor."""
