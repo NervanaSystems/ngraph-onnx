@@ -45,6 +45,10 @@ def make_reduction_op(ng_op_type, onnx_node, ng_input):
     :param ng_input: ngraph Op to be used as input to the reduction node
     """
     reduction_axes = get_reduction_axes(onnx_node, ng_input)
+    if len(reduction_axes) > len(ng_input.shape):
+        raise ValueError('Reduction node (%s) provided reduction axes count (%d) is larger than '
+                         'input tensor rank (%d).', onnx_node.name, len(reduction_axes),
+                         len(ng_input.shape))
     op_node = ng_op_type(ng_input, reduction_axes)
 
     if onnx_node.get_attribute_value('keepdims', default=1):
