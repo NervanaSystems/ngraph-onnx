@@ -327,9 +327,31 @@ def test_softsign():
 
 
 def test_identity():
-    np.random.seed(133391)
-    input_data = np.random.randint(-100, 100, (2, 3, 4), dtype=np.int32)
+    from onnx.helper import make_node, make_graph, make_tensor_value_info, make_model
+    from ngraph_onnx.onnx_importer.importer import import_onnx_model
+    from tests.utils import get_runtime
 
-    node = onnx.helper.make_node('Identity', inputs=['x'], outputs=['y'])
-    ng_results = run_node(node, [input_data])
+    np.random.seed(133391)
+    shape = [2, 4]
+    input_data = np.random.randn(*shape).astype(np.float32)
+
+    identity_node = make_node('Identity', inputs=['x'], outputs=['y'])
+    ng_results = run_node(identity_node, [input_data])
     assert np.array_equal(ng_results, [input_data])
+
+    node1 = make_node('Add', inputs=['A', 'B'], outputs=['add1'], name='add_node1')
+    node2 = make_node('Identity', inputs=['add1'], outputs=['identity1'], name='identity_node1')
+    node3 = make_node('Abs', inputs=['identity1'], outputs=['Y'], name='abs_node1')
+
+    graph = make_graph([node1, node2, node3], 'test_graph',
+                       [make_tensor_value_info('A', onnx.TensorProto.FLOAT, shape),
+                        make_tensor_value_info('B', onnx.TensorProto.FLOAT, shape)],
+                       [make_tensor_value_info('Y', onnx.TensorProto.FLOAT, shape)])
+    model = make_model(graph, producer_name='ngarph ONNX Importer')
+    ng_model = import_onnx_model(model)[0]
+    runtime = get_runtime()
+    computation = runtime.computation(ng_model['output'], *ng_model['inputs'])
+    ng_results = computation(input_data, input_data)
+    expected_result = np.abs(input_data + input_data)
+
+    assert np.array_equal(ng_results, expected_result)
