@@ -20,7 +20,9 @@ import pytest
 import onnx
 import numpy as np
 
-from tests.utils import run_node
+from tests.utils import run_node, get_runtime
+from onnx.helper import make_node, make_graph, make_tensor_value_info, make_model
+from ngraph_onnx.onnx_importer.importer import import_onnx_model
 
 
 @pytest.mark.parametrize('input_data', [
@@ -327,10 +329,6 @@ def test_softsign():
 
 
 def test_identity():
-    from onnx.helper import make_node, make_graph, make_tensor_value_info, make_model
-    from ngraph_onnx.onnx_importer.importer import import_onnx_model
-    from tests.utils import get_runtime
-
     np.random.seed(133391)
     shape = [2, 4]
     input_data = np.random.randn(*shape).astype(np.float32)
@@ -347,7 +345,7 @@ def test_identity():
                        [make_tensor_value_info('A', onnx.TensorProto.FLOAT, shape),
                         make_tensor_value_info('B', onnx.TensorProto.FLOAT, shape)],
                        [make_tensor_value_info('Y', onnx.TensorProto.FLOAT, shape)])
-    model = make_model(graph, producer_name='ngarph ONNX Importer')
+    model = make_model(graph, producer_name='ngraph ONNX Importer')
     ng_model = import_onnx_model(model)[0]
     runtime = get_runtime()
     computation = runtime.computation(ng_model['output'], *ng_model['inputs'])
