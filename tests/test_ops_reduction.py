@@ -175,6 +175,48 @@ def test_reduce_prod():
                           np.prod(data, keepdims=False, axis=(0, 1, 2)))
 
 
+@pytest.mark.parametrize('reduction_axes', [
+    (0,),
+    (0, 2),
+    (0, 1, 2),
+])
+def test_reduce_log_sum(reduction_axes):
+    shape = [2, 4, 3, 2]
+    np.random.seed(133391)
+    input_data = np.random.uniform(0, 1, shape).astype(np.float32)
+
+    expected = np.log(np.sum(input_data, keepdims=True, axis=reduction_axes))
+    node = onnx.helper.make_node('ReduceLogSum', inputs=['x'], outputs=['y'], axes=reduction_axes)
+    ng_result = np.array(run_node(node, [input_data]).pop())
+    assert np.array_equal(expected.shape, ng_result.shape)
+    assert np.allclose(expected, ng_result)
+
+    expected = np.log(np.sum(input_data, keepdims=False, axis=reduction_axes))
+    node = onnx.helper.make_node('ReduceLogSum', inputs=['x'], outputs=['y'], keepdims=0,
+                                 axes=reduction_axes)
+    ng_result = np.array(run_node(node, [input_data]).pop())
+    assert np.array_equal(expected.shape, ng_result.shape)
+    assert np.allclose(expected, ng_result)
+
+
+def test_reduce_log_sum_default_axes():
+    shape = [2, 4, 3, 2]
+    np.random.seed(133391)
+    input_data = np.random.uniform(0, 1, shape).astype(np.float32)
+
+    expected = np.log(np.sum(input_data, keepdims=True))
+    node = onnx.helper.make_node('ReduceLogSum', inputs=['x'], outputs=['y'])
+    ng_result = np.array(run_node(node, [input_data]).pop())
+    assert np.array_equal(expected.shape, ng_result.shape)
+    assert np.allclose(expected, ng_result)
+
+    expected = np.log(np.sum(input_data, keepdims=False))
+    node = onnx.helper.make_node('ReduceLogSum', inputs=['x'], outputs=['y'], keepdims=0)
+    ng_result = np.array(run_node(node, [input_data]).pop())
+    assert np.array_equal(expected.shape, ng_result.shape)
+    assert np.allclose(expected, ng_result)
+
+
 def test_reduce_log_sum_exp():
     data = np.array([[[5, 1], [20, 2]], [[30, 1], [40, 2]], [[55, 1], [60, 2]]], dtype=np.float32)
 
