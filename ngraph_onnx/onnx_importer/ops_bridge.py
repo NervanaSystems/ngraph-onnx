@@ -334,6 +334,17 @@ def ReduceSum(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) ->
     return make_reduction_op(ng.sum, onnx_node, ng_inputs[0])
 
 
+def ReduceSumSquare(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
+    """Compute the sum square of the input tensor's element along the provided axes.
+
+    :param onnx_node: The ONNX node representing this operation.
+    :param ng_inputs: The input tensors.
+    :return: The tensor with applied ReduceSumSquare operation.
+    """
+    square_node = ng_inputs[0] * ng_inputs[0]
+    return make_reduction_op(ng.sum, onnx_node, square_node)
+
+
 def ReduceMax(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Compute the maximum value of the input tensor's elements along the provided axes."""
     return make_reduction_op(ng.max, onnx_node, ng_inputs[0])
@@ -342,6 +353,17 @@ def ReduceMax(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) ->
 def ReduceMin(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Compute the minimum value of the input tensor's elements along the provided axes."""
     return make_reduction_op(ng.min, onnx_node, ng_inputs[0])
+
+
+def ReduceLogSum(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
+    """Compute the log sum of the input tensor's element along the provided axes.
+
+    :param onnx_node: The ONNX node representing this operation.
+    :param ng_inputs: The input tensors.
+    :return: The tensor with applied ReduceLogSum operation.
+    """
+    sum_node = make_reduction_op(ng.sum, onnx_node, ng_inputs[0])
+    return ng.log(sum_node)
 
 
 def ReduceLogSumExp(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
@@ -364,8 +386,36 @@ def ReduceMean(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -
 
 
 def ReduceProd(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
-    """Compute the product of the input tensor's elements along the provided axes."""
+    """Compute the product of the input tensor's elements along the provided axes.
+
+    :param onnx_node: The ONNX node representing this operation.
+    :param ng_inputs: The input tensors.
+    :return: The tensor with applied ReduceProd operation.
+    """
     return make_reduction_op(ng.prod, onnx_node, ng_inputs[0])
+
+
+def ReduceL1(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
+    """Compute the L1 norm of the input tensor's element along the provided axes.
+
+    :param onnx_node: The ONNX node representing this operation.
+    :param ng_inputs: The input tensors.
+    :return: The tensor with applied ReduceL1 operation.
+    """
+    abs_node = ng.abs(ng_inputs[0])
+    return make_reduction_op(ng.sum, onnx_node, abs_node)
+
+
+def ReduceL2(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
+    """Compute the L2 norm of the input tensor's element along the provided axes.
+
+    :param onnx_node: The ONNX node representing this operation.
+    :param ng_inputs: The input tensors.
+    :return: The tensor with applied ReduceL2 operation.
+    """
+    square_node = ng_inputs[0] * ng_inputs[0]
+    sum_node = make_reduction_op(ng.sum, onnx_node, square_node)
+    return ng.sqrt(sum_node)
 
 
 @refactoring_required
