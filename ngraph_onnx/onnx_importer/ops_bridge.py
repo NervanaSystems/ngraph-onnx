@@ -542,9 +542,11 @@ def Gemm(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngra
     if not broadcast and input_c.shape != a_dot_b.shape:
         raise ValueError('Gemm node (%s): input data shapes are incompatible and broadcast '
                          ' was not requested!', onnx_node.name)
-
-    return alpha * a_dot_b + beta * input_c
-
+    if alpha != 1:
+        a_dot_b = alpha *a_dot_b
+    if beta != 1:
+        input_c = beta * input_c
+    return a_dot_b + input_c
 
 def Dropout(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Dropout [inference only].
