@@ -39,10 +39,9 @@ from ngraph_onnx.onnx_importer.importer import import_onnx_model
 class NgraphBackend(Backend):
     """Takes an ONNX model with inputs, perform a computation, and then return the output."""
 
-    # The requested nGraph backend to use, defaults to CPU
-    backend_name = 'CPU'  # type: str
+    # The requested (nGraph) backend to be used instead of hardcoded by ONNX test Runner.
+    backend_name = None  # type: str
 
-    _ngraph_supported_devices = []  # type: List[str]
     _ngraph_onnx_device_map = [
         # (<ngraph_backend_name>, <onnx_device_name>)
         ('CPU', 'CPU'),
@@ -61,15 +60,13 @@ class NgraphBackend(Backend):
         return NgraphBackendRep(ng_model, cls.backend_name)
 
     @classmethod
-    def _get_supported_devices(cls):  # type: () -> List[str]
-        if len(cls._ngraph_supported_devices) == 0:
-            cls._ngraph_supported_devices = ng.impl.runtime.Backend.get_registered_devices()
-        return cls._ngraph_supported_devices
-
-    @classmethod
     def _get_onnx_device_name(cls, ngraph_device_name):  # type: (str) -> Optional[str]
         return next((onnx_device for (ng_device, onnx_device) in cls._ngraph_onnx_device_map
                      if ngraph_device_name == ng_device), None)
+
+    @classmethod
+    def _get_supported_devices(cls):  # type: () -> List[str]
+        return ng.impl.runtime.Backend.get_registered_devices()
 
     @classmethod
     def supports_ngraph_device(cls, ngraph_device_name):  # type: (str) -> bool
@@ -78,11 +75,17 @@ class NgraphBackend(Backend):
         :param ngraph_device_name: Name of nGraph device.
         :return: True if current nGraph library supports ngraph_device_name.
         """
-        return ngraph_device_name in cls._get_supported_devices()
+        # Check whether the backend was already created and if not try to create it.
+        if ngraph_device_name not in cls._get_supported_devices():
+            try:
+                ng.runtime(backend_name=ngraph_device_name)
+            except RuntimeError:
+                return False
+        return True
 
     @classmethod
     def supports_device(cls, onnx_device_name):  # type: (str) -> bool
-        """Check whether this NgraphBackend supports a particular ONNX device.
+        """Check whether the requested nGraph backend supports a particular ONNX device.
 
         During running ONNX backend tests this function is called on each item of ONNX defined
         devices list. Currently this list is hardcoded and contains only two entries:

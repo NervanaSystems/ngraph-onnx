@@ -20,7 +20,9 @@ import pytest
 import onnx
 import numpy as np
 
-from tests.utils import convert_and_calculate
+from tests.utils import run_node, get_runtime
+from onnx.helper import make_node, make_graph, make_tensor_value_info, make_model
+from ngraph_onnx.onnx_importer.importer import import_onnx_model
 
 
 @pytest.mark.parametrize('input_data', [
@@ -31,7 +33,7 @@ from tests.utils import convert_and_calculate
 def test_abs(input_data):
     expected_output = np.abs(input_data)
     node = onnx.helper.make_node('Abs', inputs=['x'], outputs=['y'])
-    ng_results = convert_and_calculate(node, [input_data], [expected_output])
+    ng_results = run_node(node, [input_data])
     assert np.array_equal(ng_results, [expected_output])
 
 
@@ -43,7 +45,7 @@ def test_abs(input_data):
 def test_sqrt(input_data):
     expected_output = np.sqrt(input_data)
     node = onnx.helper.make_node('Sqrt', inputs=['x'], outputs=['y'])
-    ng_results = convert_and_calculate(node, [input_data], [expected_output])
+    ng_results = run_node(node, [input_data])
     assert np.allclose(ng_results, [expected_output])
 
 
@@ -55,7 +57,7 @@ def test_sqrt(input_data):
 def test_exp(input_data):
     expected_output = np.exp(input_data)
     node = onnx.helper.make_node('Exp', inputs=['x'], outputs=['y'])
-    ng_results = convert_and_calculate(node, [input_data], [expected_output])
+    ng_results = run_node(node, [input_data])
     assert np.allclose(ng_results, [expected_output])
 
 
@@ -67,7 +69,7 @@ def test_exp(input_data):
 def test_log(input_data):
     expected_output = np.log(input_data)
     node = onnx.helper.make_node('Log', inputs=['x'], outputs=['y'])
-    ng_results = convert_and_calculate(node, [input_data], [expected_output])
+    ng_results = run_node(node, [input_data])
     assert np.allclose(ng_results, [expected_output])
 
 
@@ -79,7 +81,7 @@ def test_log(input_data):
 def test_neg(input_data):
     expected_output = np.negative(input_data)
     node = onnx.helper.make_node('Neg', inputs=['x'], outputs=['y'])
-    ng_results = convert_and_calculate(node, [input_data], [expected_output])
+    ng_results = run_node(node, [input_data])
     assert np.array_equal(ng_results, [expected_output])
 
 
@@ -91,7 +93,7 @@ def test_neg(input_data):
 def test_floor(input_data):
     expected_output = np.floor(input_data)
     node = onnx.helper.make_node('Floor', inputs=['x'], outputs=['y'])
-    ng_results = convert_and_calculate(node, [input_data], [expected_output])
+    ng_results = run_node(node, [input_data])
     assert np.array_equal(ng_results, [expected_output])
 
 
@@ -103,7 +105,7 @@ def test_floor(input_data):
 def test_ceil(input_data):
     expected_output = np.ceil(input_data)
     node = onnx.helper.make_node('Ceil', inputs=['x'], outputs=['y'])
-    ng_results = convert_and_calculate(node, [input_data], [expected_output])
+    ng_results = run_node(node, [input_data])
     assert np.array_equal(ng_results, [expected_output])
 
 
@@ -120,7 +122,7 @@ def test_clip(min_value, max_value):
     node = onnx.helper.make_node('Clip', inputs=['x'], outputs=['y'],
                                  min=float(min_value), max=float(max_value))
     expected = np.clip(data, min_value, max_value)
-    ng_results = convert_and_calculate(node, [data], [expected])
+    ng_results = run_node(node, [data])
     assert np.allclose(ng_results, [expected])
 
 
@@ -130,12 +132,12 @@ def test_clip_default():
 
     node = onnx.helper.make_node('Clip', inputs=['x'], outputs=['y'], min=0.)
     expected = np.clip(data, np.float32(0.), np.finfo(np.float32).max)
-    ng_results = convert_and_calculate(node, [data], [expected])
+    ng_results = run_node(node, [data])
     assert np.allclose(ng_results, [expected])
 
     node = onnx.helper.make_node('Clip', inputs=['x'], outputs=['y'], max=0.)
     expected = np.clip(data, np.finfo(np.float32).min, np.float32(0.))
-    ng_results = convert_and_calculate(node, [data], [expected])
+    ng_results = run_node(node, [data])
     assert np.allclose(ng_results, [expected])
 
 
@@ -147,7 +149,7 @@ def test_clip_default():
 def test_reciprocal(input_data):
     expected_output = np.reciprocal(input_data)
     node = onnx.helper.make_node('Reciprocal', inputs=['x'], outputs=['y'])
-    ng_results = convert_and_calculate(node, [input_data], [expected_output])
+    ng_results = run_node(node, [input_data])
     assert np.allclose(ng_results, [expected_output])
 
 
@@ -166,7 +168,7 @@ def test_hardmax(axis, dim1, dim2):
     data = np.random.rand(3, 4, 5).astype(np.float32)
     expected = hardmax_2d(data.reshape(dim1, dim2)).reshape(3, 4, 5)
     node = onnx.helper.make_node('Hardmax', inputs=['x'], outputs=['y'], axis=axis)
-    ng_results = convert_and_calculate(node, [data], [expected])
+    ng_results = run_node(node, [data])
     assert np.allclose(ng_results, [expected])
 
 
@@ -182,23 +184,23 @@ def test_hardmax_special_cases():
     # default axis=1
     expected = hardmax_2d(data.reshape(3, 20)).reshape(3, 4, 5)
     node = onnx.helper.make_node('Hardmax', inputs=['x'], outputs=['y'])
-    ng_results = convert_and_calculate(node, [data], [expected])
+    ng_results = run_node(node, [data])
     assert np.allclose(ng_results, [expected])
 
     with pytest.raises(ValueError):
         node = onnx.helper.make_node('Hardmax', inputs=['x'], outputs=['y'], axis=-1)
-        ng_results = convert_and_calculate(node, [data], [expected])
+        ng_results = run_node(node, [data])
 
     with pytest.raises(ValueError):
         node = onnx.helper.make_node('Hardmax', inputs=['x'], outputs=['y'], axis=3)
-        ng_results = convert_and_calculate(node, [data], [expected])
+        ng_results = run_node(node, [data])
 
     # For multiple occurrences of the maximal values, the first occurrence is selected
     # for one-hot output
     data = np.array([[3, 3, 3, 1]]).astype(np.float32)
     expected = np.array([[1, 0, 0, 0]]).astype(np.float32)
     node = onnx.helper.make_node('Hardmax', inputs=['x'], outputs=['y'])
-    ng_results = convert_and_calculate(node, [data], [expected])
+    ng_results = run_node(node, [data])
     assert np.allclose(ng_results, [expected])
 
 
@@ -214,12 +216,12 @@ def test_hardsigmoid():
     expected = hardsigmoid(data, alpha, beta)
     node = onnx.helper.make_node('HardSigmoid', inputs=['x'], outputs=['y'], alpha=alpha,
                                  beta=beta)
-    ng_results = convert_and_calculate(node, [data], [expected])
+    ng_results = run_node(node, [data])
     assert np.allclose(ng_results, [expected])
 
     expected = hardsigmoid(data)
     node = onnx.helper.make_node('HardSigmoid', inputs=['x'], outputs=['y'])
-    ng_results = convert_and_calculate(node, [data], [expected])
+    ng_results = run_node(node, [data])
     assert np.allclose(ng_results, [expected])
 
 
@@ -234,32 +236,32 @@ def test_softmax():
 
     node = onnx.helper.make_node('Softmax', inputs=['x'], outputs=['y'], axis=0)
     expected = softmax_2d(data.reshape(1, 60)).reshape(3, 4, 5)
-    ng_results = convert_and_calculate(node, [data], [expected])
+    ng_results = run_node(node, [data])
     assert np.allclose(ng_results, [expected])
 
     node = onnx.helper.make_node('Softmax', inputs=['x'], outputs=['y'], axis=1)
     expected = softmax_2d(data.reshape(3, 20)).reshape(3, 4, 5)
-    ng_results = convert_and_calculate(node, [data], [expected])
+    ng_results = run_node(node, [data])
     assert np.allclose(ng_results, [expected])
 
     # default axis is 1
     node = onnx.helper.make_node('Softmax', inputs=['x'], outputs=['y'])
-    ng_results = convert_and_calculate(node, [data], [expected])
+    ng_results = run_node(node, [data])
     assert np.allclose(ng_results, [expected])
 
     node = onnx.helper.make_node('Softmax', inputs=['x'], outputs=['y'], axis=2)
     expected = softmax_2d(data.reshape(12, 5)).reshape(3, 4, 5)
-    ng_results = convert_and_calculate(node, [data], [expected])
+    ng_results = run_node(node, [data])
     assert np.allclose(ng_results, [expected])
 
     node = onnx.helper.make_node('Softmax', inputs=['x'], outputs=['y'], axis=-1)
     expected = softmax_2d(data.reshape(12, 5)).reshape(3, 4, 5)
-    ng_results = convert_and_calculate(node, [data], [expected])
+    ng_results = run_node(node, [data])
     assert np.allclose(ng_results, [expected])
 
     with pytest.raises(ValueError):
         node = onnx.helper.make_node('Softmax', inputs=['x'], outputs=['y'], axis=3)
-        ng_results = convert_and_calculate(node, [data], [expected])
+        ng_results = run_node(node, [data])
 
 
 def test_logsoftmax():
@@ -273,31 +275,31 @@ def test_logsoftmax():
 
     node = onnx.helper.make_node('LogSoftmax', inputs=['x'], outputs=['y'], axis=0)
     expected = logsoftmax_2d(data.reshape(1, 60)).reshape(3, 4, 5)
-    ng_results = convert_and_calculate(node, [data], [expected])
+    ng_results = run_node(node, [data])
     assert np.allclose(ng_results, [expected])
 
     node = onnx.helper.make_node('LogSoftmax', inputs=['x'], outputs=['y'], axis=1)
     expected = logsoftmax_2d(data.reshape(3, 20)).reshape(3, 4, 5)
-    ng_results = convert_and_calculate(node, [data], [expected])
+    ng_results = run_node(node, [data])
     assert np.allclose(ng_results, [expected])
 
     # default axis is 1
     node = onnx.helper.make_node('LogSoftmax', inputs=['x'], outputs=['y'])
-    ng_results = convert_and_calculate(node, [data], [expected])
+    ng_results = run_node(node, [data])
     assert np.allclose(ng_results, [expected])
 
     node = onnx.helper.make_node('LogSoftmax', inputs=['x'], outputs=['y'], axis=2)
     expected = logsoftmax_2d(data.reshape(12, 5)).reshape(3, 4, 5)
-    ng_results = convert_and_calculate(node, [data], [expected])
+    ng_results = run_node(node, [data])
     assert np.allclose(ng_results, [expected])
 
     with pytest.raises(ValueError):
         node = onnx.helper.make_node('LogSoftmax', inputs=['x'], outputs=['y'], axis=-1)
-        ng_results = convert_and_calculate(node, [data], [expected])
+        ng_results = run_node(node, [data])
 
     with pytest.raises(ValueError):
         node = onnx.helper.make_node('LogSoftmax', inputs=['x'], outputs=['y'], axis=3)
-        ng_results = convert_and_calculate(node, [data], [expected])
+        ng_results = run_node(node, [data])
 
 
 def test_softplus():
@@ -309,7 +311,7 @@ def test_softplus():
 
     node = onnx.helper.make_node('Softplus', inputs=['x'], outputs=['y'])
     expected = softplus(data)
-    ng_results = convert_and_calculate(node, [data], [expected])
+    ng_results = run_node(node, [data])
     assert np.allclose(ng_results, [expected])
 
 
@@ -322,5 +324,32 @@ def test_softsign():
 
     node = onnx.helper.make_node('Softsign', inputs=['x'], outputs=['y'])
     expected = softsign(data)
-    ng_results = convert_and_calculate(node, [data], [expected])
+    ng_results = run_node(node, [data])
     assert np.allclose(ng_results, [expected])
+
+
+def test_identity():
+    np.random.seed(133391)
+    shape = [2, 4]
+    input_data = np.random.randn(*shape).astype(np.float32)
+
+    identity_node = make_node('Identity', inputs=['x'], outputs=['y'])
+    ng_results = run_node(identity_node, [input_data])
+    assert np.array_equal(ng_results, [input_data])
+
+    node1 = make_node('Add', inputs=['A', 'B'], outputs=['add1'], name='add_node1')
+    node2 = make_node('Identity', inputs=['add1'], outputs=['identity1'], name='identity_node1')
+    node3 = make_node('Abs', inputs=['identity1'], outputs=['Y'], name='abs_node1')
+
+    graph = make_graph([node1, node2, node3], 'test_graph',
+                       [make_tensor_value_info('A', onnx.TensorProto.FLOAT, shape),
+                        make_tensor_value_info('B', onnx.TensorProto.FLOAT, shape)],
+                       [make_tensor_value_info('Y', onnx.TensorProto.FLOAT, shape)])
+    model = make_model(graph, producer_name='ngraph ONNX Importer')
+    ng_model = import_onnx_model(model)[0]
+    runtime = get_runtime()
+    computation = runtime.computation(ng_model['output'], *ng_model['inputs'])
+    ng_results = computation(input_data, input_data)
+    expected_result = np.abs(input_data + input_data)
+
+    assert np.array_equal(ng_results, expected_result)

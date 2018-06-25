@@ -23,7 +23,7 @@ import numpy as np
 import onnx
 
 
-from tests.utils import convert_and_calculate
+from tests.utils import run_node
 
 
 @pytest.mark.parametrize('onnx_op,numpy_func', [
@@ -36,7 +36,7 @@ def test_variadic(onnx_op, numpy_func):
     node = onnx.helper.make_node(onnx_op, inputs=['data_0', 'data_1', 'data_2'], outputs=['y'])
     expected_output = reduce(numpy_func, data)
 
-    ng_results = convert_and_calculate(node, data, [expected_output])
+    ng_results = run_node(node, data)
     assert np.array_equal(ng_results, [expected_output])
 
 
@@ -45,5 +45,5 @@ def test_mean():
     node = onnx.helper.make_node('Mean', inputs=['data_0', 'data_1', 'data_2'], outputs=['y'])
     expected_output = reduce(np.add, data) / len(data)
 
-    ng_results = convert_and_calculate(node, data, [expected_output])
+    ng_results = run_node(node, data)
     assert np.array_equal(ng_results, [expected_output])

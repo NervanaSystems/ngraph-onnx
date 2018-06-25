@@ -19,13 +19,13 @@ import numpy as np
 import onnx
 import pytest
 
-from tests.utils import convert_and_calculate
+from tests.utils import run_node
 
 
 def import_and_compute(op_type, input_data, **node_attrs):
     data_inputs = [np.array(input_data)]
     node = onnx.helper.make_node(op_type, inputs=['x'], outputs=['y'], **node_attrs)
-    return convert_and_calculate(node, data_inputs, data_inputs).pop()
+    return run_node(node, data_inputs).pop()
 
 
 def assert_onnx_import_equals_callable(onnx_op_type, python_function, data, **kwargs):
@@ -67,7 +67,7 @@ def test_leaky_relu():
     assert_onnx_import_equals_callable('LeakyRelu', leaky_relu, [-2, -1., 0., 1., 2.], alpha=0.5)
     assert_onnx_import_equals_callable('LeakyRelu', leaky_relu, [0.])
     assert_onnx_import_equals_callable('LeakyRelu', leaky_relu,
-                                       [-0.9, -0.8, -0.7, -0.4, -0.3, -0.2, -0.1], alpha=1)
+                                       [-0.9, -0.8, -0.7, -0.4, -0.3, -0.2, -0.1], alpha=1.)
     assert_onnx_import_equals_callable('LeakyRelu', leaky_relu, [[1, 2, 3], [4, 5, 6]], alpha=0.2)
     assert_onnx_import_equals_callable('LeakyRelu', leaky_relu, [[-3, -2, -1], [1, 2, 3]])
 
@@ -86,7 +86,7 @@ def test_parametric_relu(x, slope):
     x, slope = np.array(x), np.array(slope)
     expected_output = parametic_relu(x, slope)
     node = onnx.helper.make_node('PRelu', inputs=['x', 'slope'], outputs=['y'])
-    output = convert_and_calculate(node, [x, slope], [expected_output]).pop()
+    output = run_node(node, [x, slope]).pop()
     assert np.allclose(output, expected_output)
 
 

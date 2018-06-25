@@ -21,6 +21,7 @@ import logging
 from typing import Tuple, List
 
 import numpy as np
+import onnx.mapping
 from functools import reduce
 from ngraph.utils.types import get_dtype
 from ngraph_onnx import TYPE_CHECKING
@@ -31,35 +32,17 @@ import ngraph as ng
 from ngraph_onnx.onnx_importer.utils.binary import broadcast_for_binary_operation
 from ngraph_onnx.onnx_importer.utils.conv import make_convolution_op
 from ngraph_onnx.onnx_importer.utils.decorators import refactoring_required
-from ngraph_onnx.onnx_importer.utils.matmul import has_matmul_compatible_shapes
+from ngraph_onnx.onnx_importer.utils.matmul import reshape_for_matmul
 from ngraph_onnx.onnx_importer.utils.misc import split_pads_into_pairs
 from ngraph_onnx.onnx_importer.utils.pool import make_pooling_op, make_global_pooling_op
 from ngraph_onnx.onnx_importer.utils.reduction import make_reduction_op, get_reduction_axes
 from ngraph_onnx.onnx_importer.utils.reshape import transpose, infer_dimensions, \
-    flatten_innermost_empty_dims, reorder_axes, make_slice_op, flatten
+    reorder_axes, make_slice_op, flatten
 
 if TYPE_CHECKING:
     from ngraph_onnx.onnx_importer.model_wrappers import NodeWrapper
 
 logger = logging.getLogger(__name__)
-
-
-def make_ng_nodes(onnx_node):  # type: (NodeWrapper) -> Tuple[NgraphNode]
-    """Create ngraph output Ops for an ONNX node."""
-    op_type = onnx_node.op_type
-
-    try:
-        ng_node_factory = globals()[op_type]
-    except KeyError:
-        raise NotImplementedError('Unknown operation: %s', op_type)
-
-    ng_inputs = onnx_node.get_ng_inputs()
-    ng_outputs = ng_node_factory(onnx_node, ng_inputs)
-
-    if type(ng_outputs) != tuple:
-        ng_outputs = (ng_outputs,)
-
-    return ng_outputs
 
 
 # Unary Ops
@@ -68,9 +51,48 @@ def Abs(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngrap
     return ng.absolute(ng_inputs[0])
 
 
+def Acos(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
+    """Apply f(x) = acos(x) to the input tensor elementwise."""
+    return ng.acos(ng_inputs[0])
+
+
+def Asin(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
+    """Apply f(x) = asin(x) to the input tensor elementwise."""
+    return ng.asin(ng_inputs[0])
+
+
+def Atan(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
+    """Apply f(x) = atan(x) to the input tensor elementwise."""
+    return ng.atan(ng_inputs[0])
+
+
+def Sin(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
+    """Apply f(x) = sin(x) to the input tensor elementwise."""
+    return ng.sin(ng_inputs[0])
+
+
+def Cos(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
+    """Apply f(x) = cos(x) to the input tensor elementwise."""
+    return ng.cos(ng_inputs[0])
+
+
+def Tan(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
+    """Apply f(x) = tan(x) to the input tensor elementwise."""
+    return ng.tan(ng_inputs[0])
+
+
 def Ceil(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Apply f(x) = ceil(x) to the input tensor elementwise."""
     return ng.ceiling(ng_inputs[0])
+
+
+def Cast(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
+    """Limit input tensor values within specified interval."""
+    data = ng_inputs[0]
+    onnx_code_type = onnx_node.get_attribute_value('to')
+    new_type = onnx.mapping.TENSOR_TYPE_TO_NP_TYPE[onnx_code_type]
+
+    return ng.convert(data, new_type)
 
 
 def Clip(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
@@ -230,6 +252,16 @@ def LogSoftmax(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -
     return ng.log(ng.softmax(data, range(axis, len(data.shape))))
 
 
+def Identity(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
+    """Identity operator returning input tensor.
+
+    :param onnx_node: The ONNX node representing this operation.
+    :param ng_inputs: The input tensors.
+    :return: The input tensor.
+    """
+    return ng_inputs[0]
+
+
 @refactoring_required
 def Hardmax(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Compute the hardmax values for each layer in the batch of the given input.
@@ -294,6 +326,17 @@ def ReduceSum(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) ->
     return make_reduction_op(ng.sum, onnx_node, ng_inputs[0])
 
 
+def ReduceSumSquare(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
+    """Compute the sum square of the input tensor's element along the provided axes.
+
+    :param onnx_node: The ONNX node representing this operation.
+    :param ng_inputs: The input tensors.
+    :return: The tensor with applied ReduceSumSquare operation.
+    """
+    square_node = ng_inputs[0] * ng_inputs[0]
+    return make_reduction_op(ng.sum, onnx_node, square_node)
+
+
 def ReduceMax(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Compute the maximum value of the input tensor's elements along the provided axes."""
     return make_reduction_op(ng.max, onnx_node, ng_inputs[0])
@@ -302,6 +345,17 @@ def ReduceMax(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) ->
 def ReduceMin(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Compute the minimum value of the input tensor's elements along the provided axes."""
     return make_reduction_op(ng.min, onnx_node, ng_inputs[0])
+
+
+def ReduceLogSum(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
+    """Compute the log sum of the input tensor's element along the provided axes.
+
+    :param onnx_node: The ONNX node representing this operation.
+    :param ng_inputs: The input tensors.
+    :return: The tensor with applied ReduceLogSum operation.
+    """
+    sum_node = make_reduction_op(ng.sum, onnx_node, ng_inputs[0])
+    return ng.log(sum_node)
 
 
 def ReduceLogSumExp(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
@@ -324,8 +378,36 @@ def ReduceMean(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -
 
 
 def ReduceProd(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
-    """Compute the product of the input tensor's elements along the provided axes."""
+    """Compute the product of the input tensor's elements along the provided axes.
+
+    :param onnx_node: The ONNX node representing this operation.
+    :param ng_inputs: The input tensors.
+    :return: The tensor with applied ReduceProd operation.
+    """
     return make_reduction_op(ng.prod, onnx_node, ng_inputs[0])
+
+
+def ReduceL1(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
+    """Compute the L1 norm of the input tensor's element along the provided axes.
+
+    :param onnx_node: The ONNX node representing this operation.
+    :param ng_inputs: The input tensors.
+    :return: The tensor with applied ReduceL1 operation.
+    """
+    abs_node = ng.abs(ng_inputs[0])
+    return make_reduction_op(ng.sum, onnx_node, abs_node)
+
+
+def ReduceL2(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
+    """Compute the L2 norm of the input tensor's element along the provided axes.
+
+    :param onnx_node: The ONNX node representing this operation.
+    :param ng_inputs: The input tensors.
+    :return: The tensor with applied ReduceL2 operation.
+    """
+    square_node = ng_inputs[0] * ng_inputs[0]
+    sum_node = make_reduction_op(ng.sum, onnx_node, square_node)
+    return ng.sqrt(sum_node)
 
 
 @refactoring_required
@@ -365,6 +447,12 @@ def Div(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngrap
     """Perform element-wise binary division."""
     left, right = broadcast_for_binary_operation(onnx_node, ng_inputs)
     return ng.divide(left, right)
+
+
+def Pow(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
+    """Perform element-wise binary power."""
+    base, exponent = broadcast_for_binary_operation(onnx_node, ng_inputs)
+    return ng.power(base, exponent)
 
 
 # Logical ops
@@ -479,25 +567,20 @@ def Gemm(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngra
     if trans_b:
         input_b = transpose(input_b)
 
-    # onnx-tensorflow: https://github.com/onnx/onnx-tensorflow/
-    #  blob/17075f44c9071600beccfc62c92b22d1cd957bfd/onnx_tf/backend.py#L711
-    # They have hardcoded flatten input `A` before transposition.
-    #
-    # Firstly, we check whether input data have incompatible shapes and then try flatten input data.
-    if not has_matmul_compatible_shapes(input_a.shape, input_b.shape):
-        input_a = flatten(input_a, 1)  # Flatten ND tensors to 2D matrices
-        input_b = flatten(input_b, 1)
-        if not has_matmul_compatible_shapes(input_a.shape, input_b.shape):
-            raise ValueError('Gemm node (%s): input "A" and "B" data shapes are incompatible to '
-                             'multiply with each other.', onnx_node.name)
+    input_a, input_b = reshape_for_matmul(onnx_node, input_a, input_b)
 
     a_dot_b = ng.dot(input_a, input_b)
 
     if not broadcast and input_c.shape != a_dot_b.shape:
         raise ValueError('Gemm node (%s): input data shapes are incompatible and broadcast '
                          ' was not requested!', onnx_node.name)
+    if alpha != 1:
+        a_dot_b = alpha * a_dot_b
 
-    return alpha * a_dot_b + beta * input_c
+    if beta != 1:
+        input_c = beta * input_c
+
+    return a_dot_b + input_c
 
 
 def Dropout(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
