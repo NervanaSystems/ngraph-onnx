@@ -270,6 +270,16 @@ def LogSoftmax(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -
     return ng.log(ng.softmax(data, range(axis, len(data.shape))))
 
 
+def Identity(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
+    """Identity operator returning input tensor.
+
+    :param onnx_node: The ONNX node representing this operation.
+    :param ng_inputs: The input tensors.
+    :return: The input tensor.
+    """
+    return ng_inputs[0]
+
+
 @refactoring_required
 def Hardmax(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Compute the hardmax values for each layer in the batch of the given input.
