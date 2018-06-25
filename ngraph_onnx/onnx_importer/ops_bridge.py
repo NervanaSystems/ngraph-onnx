@@ -37,7 +37,7 @@ from ngraph_onnx.onnx_importer.utils.misc import split_pads_into_pairs
 from ngraph_onnx.onnx_importer.utils.pool import make_pooling_op, make_global_pooling_op
 from ngraph_onnx.onnx_importer.utils.reduction import make_reduction_op, get_reduction_axes
 from ngraph_onnx.onnx_importer.utils.reshape import transpose, infer_dimensions, \
-    flatten_innermost_empty_dims, reorder_axes, make_slice_op, flatten
+    reorder_axes, make_slice_op, flatten
 
 if TYPE_CHECKING:
     from ngraph_onnx.onnx_importer.model_wrappers import NodeWrapper
