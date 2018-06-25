@@ -18,8 +18,11 @@ from typing import Tuple
 from ngraph.utils.types import TensorShape
 from ngraph.impl import Node as NgraphNode
 
-from ngraph_onnx.onnx_importer.model_wrappers import NodeWrapper
+from ngraph_onnx import TYPE_CHECKING
 from ngraph_onnx.onnx_importer.utils.reshape import flatten
+
+if TYPE_CHECKING:
+    from ngraph_onnx.onnx_importer.model_wrappers import NodeWrapper
 
 
 def _is_matrix(shape):  # type: (TensorShape) -> bool
