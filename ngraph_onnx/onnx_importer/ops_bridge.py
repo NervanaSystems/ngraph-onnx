@@ -32,7 +32,7 @@ import ngraph as ng
 from ngraph_onnx.onnx_importer.utils.binary import broadcast_for_binary_operation
 from ngraph_onnx.onnx_importer.utils.conv import make_convolution_op
 from ngraph_onnx.onnx_importer.utils.decorators import refactoring_required
-from ngraph_onnx.onnx_importer.utils.matmul import has_matmul_compatible_shapes
+from ngraph_onnx.onnx_importer.utils.matmul import reshape_for_matmul
 from ngraph_onnx.onnx_importer.utils.misc import split_pads_into_pairs
 from ngraph_onnx.onnx_importer.utils.pool import make_pooling_op, make_global_pooling_op
 from ngraph_onnx.onnx_importer.utils.reduction import make_reduction_op, get_reduction_axes
@@ -585,25 +585,20 @@ def Gemm(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngra
     if trans_b:
         input_b = transpose(input_b)
 
-    # onnx-tensorflow: https://github.com/onnx/onnx-tensorflow/
-    #  blob/17075f44c9071600beccfc62c92b22d1cd957bfd/onnx_tf/backend.py#L711
-    # They have hardcoded flatten input `A` before transposition.
-    #
-    # Firstly, we check whether input data have incompatible shapes and then try flatten input data.
-    if not has_matmul_compatible_shapes(input_a.shape, input_b.shape):
-        input_a = flatten(input_a, 1)  # Flatten ND tensors to 2D matrices
-        input_b = flatten(input_b, 1)
-        if not has_matmul_compatible_shapes(input_a.shape, input_b.shape):
-            raise ValueError('Gemm node (%s): input "A" and "B" data shapes are incompatible to '
-                             'multiply with each other.', onnx_node.name)
+    input_a, input_b = reshape_for_matmul(onnx_node, input_a, input_b)
 
     a_dot_b = ng.dot(input_a, input_b)
 
     if not broadcast and input_c.shape != a_dot_b.shape:
         raise ValueError('Gemm node (%s): input data shapes are incompatible and broadcast '
                          ' was not requested!', onnx_node.name)
+    if alpha != 1:
+        a_dot_b = alpha * a_dot_b
 
-    return alpha * a_dot_b + beta * input_c
+    if beta != 1:
+        input_c = beta * input_c
+
+    return a_dot_b + input_c
 
 
 def Dropout(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode

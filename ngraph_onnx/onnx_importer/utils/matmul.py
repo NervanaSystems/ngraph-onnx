@@ -13,8 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ******************************************************************************
+from typing import Tuple
 
 from ngraph.utils.types import TensorShape
+from ngraph.impl import Node as NgraphNode
+
+from ngraph_onnx import TYPE_CHECKING
+from ngraph_onnx.onnx_importer.utils.reshape import flatten
+
+if TYPE_CHECKING:
+    from ngraph_onnx.onnx_importer.model_wrappers import NodeWrapper
 
 
 def _is_matrix(shape):  # type: (TensorShape) -> bool
@@ -35,7 +43,7 @@ def _is_vector(shape):  # type: (TensorShape) -> bool
 
 def has_matmul_compatible_shapes(shape_a, shape_b):  # noqa: C901
     # type: (TensorShape, TensorShape) -> bool
-    # FIXME: C901 too comples function
+    # FIXME: C901 function too complex
     """Check wheter input tensors have compatible shapes to multiply A @ B.
 
     Shape requirements are defined by NumPy.matmul function. They boil down to:
@@ -107,3 +115,26 @@ def has_matmul_compatible_shapes(shape_a, shape_b):  # noqa: C901
             return False
 
     return True
+
+
+def reshape_for_matmul(onnx_node, input_a, input_b):
+    # type: (NodeWrapper, NgraphNode, NgraphNode) -> Tuple[NgraphNode, NgraphNode]
+    """Adjust input tensor shapes for matrix multiplication.
+
+    This is based on an idea from onnx-tensorflow
+    https://github.com/onnx/onnx-tensorflow/blob/17075f44c9071600beccfc62c92b22d1cd957bfd/onnx_tf/backend.py#L711
+    They have hardcoded flatten input `A` before transposition.
+
+    :param onnx_node: ONNX node for the matrix multiplication operation
+    :param input_a: left side input node
+    :param input_b: right side input node
+    :return: tuple with input_a and input_b reshaped if needed
+    """
+    # First we check whether input data have incompatible shapes and then try flatten input data.
+    if not has_matmul_compatible_shapes(input_a.shape, input_b.shape):
+        input_a = flatten(input_a, 1)  # Flatten ND tensors to 2D matrices
+        input_b = flatten(input_b, 1)
+        if not has_matmul_compatible_shapes(input_a.shape, input_b.shape):
+            raise ValueError('%s node (%s): input "A" and "B" data shapes are incompatible to '
+                             'multiply with each other.', onnx_node.op_type, onnx_node.name)
+    return input_a, input_b
