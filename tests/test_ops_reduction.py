@@ -180,6 +180,91 @@ def test_reduce_prod():
     (0, 2),
     (0, 1, 2),
 ])
+def test_reduce_l1(reduction_axes):
+    shape = [2, 4, 3, 2]
+    np.random.seed(133391)
+    input_data = np.random.uniform(-100, 100, shape).astype(np.float32)
+
+    expected = np.sum(np.abs(input_data), keepdims=True, axis=reduction_axes)
+    node = onnx.helper.make_node('ReduceL1', inputs=['x'], outputs=['y'], axes=reduction_axes)
+    ng_result = np.array(run_node(node, [input_data]).pop())
+    assert np.array_equal(expected.shape, ng_result.shape)
+    assert np.allclose(expected, ng_result)
+
+    expected = np.sum(np.abs(input_data), keepdims=False, axis=reduction_axes)
+    node = onnx.helper.make_node('ReduceL1', inputs=['x'], outputs=['y'], keepdims=0,
+                                 axes=reduction_axes)
+    ng_result = np.array(run_node(node, [input_data]).pop())
+    assert np.array_equal(expected.shape, ng_result.shape)
+    assert np.allclose(expected, ng_result)
+
+
+def test_reduce_l1_default_axes():
+    shape = [2, 4, 3, 2]
+    np.random.seed(133391)
+    input_data = np.random.uniform(-100, 100, shape).astype(np.float32)
+
+    expected = np.sum(np.abs(input_data), keepdims=True)
+    node = onnx.helper.make_node('ReduceL1', inputs=['x'], outputs=['y'])
+    ng_result = np.array(run_node(node, [input_data]).pop())
+    assert np.array_equal(expected.shape, ng_result.shape)
+    assert np.allclose(expected, ng_result)
+
+    expected = np.sum(np.abs(input_data), keepdims=False)
+    node = onnx.helper.make_node('ReduceL1', inputs=['x'], outputs=['y'], keepdims=0)
+    ng_result = np.array(run_node(node, [input_data]).pop())
+    assert np.array_equal(expected.shape, ng_result.shape)
+    assert np.allclose(expected, ng_result)
+
+
+@pytest.mark.parametrize('reduction_axes', [
+    (0,),
+    (0, 2),
+    (0, 1, 2),
+])
+def test_reduce_l2(reduction_axes):
+    shape = [2, 4, 3, 2]
+    np.random.seed(133391)
+    input_data = np.random.uniform(-100, 100, shape).astype(np.float32)
+
+    expected = np.sqrt(np.sum(np.square(input_data), keepdims=True, axis=reduction_axes))
+    node = onnx.helper.make_node('ReduceL2', inputs=['x'], outputs=['y'], axes=reduction_axes)
+    raw_result = run_node(node, [input_data])
+    ng_result = np.array(raw_result.pop())
+    assert np.array_equal(expected.shape, ng_result.shape)
+    assert np.allclose(expected, ng_result)
+
+    expected = np.sqrt(np.sum(np.square(input_data), keepdims=False, axis=reduction_axes))
+    node = onnx.helper.make_node('ReduceL2', inputs=['x'], outputs=['y'], keepdims=0,
+                                 axes=reduction_axes)
+    ng_result = np.array(run_node(node, [input_data]).pop())
+    assert np.array_equal(expected.shape, ng_result.shape)
+    assert np.allclose(expected, ng_result)
+
+
+def test_reduce_l2_default_axes():
+    shape = [2, 4, 3, 2]
+    np.random.seed(133391)
+    input_data = np.random.uniform(-100, 100, shape).astype(np.float32)
+
+    expected = np.sqrt(np.sum(np.square(input_data), keepdims=True))
+    node = onnx.helper.make_node('ReduceL2', inputs=['x'], outputs=['y'])
+    ng_result = np.array(run_node(node, [input_data]).pop())
+    assert np.array_equal(expected.shape, ng_result.shape)
+    assert np.allclose(expected, ng_result)
+
+    expected = np.sqrt(np.sum(np.square(input_data), keepdims=False))
+    node = onnx.helper.make_node('ReduceL2', inputs=['x'], outputs=['y'], keepdims=0)
+    ng_result = np.array(run_node(node, [input_data]).pop())
+    assert np.array_equal(expected.shape, ng_result.shape)
+    assert np.allclose(expected, ng_result)
+
+
+@pytest.mark.parametrize('reduction_axes', [
+    (0,),
+    (0, 2),
+    (0, 1, 2),
+])
 def test_reduce_log_sum(reduction_axes):
     shape = [2, 4, 3, 2]
     np.random.seed(133391)
@@ -239,6 +324,48 @@ def test_reduce_log_sum_exp():
                           logsumexp(data, keepdims=True, axis=(0, 1, 2)))
     assert np.array_equal(import_and_compute('ReduceLogSumExp', data, axes=(0, 1, 2), keepdims=0),
                           logsumexp(data, keepdims=False, axis=(0, 1, 2)))
+
+
+@pytest.mark.parametrize('reduction_axes', [
+    (0,),
+    (0, 2),
+    (0, 1, 2),
+])
+def test_reduce_sum_square(reduction_axes):
+    shape = [2, 4, 3, 2]
+    np.random.seed(133391)
+    input_data = np.random.uniform(-100, 100, shape).astype(np.float32)
+
+    expected = np.sum(np.square(input_data), keepdims=True, axis=reduction_axes)
+    node = onnx.helper.make_node('ReduceSumSquare', inputs=['x'], outputs=['y'], axes=reduction_axes)
+    ng_result = np.array(run_node(node, [input_data]).pop())
+    assert np.array_equal(expected.shape, ng_result.shape)
+    assert np.allclose(expected, ng_result)
+
+    expected = np.sum(np.square(input_data), keepdims=False, axis=reduction_axes)
+    node = onnx.helper.make_node('ReduceSumSquare', inputs=['x'], outputs=['y'], keepdims=0,
+                                 axes=reduction_axes)
+    ng_result = np.array(run_node(node, [input_data]).pop())
+    assert np.array_equal(expected.shape, ng_result.shape)
+    assert np.allclose(expected, ng_result)
+
+
+def test_reduce_sum_square_default_axes():
+    shape = [2, 4, 3, 2]
+    np.random.seed(133391)
+    input_data = np.random.uniform(-100, 100, shape).astype(np.float32)
+
+    expected = np.sum(np.square(input_data), keepdims=True)
+    node = onnx.helper.make_node('ReduceSumSquare', inputs=['x'], outputs=['y'])
+    ng_result = np.array(run_node(node, [input_data]).pop())
+    assert np.array_equal(expected.shape, ng_result.shape)
+    assert np.allclose(expected, ng_result)
+
+    expected = np.sum(np.square(input_data), keepdims=False)
+    node = onnx.helper.make_node('ReduceSumSquare', inputs=['x'], outputs=['y'], keepdims=0)
+    ng_result = np.array(run_node(node, [input_data]).pop())
+    assert np.array_equal(expected.shape, ng_result.shape)
+    assert np.allclose(expected, ng_result)
 
 
 # -> NGRAPH-1839
