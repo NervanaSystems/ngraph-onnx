@@ -44,6 +44,23 @@ def run_node(onnx_node, data_inputs):
                            '> is not supported!')
 
 
+def run_model(onnx_model, data_inputs):
+    # type: (onnx.ModelProto, List[np.ndarray]) -> List[np.ndarray]
+    """
+    Convert ONNX model to an ngraph model and perform computation on input data.
+
+    :param onnx_model: ONNX ModelProto describing an ONNX model
+    :param data_inputs: list of numpy ndarrays with input data
+    :return: list of numpy ndarrays with computed output
+    """
+    NgraphBackend.backend_name = pytest.config.getoption('backend', default='CPU')
+    if NgraphBackend.supports_ngraph_device(NgraphBackend.backend_name):
+        return NgraphBackend.run_model(onnx_model, data_inputs)
+    else:
+        raise RuntimeError('The requested nGraph backend <' + NgraphBackend.backend_name +
+                           '> is not supported!')
+
+
 def all_arrays_equal(first_list, second_list):
     # type: (Iterable[np.ndarray], Iterable[np.ndarray]) -> bool
     """

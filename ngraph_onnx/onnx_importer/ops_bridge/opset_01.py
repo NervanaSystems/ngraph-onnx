@@ -45,24 +45,6 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-def make_ng_nodes(onnx_node):  # type: (NodeWrapper) -> Tuple[NgraphNode]
-    """Create ngraph output Ops for an ONNX node."""
-    op_type = onnx_node.op_type
-
-    try:
-        ng_node_factory = globals()[op_type]
-    except KeyError:
-        raise NotImplementedError('Unknown operation: %s', op_type)
-
-    ng_inputs = onnx_node.get_ng_inputs()
-    ng_outputs = ng_node_factory(onnx_node, ng_inputs)
-
-    if type(ng_outputs) != tuple:
-        ng_outputs = (ng_outputs,)
-
-    return ng_outputs
-
-
 # Unary Ops
 def Abs(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Apply f(x) = abs(x) to the input tensor elementwise."""
