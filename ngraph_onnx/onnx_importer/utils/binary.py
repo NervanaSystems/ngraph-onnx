@@ -90,7 +90,7 @@ def numpy_style_broadcast_for_binary_operation(onnx_node, ng_inputs):
         right = ng.broadcast(right, output_shape)
 
     if left.shape != output_shape:
-        left = ng.reshape(left, [dim for dim in right.shape if dim != 1])
+        left = ng.reshape(left, [dim for dim in left.shape if dim != 1])
         left = ng.broadcast(left, output_shape)
 
     return left, right
