@@ -20,11 +20,10 @@ from ngraph.impl import Node as NgraphNode
 
 from ngraph_onnx import TYPE_CHECKING
 from ngraph_onnx.onnx_importer.utils.reshape import flatten
+from ngraph_onnx.onnx_importer.utils.binary import numpy_style_broadcast_output_shape
 
 if TYPE_CHECKING:
     from ngraph_onnx.onnx_importer.model_wrappers import NodeWrapper
-
-from ngraph_onnx.onnx_importer.utils.binary import numpy_style_broadcast_output_shape
 
 
 def _is_matrix(shape):  # type: (TensorShape) -> bool
