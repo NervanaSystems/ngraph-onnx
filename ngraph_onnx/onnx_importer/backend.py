@@ -79,8 +79,16 @@ class NgraphBackend(Backend):
         if ngraph_device_name not in cls._get_supported_devices():
             try:
                 ng.runtime(backend_name=ngraph_device_name)
-            except RuntimeError:
-                return False
+            except RuntimeError as e:
+                # Catch specific error raised when backend hasn't been registered yet with message
+                # like:
+                # 'Backend \'' + ngraph_device_name + '\' not found in registered backends',
+                # but using more permissive condition to protect against slight changes in error
+                # message content.
+                if str(ngraph_device_name) in str(e) and 'not found' in str(e):
+                    return False
+                else:
+                    raise e
         return True
 
     @classmethod
