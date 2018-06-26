@@ -719,8 +719,7 @@ def Concat(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ng
         raise ValueError('Concat node (%s): requires "axis" attribute', onnx_node.name)
 
     if len(ng_inputs) < 2:
-        raise ValueError('Concat node (%s): requires at least 2 inputs, %d given.',
-                         onnx_node.name, len(ng_inputs))
+        return ng_inputs[0]
 
     unique_input_ranks = {len(node.shape) for node in ng_inputs}
     if len(unique_input_ranks) != 1:
