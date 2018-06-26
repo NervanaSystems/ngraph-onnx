@@ -606,11 +606,27 @@ def ConvTranspose(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]
 
 def Pad(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Add padding to the input tensor."""
+    # Oprator set version 1
+    paddings = onnx_node.get_attribute_value('paddings')
+    # Operator set version >= 2
     pads = onnx_node.get_attribute_value('pads')
+
+    pads = pads if pads is not None else paddings
+    if pads is None:
+        raise ValueError('Pad node (s%): paddings attribute is required.', onnx_node.name)
+
     constant = 'constant'
     mode = onnx_node.get_attribute_value('mode', constant)  # 'constant', 'reflect' or 'edge'
-    value = onnx_node.get_attribute_value('value', 0)
+    value = onnx_node.get_attribute_value('value', 0.)
 
+    if len(pads) != 2 * len(ng_inputs[0].shape):
+        raise ValueError('Pad node (%s): \'paddings rank (%d) should be double of input tensor '
+                         'rank (%d).', onnx_node.name, len(pads), len(ng_inputs[0].shape))
+
+    # Operator set version >= 2
+    if any(map(lambda x: x < 0, pads)):
+        raise NotImplementedError('Pad node (%s): removing padding elements is not supported yet.',
+                                  onnx_node.name)
     if mode != constant:
         raise NotImplementedError('Pad node (%s): only constant padding is supported.', onnx_node.name)
 
