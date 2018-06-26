@@ -80,8 +80,9 @@ class NgraphBackend(Backend):
             try:
                 ng.runtime(backend_name=ngraph_device_name)
             except RuntimeError as e:
-                expected_err_msg = 'Backend \'' + ngraph_device_name + '\' not found in registered backends'
-                if str(e) == expected_err_msg:
+                # XXX: Using such permissive condition to protect against slight changes in error
+                # message content.
+                if str(ngraph_device_name) in str(e) and 'not found' in str(e):
                     return False
                 else:
                     raise e
