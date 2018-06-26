@@ -66,7 +66,7 @@ def run_model(onnx_model, data_inputs):
 
 
 def get_node_model(op_type, *input_data, opset=1, num_outputs=1, **node_attributes):
-    # type: (str, Any, Optional[int], Optional[int], Optional[Any]) -> onnx.ModelProto
+    # type: (str, *Any, Optional[int], Optional[int], **Any) -> onnx.ModelProto
     """Generate model with single requested node.
 
     :param op_type: The ONNX node operation.
