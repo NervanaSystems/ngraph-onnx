@@ -869,3 +869,9 @@ def Size(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngra
     """Return input size."""
     # Dtype int64 is required for ONNX unit tests.
     return ng.constant(flatten(ng_inputs[0], 0).shape[1], dtype=np.int64)
+
+
+@refactoring_required
+def GRU(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
+    """Return node performing GRU operation."""
+    return None
