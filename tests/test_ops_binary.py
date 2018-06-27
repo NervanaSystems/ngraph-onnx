@@ -94,25 +94,12 @@ def test_add():
     ((5, 4), (1,)),
     ((5, 4), (4,)),
     ((15, 3, 5), (3, 5)),
-])
-def test_add_opset7(left_shape, right_shape):
-    """Test Add-7 operator, which uses numpy-style broadcasting."""
-    left_input = np.ones(left_shape)
-    right_input = np.ones(right_shape)
-    assert np.array_equal(import_and_compute('Add', left_input, right_input, opset=7),
-                          left_input + right_input)
-
-
-# -> NC5-191
-@pytest.mark.xfail(reason='Need to support numpy-style broadcasting')
-@pytest.mark.parametrize('left_shape,right_shape', [
     ((15, 3, 5), (15, 1, 5)),
     ((15, 3, 5), (3, 1)),
     ((8, 1, 6, 1), (7, 1, 5)),
 ])
-def test_add_opset7_failing(left_shape, right_shape):
+def test_add_opset7(left_shape, right_shape):
     """Test Add-7 operator, which uses numpy-style broadcasting."""
-    # TODO: fix broadcasting problem and merge into test above
     left_input = np.ones(left_shape)
     right_input = np.ones(right_shape)
     assert np.array_equal(import_and_compute('Add', left_input, right_input, opset=7),

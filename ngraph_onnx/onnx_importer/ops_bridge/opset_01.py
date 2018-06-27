@@ -188,11 +188,11 @@ def PRelu(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngr
     if len(slope.shape) == 0:
         return ng.maximum(slope * x, x)
     elif slope.shape[0] == 1:
-        slope = ng.broadcast(slope, [x.shape[0], 1])
+        slope = ng.broadcast_to(slope, [x.shape[0], 1])
         slope = ng.reshape(slope, [x.shape[0]])
-        return ng.maximum(ng.broadcast(slope, x.shape, 0) * x, x)
+        return ng.maximum(ng.broadcast_to(slope, x.shape, 0) * x, x)
     else:
-        return ng.maximum(ng.broadcast(slope, x.shape, 1) * x, x)
+        return ng.maximum(ng.broadcast_to(slope, x.shape, 1) * x, x)
 
 
 def ThresholdedRelu(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
@@ -387,8 +387,8 @@ def ReduceMean(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -
     sum_node = make_reduction_op(ng.sum, onnx_node, ng_inputs[0])
     reduction_axes = get_reduction_axes(onnx_node, ng_inputs[0])
     avg_elem_count = np.prod([input_shape[x] for x in reduction_axes])
-    const_node = ng.broadcast(ng.constant(avg_elem_count, get_dtype(sum_node.get_element_type())),
-                              sum_node.shape)
+    const_node = ng.broadcast_to(ng.constant(avg_elem_count, get_dtype(sum_node.get_element_type())),
+                                 sum_node.shape)
     return ng.divide(sum_node, const_node)
 
 
