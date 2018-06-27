@@ -189,6 +189,6 @@ def make_convolution_op(onnx_node, ng_inputs):
     else:
         conv = ng.convolution(data, weights, strides, dilation, padding_below, padding_above)
     if len(bias.shape) > 0:
-        return conv + ng.broadcast(bias, conv.shape, 1)
+        return conv + ng.broadcast_to(bias, conv.shape, 1)
     else:
         return conv
