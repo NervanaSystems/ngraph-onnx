@@ -69,6 +69,8 @@ def get_node_model(op_type, *input_data, opset=1, num_outputs=1, **node_attribut
     # type: (str, Any, Optional[int], Optional[int], Optional[Any]) -> onnx.ModelProto
     """Generate model with single requested node.
 
+    Input and output Tensor data type is the same.
+
     :param op_type: The ONNX node operation.
     :param input_data: Optional list of input arguments for node.
     :param opset: The ONNX operation set version to use. Default to 4.
