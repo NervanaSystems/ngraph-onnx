@@ -32,8 +32,7 @@ from ngraph_onnx.onnx_importer.utils.binary import broadcast_for_binary_operatio
 from ngraph_onnx.onnx_importer.utils.conv import make_convolution_op
 from ngraph_onnx.onnx_importer.utils.decorators import refactoring_required
 from ngraph_onnx.onnx_importer.utils.matmul import reshape_for_matmul
-from ngraph_onnx.onnx_importer.utils.mapping import onnx_tensor_type_to_numpy_type,\
-    TENSOR_TYPE_STR_TO_NP_TYPE
+from ngraph_onnx.onnx_importer.utils.mapping import onnx_tensor_type_to_numpy_type
 from ngraph_onnx.onnx_importer.utils.misc import split_pads_into_pairs
 from ngraph_onnx.onnx_importer.utils.pool import make_pooling_op, make_global_pooling_op
 from ngraph_onnx.onnx_importer.utils.reduction import make_reduction_op, get_reduction_axes
@@ -97,8 +96,8 @@ def Cast(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngra
     input_tensor_type = get_dtype(data.get_element_type())
     new_type = onnx_tensor_type_to_numpy_type(cast_to_type)
     unsupported_types = [
-        TENSOR_TYPE_STR_TO_NP_TYPE['COMPLEX64'],
-        TENSOR_TYPE_STR_TO_NP_TYPE['COMPLEX128'],
+        onnx_tensor_type_to_numpy_type('COMPLEX64'),
+        onnx_tensor_type_to_numpy_type('COMPLEX128'),
     ]
 
     if input_tensor_type in unsupported_types:

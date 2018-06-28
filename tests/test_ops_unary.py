@@ -24,8 +24,7 @@ import numpy as np
 from tests.utils import run_model, run_node, get_node_model, get_runtime
 from onnx.helper import make_node, make_graph, make_tensor_value_info, make_model
 from ngraph_onnx.onnx_importer.importer import import_onnx_model
-from ngraph_onnx.onnx_importer.utils.mapping import NP_TYPE_TO_TENSOR_TYPE_STR
-
+from ngraph_onnx.onnx_importer.utils.mapping import np_dtype_to_tensor_type_name
 from ngraph.exceptions import NgraphTypeError
 
 
@@ -370,8 +369,7 @@ def test_cast_to_bool(val_type, input_data):
     result = run_model(model, [input_data])
     assert np.allclose(result, expected)
 
-    model = get_node_model('Cast', input_data, opset=5,
-                           to=NP_TYPE_TO_TENSOR_TYPE_STR[val_type])
+    model = get_node_model('Cast', input_data, opset=5, to=np_dtype_to_tensor_type_name(val_type))
     result = run_model(model, [input_data])
     assert np.allclose(result, expected)
 
@@ -390,7 +388,7 @@ def test_cast_to_float(val_type, range_start, range_end, in_dtype):
     result = run_model(model, [input_data])
     assert np.allclose(result, expected)
 
-    model = get_node_model('Cast', input_data, opset=5, to=NP_TYPE_TO_TENSOR_TYPE_STR[in_dtype])
+    model = get_node_model('Cast', input_data, opset=5, to=np_dtype_to_tensor_type_name(in_dtype))
     result = run_model(model, [input_data])
     assert np.allclose(result, expected)
 
@@ -411,7 +409,7 @@ def test_cast_to_int(val_type):
     result = run_model(model, [input_data])
     assert np.allclose(result, expected)
 
-    model = get_node_model('Cast', input_data, opset=5, to=NP_TYPE_TO_TENSOR_TYPE_STR[val_type])
+    model = get_node_model('Cast', input_data, opset=5, to=np_dtype_to_tensor_type_name(val_type))
     result = run_model(model, [input_data])
     assert np.allclose(result, expected)
 
@@ -432,7 +430,7 @@ def test_cast_to_uint(val_type):
     result = run_model(model, [input_data])
     assert np.allclose(result, expected)
 
-    model = get_node_model('Cast', input_data, opset=5, to=NP_TYPE_TO_TENSOR_TYPE_STR[val_type])
+    model = get_node_model('Cast', input_data, opset=5, to=np_dtype_to_tensor_type_name(val_type))
     result = run_model(model, [input_data])
     assert np.allclose(result, expected)
 
