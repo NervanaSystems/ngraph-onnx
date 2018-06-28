@@ -14,4 +14,9 @@
 # limitations under the License.
 # ******************************************************************************
 
+# TODO: GlobalLpPool-2  
+# TODO: LpPool-2        
+# Pad-2                 supported by opset_01.Pad
+# Split-2               supported by opset_01.Split
+
 from ngraph_onnx.onnx_importer.ops_bridge.opset_01 import *  # noqa
