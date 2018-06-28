@@ -365,6 +365,11 @@ def test_identity():
 def test_cast_to_bool(val_type, input_data):
     expected = np.array(input_data, dtype=val_type)
 
+    model = get_node_model('Cast', input_data, opset=6,
+                           to=onnx.mapping.NP_TYPE_TO_TENSOR_TYPE[val_type])
+    result = run_model(model, [input_data])
+    assert np.allclose(result, expected)
+
     model = get_node_model('Cast', input_data, opset=5,
                            to=NP_TYPE_TO_TENSOR_TYPE_STR[val_type])
     result = run_model(model, [input_data])
@@ -379,6 +384,11 @@ def test_cast_to_float(val_type, range_start, range_end, in_dtype):
     np.random.seed(133391)
     input_data = np.random.randint(range_start, range_end, size=(2, 2), dtype=in_dtype)
     expected = np.array(input_data, dtype=val_type)
+
+    model = get_node_model('Cast', input_data, opset=6,
+                           to=onnx.mapping.NP_TYPE_TO_TENSOR_TYPE[val_type])
+    result = run_model(model, [input_data])
+    assert np.allclose(result, expected)
 
     model = get_node_model('Cast', input_data, opset=5, to=NP_TYPE_TO_TENSOR_TYPE_STR[in_dtype])
     result = run_model(model, [input_data])
@@ -396,6 +406,11 @@ def test_cast_to_int(val_type):
     input_data = np.ceil(-8 + np.random.rand(2, 3, 4) * 16)
     expected = np.array(input_data, dtype=val_type)
 
+    model = get_node_model('Cast', input_data, opset=6,
+                           to=onnx.mapping.NP_TYPE_TO_TENSOR_TYPE[val_type])
+    result = run_model(model, [input_data])
+    assert np.allclose(result, expected)
+
     model = get_node_model('Cast', input_data, opset=5, to=NP_TYPE_TO_TENSOR_TYPE_STR[val_type])
     result = run_model(model, [input_data])
     assert np.allclose(result, expected)
@@ -411,6 +426,11 @@ def test_cast_to_uint(val_type):
     np.random.seed(133391)
     input_data = np.ceil(np.random.rand(2, 3, 4) * 16)
     expected = np.array(input_data, dtype=val_type)
+
+    model = get_node_model('Cast', input_data, opset=6,
+                           to=onnx.mapping.NP_TYPE_TO_TENSOR_TYPE[val_type])
+    result = run_model(model, [input_data])
+    assert np.allclose(result, expected)
 
     model = get_node_model('Cast', input_data, opset=5, to=NP_TYPE_TO_TENSOR_TYPE_STR[val_type])
     result = run_model(model, [input_data])
