@@ -21,7 +21,6 @@ import logging
 from typing import Tuple, List
 
 import numpy as np
-import onnx.mapping
 from functools import reduce
 from ngraph.utils.types import get_dtype
 from ngraph_onnx import TYPE_CHECKING
@@ -33,6 +32,8 @@ from ngraph_onnx.onnx_importer.utils.binary import broadcast_for_binary_operatio
 from ngraph_onnx.onnx_importer.utils.conv import make_convolution_op
 from ngraph_onnx.onnx_importer.utils.decorators import refactoring_required
 from ngraph_onnx.onnx_importer.utils.matmul import reshape_for_matmul
+from ngraph_onnx.onnx_importer.utils.mapping import onnx_tensor_type_to_numpy_type,\
+    TENSOR_TYPE_STR_TO_NP_TYPE
 from ngraph_onnx.onnx_importer.utils.misc import split_pads_into_pairs
 from ngraph_onnx.onnx_importer.utils.pool import make_pooling_op, make_global_pooling_op
 from ngraph_onnx.onnx_importer.utils.reduction import make_reduction_op, get_reduction_axes
@@ -89,8 +90,23 @@ def Ceil(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngra
 def Cast(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Limit input tensor values within specified interval."""
     data = ng_inputs[0]
-    onnx_code_type = onnx_node.get_attribute_value('to')
-    new_type = onnx.mapping.TENSOR_TYPE_TO_NP_TYPE[onnx_code_type]
+    cast_to_type = onnx_node.get_attribute_value('to')
+    if cast_to_type is None:
+        raise ValueError('Cast node (%s): \'to\' attribute is required.')
+
+    input_tensor_type = get_dtype(data.get_element_type())
+    new_type = onnx_tensor_type_to_numpy_type(cast_to_type)
+    unsupported_types = [
+        TENSOR_TYPE_STR_TO_NP_TYPE['COMPLEX64'],
+        TENSOR_TYPE_STR_TO_NP_TYPE['COMPLEX128'],
+    ]
+
+    if input_tensor_type in unsupported_types:
+        raise ValueError('Cast node (%s): input tensor data type (%s) is not supported.',
+                         onnx_node.name, str(input_tensor_type))
+    if new_type in unsupported_types:
+        raise ValueError('Cast node (%s): casting to type (%s) is not supported.',
+                         onnx_node.name, str(new_type))
 
     return ng.convert(data, new_type)
 
