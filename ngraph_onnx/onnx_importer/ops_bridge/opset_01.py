@@ -214,8 +214,8 @@ def Selu(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngra
     f(x) = gamma * (alpha * exp(x) - alpha) for x <= 0, f(x) = gamma * x for x > 0
     """
     x = ng_inputs[0]
-    alpha = onnx_node.get_attribute_value('alpha', 1.6732)
-    gamma = onnx_node.get_attribute_value('gamma', 1.0507)
+    alpha = onnx_node.get_attribute_value('alpha', 1.67326319217681884765625)
+    gamma = onnx_node.get_attribute_value('gamma', 1.05070102214813232421875)
 
     return (gamma * (ng.maximum(x, 0) + alpha * (ng.exp(ng.negative(ng.maximum(ng.negative(x), 0))) - 1)))
 
