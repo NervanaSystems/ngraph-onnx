@@ -206,7 +206,39 @@ def test_2d_conv_transpose():
                                    dtype=np.float32))
 
 
-def test_padding():
+def test_pad_opset_1():
+    x = np.ones((2, 2), dtype=np.float32)
+    y = np.pad(x, pad_width=1, mode='constant')
+
+    model = get_node_model('Pad', x, paddings=[1, 1, 1, 1])
+    ng_results = run_model(model, [x])
+    assert np.array_equal(ng_results, [y])
+
+    x = np.random.randn(1, 3, 4, 5).astype(np.float32)
+    y = np.pad(x, pad_width=((0, 0), (0, 0), (1, 2), (3, 4)), mode='constant')
+
+    model = get_node_model('Pad', x, mode='constant', paddings=[0, 0, 1, 3, 0, 0, 2, 4])
+    ng_results = run_model(model, [x])
+    assert np.array_equal(ng_results, [y])
+
+    # incorrect paddings rank
+    x = np.ones((2, 2), dtype=np.float32)
+    model = get_node_model('Pad', x, paddings=[0, 1, 1, 3, 1, 2])
+    with pytest.raises(ValueError):
+        run_model(model, [x])
+
+    # negative paddings values
+    model = get_node_model('Pad', x, paddings=[0, -1, -1, 3])
+    with pytest.raises(ValueError):
+        run_model(model, [x])
+
+    # no paddings arttribute
+    model = get_node_model('Pad', x)
+    with pytest.raises(ValueError):
+        import_onnx_model(model)[0]
+
+
+def test_pad_opset_2():
     x = np.ones((2, 2), dtype=np.float32)
     y = np.pad(x, pad_width=1, mode='constant')
 
@@ -217,34 +249,22 @@ def test_padding():
     x = np.random.randn(1, 3, 4, 5).astype(np.float32)
     y = np.pad(x, pad_width=((0, 0), (0, 0), (1, 2), (3, 4)), mode='constant')
 
-    # Opset version 2
     model = get_node_model('Pad', x, opset=2, mode='constant', pads=[0, 0, 1, 3, 0, 0, 2, 4])
     ng_results = run_model(model, [x])
     assert np.array_equal(ng_results, [y])
 
-    # Opset version 1
-    model = get_node_model('Pad', x, mode='constant', paddings=[0, 0, 1, 3, 0, 0, 2, 4])
-    ng_results = run_model(model, [x])
-    assert np.array_equal(ng_results, [y])
-
-    # incorrect paddings rank
+    # incorrect pads rank
     x = np.ones((2, 2), dtype=np.float32)
     model = get_node_model('Pad', x, opset=2, pads=[0, 1, 1, 3, 1, 2])
     with pytest.raises(ValueError):
         run_model(model, [x])
 
-    # negative paddings values
-    x = np.ones((2, 2), dtype=np.float32)
+    # negative pads values
     model = get_node_model('Pad', x, opset=2, pads=[0, -1, -1, 3])
     with pytest.raises(NotImplementedError):
         run_model(model, [x])
 
-    # no pads provided operation set 1
-    model = get_node_model('Pad', x)
-    with pytest.raises(ValueError):
-        import_onnx_model(model)[0]
-
-    # no pads provided operation set 2
+    # no pads attribute
     model = get_node_model('Pad', x, opset=2)
     with pytest.raises(ValueError):
         import_onnx_model(model)[0]
