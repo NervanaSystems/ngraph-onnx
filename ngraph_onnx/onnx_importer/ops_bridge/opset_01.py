@@ -477,34 +477,27 @@ def Greater(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> N
 def And(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Perform the `and` logical operation elementwise on two input tensors."""
     left, right = broadcast_for_binary_operation(onnx_node, ng_inputs)
-    left = ng.convert(ng.not_equal(left, 0), int)
-    right = ng.convert(ng.not_equal(right, 0), int)
-    return ng.convert(left * right, bool)
+    return ng.logical_and(ng.convert(left, bool), ng.convert(right, bool))
 
 
 def Or(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Perform the `or` logical operation elementwise on two input tensors."""
     left, right = broadcast_for_binary_operation(onnx_node, ng_inputs)
-    left = ng.convert(ng.not_equal(left, 0), int)
-    right = ng.convert(ng.not_equal(right, 0), int)
-    return (left + right) > 0
+    return ng.logical_or(ng.convert(left, bool), ng.convert(right, bool))
 
 
 def Xor(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Perform the `xor` logical operation elementwise on two input tensors."""
     left, right = broadcast_for_binary_operation(onnx_node, ng_inputs)
-    not_left = ng.convert(ng.equal(left, 0), int)
-    left = ng.convert(ng.not_equal(left, 0), int)
-    right = ng.convert(ng.not_equal(right, 0), int)
-    not_right = ng.convert(ng.equal(right, 0), int)
-
-    return ((not_left * right) + (not_right * left)) > 0
+    left = ng.convert(left, bool)
+    right = ng.convert(right, bool)
+    return ng.logical_or(ng.logical_and(left, ng.logical_not(right)),
+                         ng.logical_and(ng.logical_not(left), right))
 
 
 def Not(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Return the negation of the input tensor elementwise."""
-    data = ng.convert(ng.not_equal(ng_inputs[0], 0), bool)
-    return ng.logical_not(data)
+    return ng.logical_not(ng.convert(ng_inputs[0], bool))
 
 
 # Variadic Ops
