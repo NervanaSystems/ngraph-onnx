@@ -24,7 +24,7 @@ import numpy as np
 from tests.utils import run_model, run_node, get_node_model, get_runtime
 from onnx.helper import make_node, make_graph, make_tensor_value_info, make_model
 from ngraph_onnx.onnx_importer.importer import import_onnx_model
-from ngraph_onnx.onnx_importer.utils.mapping import np_dtype_to_tensor_type_name
+from ngraph_onnx.onnx_importer.utils.types import np_dtype_to_tensor_type_name
 from ngraph.exceptions import NgraphTypeError
 
 
