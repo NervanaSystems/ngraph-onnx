@@ -30,10 +30,8 @@ from ngraph.utils.types import get_dtype
 from ngraph.impl import Node as NgraphNode
 from ngraph_onnx.onnx_importer.utils.misc import split_pads_into_pairs
 
-
 if TYPE_CHECKING:
     from ngraph_onnx.onnx_importer.model_wrappers import NodeWrapper
-
 
 from ngraph_onnx.onnx_importer.ops_bridge.opset_01 import *  # noqa
 
