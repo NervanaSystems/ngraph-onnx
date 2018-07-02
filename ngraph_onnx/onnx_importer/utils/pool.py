@@ -99,9 +99,11 @@ def make_pooling_op(onnx_node, ng_inputs, kernel_shape=None):
     padding_above = reduce_extra_dims(spatial_dims, padding_above, onnx_node)
     padding_below = reduce_extra_dims(spatial_dims, padding_below, onnx_node)
 
+    include_pad = onnx_node.get_attribute_value('count_include_pad', 0) != 0
+
     if op_type == 'avg':
         ng_op = ng.avg_pool(x, kernel_shape, strides, padding_below, padding_above,
-                            include_padding=False)
+                            include_padding=include_pad)
     elif op_type == 'max':
         ng_op = ng.max_pool(x, kernel_shape, strides, padding_below, padding_above)
     else:
