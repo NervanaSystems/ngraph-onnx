@@ -51,36 +51,6 @@ def Abs(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngrap
     return ng.absolute(ng_inputs[0])
 
 
-def Acos(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
-    """Apply f(x) = acos(x) to the input tensor elementwise."""
-    return ng.acos(ng_inputs[0])
-
-
-def Asin(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
-    """Apply f(x) = asin(x) to the input tensor elementwise."""
-    return ng.asin(ng_inputs[0])
-
-
-def Atan(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
-    """Apply f(x) = atan(x) to the input tensor elementwise."""
-    return ng.atan(ng_inputs[0])
-
-
-def Sin(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
-    """Apply f(x) = sin(x) to the input tensor elementwise."""
-    return ng.sin(ng_inputs[0])
-
-
-def Cos(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
-    """Apply f(x) = cos(x) to the input tensor elementwise."""
-    return ng.cos(ng_inputs[0])
-
-
-def Tan(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
-    """Apply f(x) = tan(x) to the input tensor elementwise."""
-    return ng.tan(ng_inputs[0])
-
-
 def Ceil(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Apply f(x) = ceil(x) to the input tensor elementwise."""
     return ng.ceiling(ng_inputs[0])
@@ -573,7 +543,6 @@ def Gemm(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngra
     input_a, input_b, input_c = ng_inputs
     alpha = onnx_node.get_attribute_value('alpha', 1)  # Scalar multiplier for A @ B
     beta = onnx_node.get_attribute_value('beta', 1)  # Scalar multiplier for input tensor C
-    broadcast = onnx_node.get_attribute_value('broadcast', 1)  # Should C be broadcast?
     trans_a = onnx_node.get_attribute_value('transA', False)  # Should A be transposed?
     trans_b = onnx_node.get_attribute_value('transB', False)  # Should B be transposed?
 
@@ -586,9 +555,6 @@ def Gemm(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngra
 
     a_dot_b = ng.dot(input_a, input_b)
 
-    if not broadcast and input_c.shape != a_dot_b.shape:
-        raise ValueError('Gemm node (%s): input data shapes are incompatible and broadcast '
-                         ' was not requested!', onnx_node.name)
     if alpha != 1:
         a_dot_b = alpha * a_dot_b
 
