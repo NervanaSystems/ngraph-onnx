@@ -129,7 +129,7 @@ def numpy_style_broadcast_output_shape(shape_a, shape_b):
         idx_dim_a = shape_a[idx]
         idx_dim_b = shape_b[idx]
         if idx_dim_a != 1 and idx_dim_b != 1 and idx_dim_a != idx_dim_b:
-            raise UserInputError
+            raise UserInputError('Shapes %s and %s are incompatible for broadcasting.', shape_a, shape_b)
         output_shape.insert(0, max(idx_dim_a, idx_dim_b))
 
     return output_shape, shape_a, shape_b
