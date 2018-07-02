@@ -105,7 +105,7 @@ def numpy_style_broadcast_output_shape(shape_a, shape_b):
 
     :param shape_a: shape of first input tensor
     :param shape_b: shape of the second input tensor
-    :return: shape of the output tensor
+    :return: shape of the output tensor, full shape of input tensors
     """
     output_shape = []  # type: List[int]
 
