@@ -227,11 +227,6 @@ def test_pad_opset_1():
     with pytest.raises(ValueError):
         run_model(model, [x])
 
-    # negative paddings values
-    model = get_node_model('Pad', x, paddings=[0, -1, -1, 3])
-    with pytest.raises(ValueError):
-        run_model(model, [x])
-
     # no paddings arttribute
     model = get_node_model('Pad', x)
     with pytest.raises(ValueError):
