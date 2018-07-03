@@ -17,9 +17,9 @@
 from __future__ import print_function, division
 
 import onnx
-from onnx.helper import make_node, make_graph, make_tensor_value_info
+from onnx.helper import make_node, make_graph, make_tensor_value_info, make_model
 
-from ngraph_onnx.onnx_importer.model_wrappers import NodeWrapper, GraphWrapper
+from ngraph_onnx.onnx_importer.model_wrappers import NodeWrapper, GraphWrapper, ModelWrapper
 from ngraph_onnx.onnx_importer.utils.conv import get_pads
 from ngraph_onnx.onnx_importer.utils.matmul import has_matmul_compatible_shapes
 
@@ -30,7 +30,8 @@ def test_get_pads():
                            [make_tensor_value_info('X', onnx.TensorProto.FLOAT, (1, 1, 1, 1)),
                             make_tensor_value_info('Y', onnx.TensorProto.FLOAT, (1, 1, 1, 1))],
                            [make_tensor_value_info('Z', onnx.TensorProto.FLOAT, ())])
-        return NodeWrapper(node, GraphWrapper(graph))
+        model = ModelWrapper(make_model(graph))
+        return NodeWrapper(node, GraphWrapper(graph, model))
 
     node = wrap_node(make_node('Conv', ['X', 'Y'], ['Z'], pads=(2, 3, 2, 3)))
     assert get_pads(node) == ([2, 3], [2, 3])

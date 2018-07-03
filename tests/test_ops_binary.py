@@ -19,15 +19,26 @@ from __future__ import print_function, division
 import onnx
 
 import numpy as np
+import pytest
+from onnx.helper import make_tensor_value_info, make_graph, make_model
 
-from tests.utils import run_node
+from tests.utils import run_model
 
 
-def import_and_compute(op_type, input_data_left, input_data_right, **node_attributes):
-    input_data_left = np.array(input_data_left)
-    input_data_right = np.array(input_data_right)
-    node = onnx.helper.make_node(op_type, inputs=['x', 'y'], outputs=['z'], **node_attributes)
-    return run_node(node, [input_data_left, input_data_right])[0]
+def import_and_compute(op_type, input_data_left, input_data_right, opset=4, **node_attributes):
+    inputs = [np.array(input_data_left), np.array(input_data_right)]
+    onnx_node = onnx.helper.make_node(op_type, inputs=['x', 'y'], outputs=['z'], **node_attributes)
+
+    input_tensors = [make_tensor_value_info(name, onnx.TensorProto.FLOAT, value.shape)
+                     for name, value in zip(onnx_node.input, inputs)]
+    output_tensors = [make_tensor_value_info(name, onnx.TensorProto.FLOAT, value.shape)
+                      for name, value in zip(onnx_node.output, ())]  # type: ignore
+
+    graph = make_graph([onnx_node], 'compute_graph', input_tensors, output_tensors)
+    model = make_model(graph, producer_name='NgraphBackend')
+    model.opset_import[0].version = opset
+
+    return run_model(model, inputs)[0]
 
 
 def test_add():
@@ -75,6 +86,37 @@ def test_add():
     assert np.array_equal(
         import_and_compute('Add', left_operand, right_operand, broadcast=1, axis=0),
         left_operand + right_operand.reshape(2, 1, 1, 1))
+
+
+@pytest.mark.parametrize('left_shape,right_shape', [
+    ((1,), (1,)),
+    ((256, 256, 3), (3,)),
+    ((5, 4), (1,)),
+    ((5, 4), (4,)),
+    ((15, 3, 5), (3, 5)),
+])
+def test_add_opset7(left_shape, right_shape):
+    """Test Add-7 operator, which uses numpy-style broadcasting."""
+    left_input = np.ones(left_shape)
+    right_input = np.ones(right_shape)
+    assert np.array_equal(import_and_compute('Add', left_input, right_input, opset=7),
+                          left_input + right_input)
+
+
+# -> NC5-191
+@pytest.mark.xfail(reason='Need to support numpy-style broadcasting')
+@pytest.mark.parametrize('left_shape,right_shape', [
+    ((15, 3, 5), (15, 1, 5)),
+    ((15, 3, 5), (3, 1)),
+    ((8, 1, 6, 1), (7, 1, 5)),
+])
+def test_add_opset7_failing(left_shape, right_shape):
+    """Test Add-7 operator, which uses numpy-style broadcasting."""
+    # TODO: fix broadcasting problem and merge into test above
+    left_input = np.ones(left_shape)
+    right_input = np.ones(right_shape)
+    assert np.array_equal(import_and_compute('Add', left_input, right_input, opset=7),
+                          left_input + right_input)
 
 
 def test_sub():

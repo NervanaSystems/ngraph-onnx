@@ -18,6 +18,7 @@ import numpy as np
 
 from typing import List
 
+from ngraph.exceptions import UserInputError
 from ngraph.impl import Node as NgraphNode
 from ngraph.impl import Shape
 
@@ -35,15 +36,15 @@ def reorder_axes(node, axes_order):  # type: (NgraphNode, List[int]) -> NgraphNo
     if axes_order is None:
         axes_order = list(range(len(node.shape)))
     elif len(axes_order) != len(node.shape):
-        raise ng.exceptions.UserInputError('Node (%s): provided axes count is different than '
-                                           'input tensor rank.', node.name)
+        raise UserInputError('Node (%s): provided axes count is different than '
+                             'input tensor rank.', node.name)
     else:
         for idx, axis in enumerate(axes_order):
             try:
                 out_shape[idx] = node.shape[axis]
-            except IndexError as e:
-                raise ng.exceptions.UserInputError('Node (%s): provided axes indices are out '
-                                                   'of range.', node.name)
+            except IndexError:
+                raise UserInputError('Node (%s): provided axes indices are out '
+                                     'of range.', node.name)
     return ng.reshape(node, out_shape, axes_order)
 
 
@@ -74,18 +75,16 @@ def infer_dimensions(node_name, input_shape, output_shape):
         if dim == 0:
             try:
                 output_shape[idx] = input_shape[idx]
-            except IndexError as e:
-                raise ng.exceptions.UserInputError('Reshape node (%s): can not copy dimension '
-                                                   'from the shape argument since requested index '
-                                                   'is out of range.', node_name)
+            except IndexError:
+                raise UserInputError('Reshape node (%s): can not copy dimension from the shape '
+                                     'argument since requested index is out of range.', node_name)
 
     # Check whether there are dimensions equal to -1 in output_shape. There may be at most one
     # such case. Its value is then inferred from the size of the tensor and the remaining
     # dimensions.
     if output_shape.count(-1) > 1:
-        raise ng.exceptions.UserInputError('Reshape node (%s): more than one dimension is set to '
-                                           '(-1). Only one dimension value can be inferred.',
-                                           node_name)
+        raise UserInputError('Reshape node (%s): more than one dimension is set to (-1). Only one '
+                             'dimension value can be inferred.', node_name)
     elif -1 in output_shape:
         idx = output_shape.index(-1)
         output_shape[idx] = 1
