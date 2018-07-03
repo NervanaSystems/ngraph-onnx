@@ -51,6 +51,7 @@ def Pad(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngrap
         raise ValueError('Pad node (%s): \'pads rank (%d) should be double of input tensor '
                          'rank (%d).', onnx_node.name, len(pads), len(ng_inputs[0].shape))
 
+    # check for negative pads values
     if any(map(lambda x: x < 0, pads)):
         raise NotImplementedError('Pad node (%s): removing padding elements is not supported yet.',
                                   onnx_node.name)

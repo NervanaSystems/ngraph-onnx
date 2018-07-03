@@ -619,7 +619,7 @@ def Pad(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngrap
         raise ValueError('Pad node (%s): \'paddings rank (%d) should be double of input tensor '
                          'rank (%d).', onnx_node.name, len(paddings), len(ng_inputs[0].shape))
 
-    # Operator set version >= 2
+    # check for negative padding values
     if any(map(lambda x: x < 0, paddings)):
         raise ValueError('Pad node (%s): supports only addition of padding elements.',
                          onnx_node.name)
