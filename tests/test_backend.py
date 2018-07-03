@@ -73,6 +73,12 @@ backend_test.exclude('test_cast_FLOAT_to_DOUBLE_cpu')
 backend_test.exclude('test_cast_FLOAT_to_FLOAT16_cpu')
 
 # Missing op 'ConvTranspose' -> NGRAPH-1840
+backend_test.exclude('test_convtranspose_1d_cpu')
+backend_test.exclude('test_convtranspose_3d_cpu')
+backend_test.exclude('test_convtranspose_cpu')
+backend_test.exclude('test_convtranspose_output_shape_cpu')
+backend_test.exclude('test_convtranspose_pad_cpu')
+backend_test.exclude('test_convtranspose_pads_cpu')
 backend_test.exclude('test_ConvTranspose2d_cpu')
 backend_test.exclude('test_ConvTranspose2d_no_bias_cpu')
 backend_test.exclude('test_operator_convtranspose_cpu')
@@ -111,7 +117,13 @@ backend_test.exclude('test_hardmax_one_hot_cpu')
 backend_test.exclude('test_identity_cpu')
 
 # Missing op 'InstanceNormalization' -> NC5-179
+backend_test.exclude('test_instancenorm_epsilon_cpu')
+backend_test.exclude('test_instancenorm_example_cpu')
 backend_test.exclude('test_operator_symbolic_override_cpu')
+
+# Missing op 'LRN' -> NGRAPH-1731
+backend_test.exclude('test_lrn_cpu')
+backend_test.exclude('test_lrn_default_cpu')
 
 # Missing op 'LSTM' -> NC5-180
 backend_test.exclude('test_lstm_defaults_cpu')
@@ -214,6 +226,8 @@ backend_test.exclude('test_reshape_negative_dim_cpu')
 backend_test.exclude('test_reshape_one_dim_cpu')
 backend_test.exclude('test_reshape_reduced_dims_cpu')
 backend_test.exclude('test_reshape_reordered_dims_cpu')
+
+backend_test.exclude('test_batchnorm_example_cpu')
 
 # IndexError msg='list assignment index out of range'
 backend_test.exclude('test_prelu_example_cpu')
