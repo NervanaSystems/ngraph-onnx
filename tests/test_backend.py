@@ -34,6 +34,8 @@ NgraphBackend.backend_name = pytest.config.getoption('backend', default='CPU')
 # import all test cases at global scope to make them visible to python.unittest
 backend_test = onnx.backend.test.BackendTest(NgraphBackend, __name__)
 
+# Workaround for bug in ngraph https://github.com/NervanaSystems/ngraph/issues/1196
+backend_test.exclude('test_clip_default_min_cpu')
 
 # Need refactoring to ngraph++
 # Casting tests -> NC5-159
