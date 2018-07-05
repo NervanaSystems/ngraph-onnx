@@ -811,6 +811,7 @@ def DepthToSpace(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode])
     if block_size is None:
         raise ValueError('DepthToSpace node (%s): missing required attribute \"blocksize\"',
                          onnx_node.name)
+    # Set default values to each dimension to be able to work with 3D or 4D data.
     n, c, h, w = 1, 1, 1, 1
     if len(data.shape) == 4:
         n, c, h, w, = data.shape
@@ -819,10 +820,12 @@ def DepthToSpace(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode])
     else:
         raise ValueError('DepthToSpace node (%s): the provided tensor shape (%s) is not supported',
                          onnx_node.name, str(data.shape))
-
-    tmp = ng.reshape(data, [n, block_size, block_size, c // (block_size ** 2), h, w])
-    tmp = reorder_axes(tmp, [0, 3, 4, 1, 5, 2])
-    return ng.reshape(tmp, [n, c // (block_size ** 2), h * block_size, w * block_size])
+    # First we have to disperse the data from depth channel, then rearrange them so as appropriate
+    # chunks of data where close to their destination place. Finally squeeze data from
+    # respective dimensions.
+    flat_node = ng.reshape(data, [n, block_size, block_size, c // (block_size ** 2), h, w])
+    flat_node = reorder_axes(flat_node, [0, 3, 4, 1, 5, 2])
+    return ng.reshape(flat_node, [n, c // (block_size ** 2), h * block_size, w * block_size])
 
 
 # Misc
