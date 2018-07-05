@@ -462,20 +462,18 @@ def Greater(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> N
 def And(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Perform the `and` logical operation elementwise on two input tensors."""
     left, right = broadcast_for_binary_operation(onnx_node, ng_inputs)
-    return ng.logical_and(ng.convert(left, bool), ng.convert(right, bool))
+    return ng.logical_and(left, right)
 
 
 def Or(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Perform the `or` logical operation elementwise on two input tensors."""
     left, right = broadcast_for_binary_operation(onnx_node, ng_inputs)
-    return ng.logical_or(ng.convert(left, bool), ng.convert(right, bool))
+    return ng.logical_or(left, right)
 
 
 def Xor(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Perform the `xor` logical operation elementwise on two input tensors."""
     left, right = broadcast_for_binary_operation(onnx_node, ng_inputs)
-    left = ng.convert(left, bool)
-    right = ng.convert(right, bool)
     return ng.logical_or(ng.logical_and(left, ng.logical_not(right)),
                          ng.logical_and(ng.logical_not(left), right))
 
