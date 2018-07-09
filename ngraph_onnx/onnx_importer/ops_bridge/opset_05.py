@@ -15,14 +15,3 @@
 # ******************************************************************************
 
 from ngraph_onnx.onnx_importer.ops_bridge.opset_04 import *  # noqa
-
-
-def Reshape(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
-    """Reshape the input tensor similar to numpy.reshape.
-
-    At most one dimension of the new shape can be -1. In this case, the value is inferred from
-    the size of the tensor and the remaining dimensions. A dimension could also be 0, in which
-    case the actual dimension value is going to be copied from the shape argument.
-    """
-    raise NotImplementedError('Reshape node (%s) - dynamic output shape is not supported yet.',
-                              onnx_node.name)

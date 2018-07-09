@@ -126,11 +126,6 @@ def test_slice():
 def test_concat():
     a = np.array([[1, 2], [3, 4]])
     b = np.array([[5, 6]])
-
-    node = onnx.helper.make_node('Concat', inputs=['x'], outputs=['z'], axis=0)
-    ng_results = run_node(node, [a])
-    assert np.array_equal(ng_results, [a])
-
     expected_output = np.concatenate((a, b), axis=0)
     node = onnx.helper.make_node('Concat', inputs=['x', 'y'], outputs=['z'], axis=0)
     ng_results = run_node(node, [a, b])
