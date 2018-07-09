@@ -271,3 +271,34 @@ def test_split_1d():
                         np.array([3., 4., 5., 6.]).astype(np.float32)]
     ng_results = run_node(node, [data])
     assert all_arrays_equal(ng_results, expected_outputs)
+
+
+def test_depth_to_space():
+    b, c, h, w = shape = (2, 8, 3, 3)
+    blocksize = 2
+    data = np.random.random_sample(shape).astype(np.float32)
+    tmp = np.reshape(data, [b, blocksize, blocksize, c // (blocksize ** 2), h, w])
+    tmp = np.transpose(tmp, [0, 3, 4, 1, 5, 2])
+    expected_output = np.reshape(tmp, [b, c // (blocksize ** 2), h * blocksize, w * blocksize])
+
+    node = onnx.helper.make_node('DepthToSpace', inputs=['x'], outputs=['y'], blocksize=blocksize)
+    ng_results = run_node(node, [data])
+    assert np.array_equal(ng_results, [expected_output])
+
+    # (1, 4, 2, 3) input tensor
+    data = np.array([[[[0, 1, 2],
+                       [3, 4, 5]],
+                      [[6, 7, 8],
+                       [9, 10, 11]],
+                      [[12, 13, 14],
+                       [15, 16, 17]],
+                      [[18, 19, 20],
+                       [21, 22, 23]]]]).astype(np.float32)
+    # (1, 1, 4, 6) output tensor
+    expected_output = np.array([[[[0, 6, 1, 7, 2, 8],
+                                  [12, 18, 13, 19, 14, 20],
+                                  [3, 9, 4, 10, 5, 11],
+                                  [15, 21, 16, 22, 17, 23]]]]).astype(np.float32)
+
+    ng_results = run_node(node, [data])
+    assert np.array_equal(ng_results, [expected_output])
