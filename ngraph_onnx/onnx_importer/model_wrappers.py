@@ -51,16 +51,19 @@ class ModelWrapper(WrapperBaseClass):
     """Wrapper for ONNX ModelProto objects."""
 
     def __init__(self, model_proto):  # type: (onnx.ModelProto) -> None
+        self._proto = model_proto
+
         # Parse op sets listed in model
+        ai_onnx_opset_version = None
         for opset in model_proto.opset_import:
             if opset.domain in ['ai.onnx', '']:
-                self.node_factory = get_node_factory(opset.version)
+                ai_onnx_opset_version = opset.version
             else:
                 raise NotImplementedError('Operator set for domain %s '
                                           'is not supported', opset.domain)
 
+        self.node_factory = get_node_factory(opset_version=ai_onnx_opset_version)
         self.graph = GraphWrapper(model_proto.graph, self)
-
         super(ModelWrapper, self).__init__(model_proto, self.graph)
 
 
