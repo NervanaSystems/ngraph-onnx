@@ -128,7 +128,6 @@ def test_clip(min_value, max_value):
     assert np.allclose(ng_results, [expected])
 
 
-@pytest.mark.xfail(reason='Workaround for bug in nGraph. https://github.com/NervanaSystems/ngraph/issues/1196')
 @pytest.mark.parametrize('min_value, max_value', [
     (0., np.finfo(np.float32).max),
 ])
@@ -144,7 +143,6 @@ def test_clip_broken(min_value, max_value):
     assert np.allclose(ng_results, [expected])
 
 
-@pytest.mark.xfail(reason='Workaround for bug in nGraph. https://github.com/NervanaSystems/ngraph/issues/1196')
 def test_clip_default():
     np.random.seed(133391)
     data = -100. + np.random.randn(3, 4, 5).astype(np.float32) * 200.0
