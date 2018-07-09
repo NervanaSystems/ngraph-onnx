@@ -31,7 +31,7 @@ import onnx
 
 from onnx.helper import make_tensor_value_info, make_graph, make_model
 from onnx.backend.base import Backend, BackendRep
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional, Sequence, Text, Tuple
 
 from ngraph_onnx.onnx_importer.importer import import_onnx_model
 
@@ -118,16 +118,23 @@ class NgraphBackend(Backend):
         return cls.prepare(onnx_model, device, **kwargs).run(inputs)
 
     @classmethod
-    def run_node(cls, onnx_node, inputs, device='CPU'):
-        # type: (onnx.NodeProto, List[np.ndarray], str) -> List[np.ndarray]
+    def run_node(cls,
+                 node,  # type: onnx.NodeProto
+                 inputs,  # type: List[np.ndarray]
+                 device='CPU',  # type: Text
+                 outputs_info=None,  # type: Optional[Sequence[Tuple[np.dtype, Tuple[int, ...]]]]
+                 **kwargs  # type: Dict[Text, Any]
+                 ):  # type: (...) -> List[np.ndarray]
         """Prepare and run a computation on an ONNX node."""
         input_tensors = [make_tensor_value_info(name, onnx.TensorProto.FLOAT, value.shape)
-                         for name, value in zip(onnx_node.input, inputs)]
+                         for name, value in zip(node.input, inputs)]
         output_tensors = [make_tensor_value_info(name, onnx.TensorProto.FLOAT, value.shape)
-                          for name, value in zip(onnx_node.output, ())]  # type: ignore
+                          for name, value in zip(node.output, ())]  # type: ignore
 
-        graph = make_graph([onnx_node], 'compute_graph', input_tensors, output_tensors)
+        graph = make_graph([node], 'compute_graph', input_tensors, output_tensors)
         model = make_model(graph, producer_name='NgraphBackend')
+        if 'opset_version' in kwargs:
+            model.opset_import[0].version = kwargs['opset_version']
         return cls.prepare(model, device).run(inputs)
 
 
