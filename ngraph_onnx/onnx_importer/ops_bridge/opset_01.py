@@ -21,7 +21,6 @@ import logging
 from typing import Tuple, List
 
 import numpy as np
-import onnx.mapping
 from functools import reduce
 from ngraph.utils.types import get_dtype
 from ngraph_onnx import TYPE_CHECKING
@@ -33,6 +32,7 @@ from ngraph_onnx.onnx_importer.utils.binary import broadcast_for_binary_operatio
 from ngraph_onnx.onnx_importer.utils.conv import make_convolution_op
 from ngraph_onnx.onnx_importer.utils.decorators import refactoring_required
 from ngraph_onnx.onnx_importer.utils.matmul import reshape_for_matmul
+from ngraph_onnx.onnx_importer.utils.types import onnx_tensor_type_to_numpy_type
 from ngraph_onnx.onnx_importer.utils.misc import split_pads_into_pairs
 from ngraph_onnx.onnx_importer.utils.pool import make_pooling_op, make_global_pooling_op
 from ngraph_onnx.onnx_importer.utils.reduction import make_reduction_op, get_reduction_axes
@@ -51,36 +51,6 @@ def Abs(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngrap
     return ng.absolute(ng_inputs[0])
 
 
-def Acos(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
-    """Apply f(x) = acos(x) to the input tensor elementwise."""
-    return ng.acos(ng_inputs[0])
-
-
-def Asin(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
-    """Apply f(x) = asin(x) to the input tensor elementwise."""
-    return ng.asin(ng_inputs[0])
-
-
-def Atan(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
-    """Apply f(x) = atan(x) to the input tensor elementwise."""
-    return ng.atan(ng_inputs[0])
-
-
-def Sin(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
-    """Apply f(x) = sin(x) to the input tensor elementwise."""
-    return ng.sin(ng_inputs[0])
-
-
-def Cos(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
-    """Apply f(x) = cos(x) to the input tensor elementwise."""
-    return ng.cos(ng_inputs[0])
-
-
-def Tan(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
-    """Apply f(x) = tan(x) to the input tensor elementwise."""
-    return ng.tan(ng_inputs[0])
-
-
 def Ceil(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Apply f(x) = ceil(x) to the input tensor elementwise."""
     return ng.ceiling(ng_inputs[0])
@@ -89,8 +59,23 @@ def Ceil(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngra
 def Cast(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Limit input tensor values within specified interval."""
     data = ng_inputs[0]
-    onnx_code_type = onnx_node.get_attribute_value('to')
-    new_type = onnx.mapping.TENSOR_TYPE_TO_NP_TYPE[onnx_code_type]
+    cast_to_type = onnx_node.get_attribute_value('to')
+    if cast_to_type is None:
+        raise ValueError('Cast node (%s): \'to\' attribute is required.')
+
+    input_tensor_type = get_dtype(data.get_element_type())
+    new_type = onnx_tensor_type_to_numpy_type(cast_to_type)
+    unsupported_types = [
+        onnx_tensor_type_to_numpy_type('COMPLEX64'),
+        onnx_tensor_type_to_numpy_type('COMPLEX128'),
+    ]
+
+    if input_tensor_type in unsupported_types:
+        raise ValueError('Cast node (%s): input tensor data type (%s) is not supported.',
+                         onnx_node.name, str(input_tensor_type))
+    if new_type in unsupported_types:
+        raise ValueError('Cast node (%s): casting to type (%s) is not supported.',
+                         onnx_node.name, str(new_type))
 
     return ng.convert(data, new_type)
 
@@ -173,11 +158,11 @@ def PRelu(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngr
     if len(slope.shape) == 0:
         return ng.maximum(slope * x, x)
     elif slope.shape[0] == 1:
-        slope = ng.broadcast(slope, [x.shape[0], 1])
+        slope = ng.broadcast_to(slope, [x.shape[0], 1])
         slope = ng.reshape(slope, [x.shape[0]])
-        return ng.maximum(ng.broadcast(slope, x.shape, 0) * x, x)
+        return ng.maximum(ng.broadcast_to(slope, x.shape, 0) * x, x)
     else:
-        return ng.maximum(ng.broadcast(slope, x.shape, 1) * x, x)
+        return ng.maximum(ng.broadcast_to(slope, x.shape, 1) * x, x)
 
 
 def ThresholdedRelu(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
@@ -198,8 +183,8 @@ def Selu(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngra
     f(x) = gamma * (alpha * exp(x) - alpha) for x <= 0, f(x) = gamma * x for x > 0
     """
     x = ng_inputs[0]
-    alpha = onnx_node.get_attribute_value('alpha', 1.6732)
-    gamma = onnx_node.get_attribute_value('gamma', 1.0507)
+    alpha = onnx_node.get_attribute_value('alpha', 1.67326319217681884765625)
+    gamma = onnx_node.get_attribute_value('gamma', 1.05070102214813232421875)
 
     return (gamma * (ng.maximum(x, 0) + alpha * (ng.exp(ng.negative(ng.maximum(ng.negative(x), 0))) - 1)))
 
@@ -372,8 +357,8 @@ def ReduceMean(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -
     sum_node = make_reduction_op(ng.sum, onnx_node, ng_inputs[0])
     reduction_axes = get_reduction_axes(onnx_node, ng_inputs[0])
     avg_elem_count = np.prod([input_shape[x] for x in reduction_axes])
-    const_node = ng.broadcast(ng.constant(avg_elem_count, get_dtype(sum_node.get_element_type())),
-                              sum_node.shape)
+    const_node = ng.broadcast_to(ng.constant(avg_elem_count, get_dtype(sum_node.get_element_type())),
+                                 sum_node.shape)
     return ng.divide(sum_node, const_node)
 
 
@@ -408,20 +393,6 @@ def ReduceL2(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> 
     square_node = ng_inputs[0] * ng_inputs[0]
     sum_node = make_reduction_op(ng.sum, onnx_node, square_node)
     return ng.sqrt(sum_node)
-
-
-@refactoring_required
-def ArgMin(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
-    """Compute the indices of the min elements of the input tensor along the provided axes."""
-    return None  # tmp
-    # return make_reduction_op(ng.argmin, onnx_node, ng_inputs[0])
-
-
-@refactoring_required
-def ArgMax(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
-    """Compute the indices of the max elements of the input tensor along the provided axes."""
-    return None  # tmp
-    # return make_reduction_op(ng.argmax, onnx_node, ng_inputs[0])
 
 
 # Binary Ops
@@ -477,7 +448,7 @@ def Greater(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> N
 def And(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Perform the `and` logical operation elementwise on two input tensors."""
     left, right = broadcast_for_binary_operation(onnx_node, ng_inputs)
-    return ng.logical_and(left * right, bool)
+    return ng.logical_and(left, right)
 
 
 def Or(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
@@ -489,20 +460,13 @@ def Or(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngraph
 def Xor(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Perform the `xor` logical operation elementwise on two input tensors."""
     left, right = broadcast_for_binary_operation(onnx_node, ng_inputs)
-    # not_left = ng.convert(ng.equal(left, 0), int)
-    # left = ng.convert(ng.not_equal(left, 0), int)
-    # right = ng.convert(ng.not_equal(right, 0), int)
-    # not_right = ng.convert(ng.equal(right, 0), int)
-
-    # return ((not_left * right) + (not_right * left)) > 0
     return ng.logical_or(ng.logical_and(left, ng.logical_not(right)),
                          ng.logical_and(ng.logical_not(left), right))
 
 
 def Not(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Return the negation of the input tensor elementwise."""
-    data = ng.convert(ng.not_equal(ng_inputs[0], 0), bool)
-    return ng.logical_not(data)
+    return ng.logical_not(ng.convert(ng_inputs[0], bool))
 
 
 # Variadic Ops
@@ -556,7 +520,6 @@ def Gemm(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngra
     input_a, input_b, input_c = ng_inputs
     alpha = onnx_node.get_attribute_value('alpha', 1)  # Scalar multiplier for A @ B
     beta = onnx_node.get_attribute_value('beta', 1)  # Scalar multiplier for input tensor C
-    broadcast = onnx_node.get_attribute_value('broadcast', 1)  # Should C be broadcast?
     trans_a = onnx_node.get_attribute_value('transA', False)  # Should A be transposed?
     trans_b = onnx_node.get_attribute_value('transB', False)  # Should B be transposed?
 
@@ -569,9 +532,6 @@ def Gemm(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngra
 
     a_dot_b = ng.dot(input_a, input_b)
 
-    if not broadcast and input_c.shape != a_dot_b.shape:
-        raise ValueError('Gemm node (%s): input data shapes are incompatible and broadcast '
-                         ' was not requested!', onnx_node.name)
     if alpha != 1:
         a_dot_b = alpha * a_dot_b
 
@@ -604,18 +564,37 @@ def ConvTranspose(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]
 
 def Pad(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Add padding to the input tensor."""
+    data = ng_inputs[0]
+    # Oprator set version 1
+    paddings = onnx_node.get_attribute_value('paddings')
+    # Operator set version >= 2
     pads = onnx_node.get_attribute_value('pads')
+
+    pads = pads if pads is not None else paddings
+    if pads is None:
+        raise ValueError('Pad node (s%): pads attribute is required.', onnx_node.name)
+
     constant = 'constant'
     mode = onnx_node.get_attribute_value('mode', constant)  # 'constant', 'reflect' or 'edge'
-    value = onnx_node.get_attribute_value('value', 0)
+    value = onnx_node.get_attribute_value('value', 0.)
 
+    if len(pads) != 2 * len(data.shape):
+        raise ValueError('Pad node (%s): \'pads rank (%d) should be double of input tensor '
+                         'rank (%d).', onnx_node.name, len(pads), len(data.shape))
+
+    # Operator set version 1 accepts only positive values, while operator set version 2 use negative
+    # values to remove pads elements. Here we check only for latter case.
+    if any(map(lambda x: x < 0, pads)):
+        raise NotImplementedError('Pad node (%s): removing padding elements is not supported yet.',
+                                  onnx_node.name)
     if mode != constant:
-        raise NotImplementedError('Pad node (%s): only constant padding is supported.', onnx_node.name)
+        raise NotImplementedError('Pad node (%s): only constant padding is supported.',
+                                  onnx_node.name)
 
     # Split paddings into pairs for each axis
     pading_below, pading_above = split_pads_into_pairs(pads)
-    return ng.pad(ng_inputs[0], ng.constant(value,
-                  dtype=get_dtype(ng_inputs[0].get_element_type())), pading_below, pading_above)
+    return ng.pad(data, ng.constant(value,
+                  dtype=get_dtype(data.get_element_type())), pading_below, pading_above)
 
 
 # Pooling
@@ -701,8 +680,7 @@ def Concat(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ng
         raise ValueError('Concat node (%s): requires "axis" attribute', onnx_node.name)
 
     if len(ng_inputs) < 2:
-        raise ValueError('Concat node (%s): requires at least 2 inputs, %d given.',
-                         onnx_node.name, len(ng_inputs))
+        return ng_inputs[0]
 
     unique_input_ranks = {len(node.shape) for node in ng_inputs}
     if len(unique_input_ranks) != 1:

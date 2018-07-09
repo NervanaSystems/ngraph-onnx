@@ -140,11 +140,6 @@ def test_gemm():
     data = ([1, 2], [1, 3], [1, 4])
     assert np.array_equal(import_and_compute_gemm(*data), numpy_gemm(*data))
 
-    data = ([1, 2], [1, 3], [[1, 2, 3]])
-    kwargs = {'broadcast': 0}
-    with pytest.raises(ValueError):
-        np.array_equal(import_and_compute_gemm(*data, **kwargs), numpy_gemm(*data, **kwargs))
-
     data = ([1, 2], [1, 3], 1)
     assert np.array_equal(import_and_compute_gemm(*data), numpy_gemm(*data))
 

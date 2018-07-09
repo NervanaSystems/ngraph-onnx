@@ -18,11 +18,14 @@ from __future__ import print_function, division
 
 import pytest
 import onnx
+import onnx.mapping
 import numpy as np
 
-from tests.utils import run_node, get_runtime
+from tests.utils import run_model, run_node, get_node_model, get_runtime
 from onnx.helper import make_node, make_graph, make_tensor_value_info, make_model
 from ngraph_onnx.onnx_importer.importer import import_onnx_model
+from ngraph_onnx.onnx_importer.utils.types import np_dtype_to_tensor_type_name
+from ngraph.exceptions import NgraphTypeError
 
 
 @pytest.mark.parametrize('input_data', [
@@ -111,7 +114,6 @@ def test_ceil(input_data):
 
 @pytest.mark.parametrize('min_value, max_value', [
     (np.finfo(np.float32).min, np.finfo(np.float32).max),
-    (0., np.finfo(np.float32).max),
     (-0.5, 0.5),
 ])
 def test_clip(min_value, max_value):
@@ -126,6 +128,23 @@ def test_clip(min_value, max_value):
     assert np.allclose(ng_results, [expected])
 
 
+@pytest.mark.xfail(reason='Workaround for bug in nGraph. https://github.com/NervanaSystems/ngraph/issues/1196')
+@pytest.mark.parametrize('min_value, max_value', [
+    (0., np.finfo(np.float32).max),
+])
+def test_clip_broken(min_value, max_value):
+    np.random.seed(133391)
+    data = (np.float32(-100.) +
+            np.random.randn(3, 4, 5).astype(np.float32) * np.float32(200.))
+
+    node = onnx.helper.make_node('Clip', inputs=['x'], outputs=['y'],
+                                 min=float(min_value), max=float(max_value))
+    expected = np.clip(data, min_value, max_value)
+    ng_results = run_node(node, [data])
+    assert np.allclose(ng_results, [expected])
+
+
+@pytest.mark.xfail(reason='Workaround for bug in nGraph. https://github.com/NervanaSystems/ngraph/issues/1196')
 def test_clip_default():
     np.random.seed(133391)
     data = -100. + np.random.randn(3, 4, 5).astype(np.float32) * 200.0
@@ -353,3 +372,134 @@ def test_identity():
     expected_result = np.abs(input_data + input_data)
 
     assert np.array_equal(ng_results, expected_result)
+
+
+@pytest.mark.parametrize('val_type, input_data', [
+    (np.dtype(bool), np.zeros((2, 2), dtype=int)),
+])
+def test_cast_to_bool(val_type, input_data):
+    expected = np.array(input_data, dtype=val_type)
+
+    model = get_node_model('Cast', input_data, opset=6,
+                           to=onnx.mapping.NP_TYPE_TO_TENSOR_TYPE[val_type])
+    result = run_model(model, [input_data])
+    assert np.allclose(result, expected)
+
+    model = get_node_model('Cast', input_data, opset=5, to=np_dtype_to_tensor_type_name(val_type))
+    result = run_model(model, [input_data])
+    assert np.allclose(result, expected)
+
+
+@pytest.mark.parametrize('val_type, range_start, range_end, in_dtype', [
+    (np.dtype(np.float32), -8, 8, np.dtype(np.int32)),
+    (np.dtype(np.float64), -16383, 16383, np.dtype(np.int64)),
+])
+def test_cast_to_float(val_type, range_start, range_end, in_dtype):
+    np.random.seed(133391)
+    input_data = np.random.randint(range_start, range_end, size=(2, 2), dtype=in_dtype)
+    expected = np.array(input_data, dtype=val_type)
+
+    model = get_node_model('Cast', input_data, opset=6,
+                           to=onnx.mapping.NP_TYPE_TO_TENSOR_TYPE[val_type])
+    result = run_model(model, [input_data])
+    assert np.allclose(result, expected)
+
+    model = get_node_model('Cast', input_data, opset=5, to=np_dtype_to_tensor_type_name(in_dtype))
+    result = run_model(model, [input_data])
+    assert np.allclose(result, expected)
+
+
+@pytest.mark.parametrize('val_type', [
+    np.dtype(np.int8),
+    np.dtype(np.int16),
+    np.dtype(np.int32),
+    np.dtype(np.int64),
+])
+def test_cast_to_int(val_type):
+    np.random.seed(133391)
+    input_data = np.ceil(-8 + np.random.rand(2, 3, 4) * 16)
+    expected = np.array(input_data, dtype=val_type)
+
+    model = get_node_model('Cast', input_data, opset=6,
+                           to=onnx.mapping.NP_TYPE_TO_TENSOR_TYPE[val_type])
+    result = run_model(model, [input_data])
+    assert np.allclose(result, expected)
+
+    model = get_node_model('Cast', input_data, opset=5, to=np_dtype_to_tensor_type_name(val_type))
+    result = run_model(model, [input_data])
+    assert np.allclose(result, expected)
+
+
+@pytest.mark.parametrize('val_type', [
+    np.dtype(np.uint8),
+    np.dtype(np.uint16),
+    np.dtype(np.uint32),
+    np.dtype(np.uint64),
+])
+def test_cast_to_uint(val_type):
+    np.random.seed(133391)
+    input_data = np.ceil(np.random.rand(2, 3, 4) * 16)
+    expected = np.array(input_data, dtype=val_type)
+
+    model = get_node_model('Cast', input_data, opset=6,
+                           to=onnx.mapping.NP_TYPE_TO_TENSOR_TYPE[val_type])
+    result = run_model(model, [input_data])
+    assert np.allclose(result, expected)
+
+    model = get_node_model('Cast', input_data, opset=5, to=np_dtype_to_tensor_type_name(val_type))
+    result = run_model(model, [input_data])
+    assert np.allclose(result, expected)
+
+
+def test_cast_errors():
+    np.random.seed(133391)
+    input_data = np.ceil(np.random.rand(2, 3, 4) * 16)
+
+    # missing 'to' attribute
+    node = onnx.helper.make_node('Cast', inputs=['A'], outputs=['B'])
+    input_tensors = [make_tensor_value_info(name, onnx.TensorProto.FLOAT, value.shape)
+                     for name, value in zip(node.input, [input_data])]
+    output_tensors = [make_tensor_value_info(name, onnx.TensorProto.FLOAT16, value.shape)
+                      for name, value in zip(node.output, ())]  # type: ignore
+
+    graph = make_graph([node], 'compute_graph', input_tensors, output_tensors)
+    model = make_model(graph, producer_name='NgraphBackend')
+    with pytest.raises(ValueError):
+        import_onnx_model(model)[0]
+
+    # unsupported data type representation
+    node = onnx.helper.make_node('Cast', inputs=['A'], outputs=['B'], to=1.2345)
+    input_tensors = [make_tensor_value_info(name, onnx.TensorProto.FLOAT, value.shape)
+                     for name, value in zip(node.input, [input_data])]
+    output_tensors = [make_tensor_value_info(name, onnx.TensorProto.INT32, value.shape)
+                      for name, value in zip(node.output, ())]  # type: ignore
+
+    graph = make_graph([node], 'compute_graph', input_tensors, output_tensors)
+    model = make_model(graph, producer_name='NgraphBackend')
+    with pytest.raises(ValueError):
+        import_onnx_model(model)[0]
+
+    # unsupported input tensor data type:
+    node = onnx.helper.make_node('Cast', inputs=['A'], outputs=['B'], to=onnx.TensorProto.INT32)
+    input_tensors = [make_tensor_value_info(name, onnx.TensorProto.COMPLEX64, value.shape)
+                     for name, value in zip(node.input, [input_data])]
+    output_tensors = [make_tensor_value_info(name, onnx.TensorProto.INT32, value.shape)
+                      for name, value in zip(node.output, ())]  # type: ignore
+
+    graph = make_graph([node], 'compute_graph', input_tensors, output_tensors)
+    model = make_model(graph, producer_name='NgraphBackend')
+    with pytest.raises((ValueError, NgraphTypeError)):
+        import_onnx_model(model)[0]
+
+    # unsupported output tensor data type:
+    node = onnx.helper.make_node('Cast', inputs=['A'], outputs=['B'],
+                                 to=onnx.TensorProto.COMPLEX128)
+    input_tensors = [make_tensor_value_info(name, onnx.TensorProto.FLOAT, value.shape)
+                     for name, value in zip(node.input, [input_data])]
+    output_tensors = [make_tensor_value_info(name, onnx.TensorProto.COMPLEX128, value.shape)
+                      for name, value in zip(node.output, ())]  # type: ignore
+
+    graph = make_graph([node], 'compute_graph', input_tensors, output_tensors)
+    model = make_model(graph, producer_name='NgraphBackend')
+    with pytest.raises(ValueError):
+        import_onnx_model(model)[0]

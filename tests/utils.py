@@ -16,11 +16,16 @@
 
 from __future__ import print_function, division
 
+import onnx
 import numpy as np
 import pytest
 
 import ngraph as ng
+
+from onnx.helper import make_node, make_graph, make_tensor_value_info, make_model
 from ngraph_onnx.onnx_importer.backend import NgraphBackend
+from ngraph_onnx.onnx_importer.importer import import_onnx_model
+from string import ascii_uppercase
 
 
 def get_runtime():
@@ -55,10 +60,44 @@ def run_model(onnx_model, data_inputs):
     """
     NgraphBackend.backend_name = pytest.config.getoption('backend', default='CPU')
     if NgraphBackend.supports_ngraph_device(NgraphBackend.backend_name):
-        return NgraphBackend.run_model(onnx_model, data_inputs)
+        ng_model = import_onnx_model(onnx_model)
+        runtime = get_runtime()
+        computations = [runtime.computation(model['output'], *model['inputs']) for
+                        model in ng_model]
+        return [computation(*data_inputs) for computation in computations]
     else:
         raise RuntimeError('The requested nGraph backend <' + NgraphBackend.backend_name +
                            '> is not supported!')
+
+
+def get_node_model(op_type, *input_data, opset=1, num_outputs=1, **node_attributes):
+    # type: (str, *Any, Optional[int], Optional[int], **Any) -> onnx.ModelProto
+    """Generate model with single requested node.
+
+    Input and output Tensor data type is the same.
+
+    :param op_type: The ONNX node operation.
+    :param input_data: Optional list of input arguments for node.
+    :param opset: The ONNX operation set version to use. Default to 4.
+    :param num_outputs: The number of node outputs.
+    :param node_attributes: Optional dictionary of node attributes.
+    :return: Generated model with single node for requested ONNX operation.
+    """
+    node_inputs = [np.array(data) for data in input_data]
+    num_inputs = len(node_inputs)
+    node_input_names = [ascii_uppercase[idx] for idx in range(num_inputs)]
+    node_output_names = [ascii_uppercase[num_inputs + idx] for idx in range(num_outputs)]
+    onnx_node = make_node(op_type, node_input_names, node_output_names, **node_attributes)
+
+    input_tensors = [make_tensor_value_info(name, onnx.TensorProto.FLOAT, value.shape)
+                     for name, value in zip(onnx_node.input, node_inputs)]
+    output_tensors = [make_tensor_value_info(name, onnx.TensorProto.FLOAT, value.shape)
+                      for name, value in zip(onnx_node.output, ())]  # type: ignore
+
+    graph = make_graph([onnx_node], 'compute_graph', input_tensors, output_tensors)
+    model = make_model(graph, producer_name='NgraphBackend')
+    model.opset_import[0].version = opset
+    return model
 
 
 def all_arrays_equal(first_list, second_list):
