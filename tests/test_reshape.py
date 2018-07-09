@@ -28,7 +28,7 @@ def test_reshape():
     node = onnx.helper.make_node('Reshape', inputs=['x'], outputs=['y'], shape=(256, 10))
     expected_output = data.reshape(256, 10)
 
-    ng_results = run_node(node, [data])
+    ng_results = run_node(node, [data], opset_version=4)
     assert np.array_equal(ng_results, [expected_output])
 
 
