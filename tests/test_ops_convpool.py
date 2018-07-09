@@ -22,7 +22,7 @@ import pytest
 import numpy as np
 from onnx.helper import make_node, make_graph, make_tensor_value_info, make_model
 from ngraph_onnx.onnx_importer.importer import import_onnx_model
-from tests.utils import run_model, run_node, get_node_model, get_runtime
+from tests.utils import run_node, get_runtime
 
 
 @pytest.fixture
@@ -206,63 +206,21 @@ def test_2d_conv_transpose():
                                    dtype=np.float32))
 
 
-def test_pad_opset_1():
+def test_padding():
+    node = onnx.helper.make_node('Pad', inputs=['x'], outputs=['y'], pads=[1, 1, 1, 1])
     x = np.ones((2, 2), dtype=np.float32)
     y = np.pad(x, pad_width=1, mode='constant')
 
-    model = get_node_model('Pad', x, paddings=[1, 1, 1, 1])
-    ng_results = run_model(model, [x])
+    ng_results = run_node(node, [x])
     assert np.array_equal(ng_results, [y])
 
+    node = onnx.helper.make_node('Pad', inputs=['x'], outputs=['y'],
+                                 mode='constant', pads=[0, 0, 1, 3, 0, 0, 2, 4])
     x = np.random.randn(1, 3, 4, 5).astype(np.float32)
     y = np.pad(x, pad_width=((0, 0), (0, 0), (1, 2), (3, 4)), mode='constant')
 
-    model = get_node_model('Pad', x, mode='constant', paddings=[0, 0, 1, 3, 0, 0, 2, 4])
-    ng_results = run_model(model, [x])
+    ng_results = run_node(node, [x])
     assert np.array_equal(ng_results, [y])
-
-    # incorrect paddings rank
-    x = np.ones((2, 2), dtype=np.float32)
-    model = get_node_model('Pad', x, paddings=[0, 1, 1, 3, 1, 2])
-    with pytest.raises(ValueError):
-        run_model(model, [x])
-
-    # no paddings arttribute
-    model = get_node_model('Pad', x)
-    with pytest.raises(ValueError):
-        import_onnx_model(model)[0]
-
-
-def test_pad_opset_2():
-    x = np.ones((2, 2), dtype=np.float32)
-    y = np.pad(x, pad_width=1, mode='constant')
-
-    model = get_node_model('Pad', x, opset=2, pads=[1, 1, 1, 1])
-    ng_results = run_model(model, [x])
-    assert np.array_equal(ng_results, [y])
-
-    x = np.random.randn(1, 3, 4, 5).astype(np.float32)
-    y = np.pad(x, pad_width=((0, 0), (0, 0), (1, 2), (3, 4)), mode='constant')
-
-    model = get_node_model('Pad', x, opset=2, mode='constant', pads=[0, 0, 1, 3, 0, 0, 2, 4])
-    ng_results = run_model(model, [x])
-    assert np.array_equal(ng_results, [y])
-
-    # incorrect pads rank
-    x = np.ones((2, 2), dtype=np.float32)
-    model = get_node_model('Pad', x, opset=2, pads=[0, 1, 1, 3, 1, 2])
-    with pytest.raises(ValueError):
-        run_model(model, [x])
-
-    # negative pads values
-    model = get_node_model('Pad', x, opset=2, pads=[0, -1, -1, 3])
-    with pytest.raises(NotImplementedError):
-        run_model(model, [x])
-
-    # no pads attribute
-    model = get_node_model('Pad', x, opset=2)
-    with pytest.raises(ValueError):
-        import_onnx_model(model)[0]
 
 
 def test_pool_average(ndarray_1x1x4x4):
