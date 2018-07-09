@@ -14,4 +14,6 @@
 # limitations under the License.
 # ******************************************************************************
 
+# Concat-4 supported by opset_01.Concat
+
 from ngraph_onnx.onnx_importer.ops_bridge.opset_03 import *  # noqa
