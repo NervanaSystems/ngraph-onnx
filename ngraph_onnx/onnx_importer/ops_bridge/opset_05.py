@@ -14,7 +14,11 @@
 # limitations under the License.
 # ******************************************************************************
 
+from ngraph_onnx.onnx_importer.ops_bridge.opset_04 import Reshape as Reshape_v4
 from ngraph_onnx.onnx_importer.ops_bridge.opset_04 import *  # noqa
+
+import logging
+logger = logging.getLogger(__name__)
 
 
 def Reshape(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
@@ -24,5 +28,6 @@ def Reshape(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> N
     the size of the tensor and the remaining dimensions. A dimension could also be 0, in which
     case the actual dimension value is going to be copied from the shape argument.
     """
-    raise NotImplementedError('Reshape node (%s) - dynamic output shape is not supported yet.',
-                              onnx_node.name)
+    logger.warning('Reshape node (%s) - dynamic output shape is not fully supported yet',
+                   onnx_node.name)
+    return Reshape_v4(onnx_node, ng_inputs)
