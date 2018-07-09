@@ -395,20 +395,6 @@ def ReduceL2(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> 
     return ng.sqrt(sum_node)
 
 
-@refactoring_required
-def ArgMin(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
-    """Compute the indices of the min elements of the input tensor along the provided axes."""
-    return None  # tmp
-    # return make_reduction_op(ng.argmin, onnx_node, ng_inputs[0])
-
-
-@refactoring_required
-def ArgMax(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
-    """Compute the indices of the max elements of the input tensor along the provided axes."""
-    return None  # tmp
-    # return make_reduction_op(ng.argmax, onnx_node, ng_inputs[0])
-
-
 # Binary Ops
 def Add(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Perform element-wise binary addition."""
@@ -587,18 +573,37 @@ def ConvTranspose(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]
 
 def Pad(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Add padding to the input tensor."""
+    data = ng_inputs[0]
+    # Oprator set version 1
+    paddings = onnx_node.get_attribute_value('paddings')
+    # Operator set version >= 2
     pads = onnx_node.get_attribute_value('pads')
+
+    pads = pads if pads is not None else paddings
+    if pads is None:
+        raise ValueError('Pad node (s%): pads attribute is required.', onnx_node.name)
+
     constant = 'constant'
     mode = onnx_node.get_attribute_value('mode', constant)  # 'constant', 'reflect' or 'edge'
-    value = onnx_node.get_attribute_value('value', 0)
+    value = onnx_node.get_attribute_value('value', 0.)
 
+    if len(pads) != 2 * len(data.shape):
+        raise ValueError('Pad node (%s): \'pads rank (%d) should be double of input tensor '
+                         'rank (%d).', onnx_node.name, len(pads), len(data.shape))
+
+    # Operator set version 1 accepts only positive values, while operator set version 2 use negative
+    # values to remove pads elements. Here we check only for latter case.
+    if any(map(lambda x: x < 0, pads)):
+        raise NotImplementedError('Pad node (%s): removing padding elements is not supported yet.',
+                                  onnx_node.name)
     if mode != constant:
-        raise NotImplementedError('Pad node (%s): only constant padding is supported.', onnx_node.name)
+        raise NotImplementedError('Pad node (%s): only constant padding is supported.',
+                                  onnx_node.name)
 
     # Split paddings into pairs for each axis
     pading_below, pading_above = split_pads_into_pairs(pads)
-    return ng.pad(ng_inputs[0], ng.constant(value,
-                  dtype=get_dtype(ng_inputs[0].get_element_type())), pading_below, pading_above)
+    return ng.pad(data, ng.constant(value,
+                  dtype=get_dtype(data.get_element_type())), pading_below, pading_above)
 
 
 # Pooling
@@ -684,8 +689,7 @@ def Concat(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ng
         raise ValueError('Concat node (%s): requires "axis" attribute', onnx_node.name)
 
     if len(ng_inputs) < 2:
-        raise ValueError('Concat node (%s): requires at least 2 inputs, %d given.',
-                         onnx_node.name, len(ng_inputs))
+        return ng_inputs[0]
 
     unique_input_ranks = {len(node.shape) for node in ng_inputs}
     if len(unique_input_ranks) != 1:
