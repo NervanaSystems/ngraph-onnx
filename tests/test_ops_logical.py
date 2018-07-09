@@ -37,13 +37,13 @@ def test_logical(onnx_op, numpy_func, data_type):
     input_a = np.array([[0, 1, -1], [0, 1, -1], [0, 1, -1]]).astype(data_type)
     input_b = np.array([[0, 0, 0], [1, 1, 1], [-1, -1, -1]]).astype(data_type)
     expected_output = numpy_func(input_a, input_b)
-    ng_results = run_node(node, [input_a, input_b])
+    ng_results = run_node(node, [input_a, input_b], opset_version=4)
     assert np.array_equal(ng_results, [expected_output])
 
     input_a = np.array([[0, 1, -1], [0, 1, -1], [0, 1, -1]]).astype(data_type)
     input_b = np.array(1).astype(data_type)
     expected_output = numpy_func(input_a, input_b)
-    ng_results = run_node(node, [input_a, input_b])
+    ng_results = run_node(node, [input_a, input_b], opset_version=4)
     assert np.array_equal(ng_results, [expected_output])
 
 
