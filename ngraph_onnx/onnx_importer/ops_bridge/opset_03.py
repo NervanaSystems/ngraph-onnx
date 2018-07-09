@@ -14,4 +14,6 @@
 # limitations under the License.
 # ******************************************************************************
 
+# TODO: GRU-3
+
 from ngraph_onnx.onnx_importer.ops_bridge.opset_02 import *  # noqa
