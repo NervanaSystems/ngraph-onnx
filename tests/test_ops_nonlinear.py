@@ -83,7 +83,7 @@ def test_parametric_relu(x, slope):
     def parametic_relu(x, slope):
         return np.where(x < 0, slope * x, x)
 
-    x, slope = np.array(x), np.array(slope)
+    x, slope = np.array(x).astype(np.float32), np.array(slope).astype(np.float32)
     expected_output = parametic_relu(x, slope)
     node = onnx.helper.make_node('PRelu', inputs=['x', 'slope'], outputs=['y'])
     output = run_node(node, [x, slope]).pop()
