@@ -214,8 +214,6 @@ backend_test.exclude('test_Conv1d_pad1size1_cpu')
 backend_test.exclude('test_Conv1d_pad2_cpu')
 backend_test.exclude('test_Conv1d_pad2size1_cpu')
 backend_test.exclude('test_Conv1d_stride_cpu')
-backend_test.exclude('test_or_bcast4v4d_cpu')
-backend_test.exclude('test_xor_bcast4v4d_cpu')
 
 # RuntimeError msg='Dot axes do not have same length' -> NGRAPH-1838
 backend_test.exclude('test_matmul_3d_cpu')
