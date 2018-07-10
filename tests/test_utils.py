@@ -19,9 +19,13 @@ from __future__ import print_function, division
 import onnx
 from onnx.helper import make_node, make_graph, make_tensor_value_info, make_model
 
+import numpy as np
+import pytest
+
 from ngraph_onnx.onnx_importer.model_wrappers import NodeWrapper, GraphWrapper, ModelWrapper
 from ngraph_onnx.onnx_importer.utils.conv import get_pads
 from ngraph_onnx.onnx_importer.utils.matmul import has_matmul_compatible_shapes
+from ngraph_onnx.onnx_importer.utils.numeric_limits import NumericLimits
 
 
 def test_get_pads():
@@ -84,3 +88,52 @@ def test_matmul_compatible_shapes():
 
     # --------- Negative cases ---------
     # TODO
+
+
+@pytest.mark.parametrize('data_type', [
+    np.int8,
+    np.int16,
+    np.int32,
+    np.int64,
+    np.uint8,
+    np.uint16,
+    np.uint32,
+    np.uint64,
+    int,
+])
+def test_numeric_limits_integral(data_type):
+    np_type_min = np.iinfo(data_type).min
+    np_type_max = np.iinfo(data_type).max
+    type_min = NumericLimits.min(data_type)
+    type_max = NumericLimits.max(data_type)
+
+    assert np.equal(np_type_min, type_min)
+    assert np.equal(np_type_max, type_max)
+
+
+@pytest.mark.parametrize('data_type', [
+    np.float32,
+    np.float64,
+    float,
+])
+def test_numeric_limits_floating_point(data_type):
+    np_type_min = np.finfo(data_type).min
+    np_type_max = np.finfo(data_type).max
+    type_min = NumericLimits.min(data_type)
+    type_max = NumericLimits.max(data_type)
+
+    assert np.equal(np_type_min, type_min)
+    assert np.equal(np_type_max, type_max)
+
+
+@pytest.mark.parametrize('data_type', [
+    str,
+    bool,
+])
+def test_numeric_limits_errors(data_type):
+
+    with pytest.raises(ValueError):
+        NumericLimits.max(data_type)
+
+    with pytest.raises(ValueError):
+        NumericLimits.min(data_type)
