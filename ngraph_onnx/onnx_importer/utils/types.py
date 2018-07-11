@@ -18,12 +18,18 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-
+import logging
 import numpy as np
 from onnx.mapping import NP_TYPE_TO_TENSOR_TYPE, TENSOR_TYPE_TO_NP_TYPE
 from onnx import TensorProto
 
-from typing import Any
+import ngraph as ng
+from ngraph.impl import Node as NgraphNode
+from ngraph.impl import Type as NgraphType
+from ngraph.utils.types import get_dtype
+
+from typing import Any, Tuple
+logger = logging.getLogger(__name__)
 
 
 def onnx_tensor_type_to_numpy_type(data_type):  # type: (Any) -> np.dtype
@@ -56,3 +62,21 @@ def np_dtype_to_tensor_type(data_type):  # type: (np.type) -> int
     :return: TensorProto.DataType enum value for corresponding type.
     """
     return NP_TYPE_TO_TENSOR_TYPE[data_type]
+
+
+def get_bool_nodes(nodes):   # type: (Tuple[NgraphNode, ...]) -> Tuple[NgraphNode, ...]
+    """Convert each input node to bool data type if necessary.
+
+    :param nodes: Input nodes to be converted.
+    :return: Converted nodes.
+    """
+    bool_nodes = []
+    for node in nodes:
+        if not node.get_element_type() == NgraphType.boolean:
+            bool_nodes.append(ng.convert(node, bool))
+            logger.warning('Converting node of type: <{}> to bool.'.format(get_dtype(
+                node.get_element_type())))
+        else:
+            bool_nodes.append(node)
+
+    return tuple(bool_nodes)
