@@ -39,6 +39,8 @@ from ngraph_onnx.onnx_importer.utils.reduction import make_reduction_op, get_red
 from ngraph_onnx.onnx_importer.utils.reshape import transpose, infer_dimensions, \
     reorder_axes, make_slice_op, flatten
 
+from ngraph_onnx.onnx_importer.utils.numeric_limits import NumericLimits
+
 if TYPE_CHECKING:
     from ngraph_onnx.onnx_importer.model_wrappers import NodeWrapper
 
@@ -501,13 +503,15 @@ def Sum(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngrap
 
 def Min(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Calculate element-wise min of the input tensors."""
-    initial_value_node = ng.constant(np.inf, get_dtype(ng_inputs[0].get_element_type()))
+    np_dtype = get_dtype(ng_inputs[0].get_element_type())
+    initial_value_node = ng.constant(NumericLimits.max(np_dtype), np_dtype)
     return reduce(ng.minimum, ng_inputs, initial_value_node)
 
 
 def Max(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Calculate element-wise max of the input tensors."""
-    initial_value_node = ng.constant(-np.inf, get_dtype(ng_inputs[0].get_element_type()))
+    np_dtype = get_dtype(ng_inputs[0].get_element_type())
+    initial_value_node = ng.constant(NumericLimits.min(np_dtype), np_dtype)
     return reduce(ng.maximum, ng_inputs, initial_value_node)
 
 

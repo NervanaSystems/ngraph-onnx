@@ -46,6 +46,7 @@ def test_abs(input_data):
     np.array([[[1, 2], [3, 4]], [[1, 2], [3, 4]]]),
 ])
 def test_sqrt(input_data):
+    input_data = input_data.astype(np.float32)
     expected_output = np.sqrt(input_data)
     node = onnx.helper.make_node('Sqrt', inputs=['x'], outputs=['y'])
     ng_results = run_node(node, [input_data])
@@ -58,6 +59,7 @@ def test_sqrt(input_data):
     np.array([[[1, 2], [3, 4]], [[1, 2], [3, 4]]]),
 ])
 def test_exp(input_data):
+    input_data = input_data.astype(np.float32)
     expected_output = np.exp(input_data)
     node = onnx.helper.make_node('Exp', inputs=['x'], outputs=['y'])
     ng_results = run_node(node, [input_data])
@@ -70,6 +72,7 @@ def test_exp(input_data):
     np.array([[[1, 2], [3, 4]], [[1, 2], [3, 4]]]),
 ])
 def test_log(input_data):
+    input_data = input_data.astype(np.float32)
     expected_output = np.log(input_data)
     node = onnx.helper.make_node('Log', inputs=['x'], outputs=['y'])
     ng_results = run_node(node, [input_data])
