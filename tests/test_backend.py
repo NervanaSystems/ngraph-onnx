@@ -89,10 +89,6 @@ backend_test.exclude('test_operator_convtranspose_cpu')
 backend_test.exclude('test_cos_cpu')
 backend_test.exclude('test_cos_example_cpu')
 
-# Missing op 'DepthToSpace' -> NC5-176
-backend_test.exclude('test_depthtospace_cpu')
-backend_test.exclude('test_depthtospace_example_cpu')
-
 # Missing op 'Gather' -> NC5-160
 backend_test.exclude('test_Embedding_cpu')
 backend_test.exclude('test_Embedding_sparse_cpu')
