@@ -34,6 +34,7 @@ from onnx.backend.base import Backend, BackendRep
 from typing import Any, Dict, List, Optional, Sequence, Text, Tuple
 
 from ngraph_onnx.onnx_importer.importer import import_onnx_model
+from ngraph_onnx.onnx_importer.utils.types import np_dtype_to_tensor_type
 
 
 class NgraphBackend(Backend):
@@ -123,13 +124,25 @@ class NgraphBackend(Backend):
                  inputs,  # type: List[np.ndarray]
                  device='CPU',  # type: Text
                  outputs_info=None,  # type: Optional[Sequence[Tuple[np.dtype, Tuple[int, ...]]]]
-                 **kwargs  # type: Dict[Text, Any]
+                 **kwargs  # type: Any
                  ):  # type: (...) -> List[np.ndarray]
         """Prepare and run a computation on an ONNX node."""
-        input_tensors = [make_tensor_value_info(name, onnx.TensorProto.FLOAT, value.shape)
-                         for name, value in zip(node.input, inputs)]
-        output_tensors = [make_tensor_value_info(name, onnx.TensorProto.FLOAT, value.shape)
-                          for name, value in zip(node.output, ())]  # type: ignore
+        # default values for input/output tensors
+        input_tensor_types = [np_dtype_to_tensor_type(node_input.dtype) for node_input in inputs]
+        output_tensor_types = [onnx.TensorProto.FLOAT for idx in range(len(node.output))]
+        output_tensor_shapes = [()]  # type: List[Tuple[int, ...]]
+
+        if outputs_info is not None:
+            output_tensor_types = [np_dtype_to_tensor_type(dtype) for (dtype, shape) in
+                                   outputs_info]
+            output_tensor_shapes = [shape for (dtype, shape) in outputs_info]
+
+        input_tensors = [make_tensor_value_info(name, tensor_type, value.shape)
+                         for name, value, tensor_type in zip(node.input, inputs,
+                                                             input_tensor_types)]
+        output_tensors = [make_tensor_value_info(name, tensor_type, shape)
+                          for name, shape, tensor_type in zip(node.output, output_tensor_shapes,
+                                                              output_tensor_types)]
 
         graph = make_graph([node], 'compute_graph', input_tensors, output_tensors)
         model = make_model(graph, producer_name='NgraphBackend')
