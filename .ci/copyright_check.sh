@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-set -e
-
 # -----------------------------------------------------
 # print utility colors
 # -----------------------------------------------------
@@ -27,7 +25,6 @@ if [[ $# -lt 1 ]]; then
 fi
 
 if [[ -n $1 ]]; then
-  info "toxinidir: $1"
   TOXINIDIR=$1
 fi
 
