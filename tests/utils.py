@@ -32,8 +32,8 @@ def get_runtime():
     return ng.runtime(backend_name=pytest.config.getoption('backend', default='CPU'))
 
 
-def run_node(onnx_node, data_inputs):
-    # type: (onnx.NodeProto, List[np.ndarray]) -> List[np.ndarray]
+def run_node(onnx_node, data_inputs, **kwargs):
+    # type: (onnx.NodeProto, List[np.ndarray], Dict[Text, Any]) -> List[np.ndarray]
     """
     Convert ONNX node to ngraph node and perform computation on input data.
 
@@ -43,7 +43,7 @@ def run_node(onnx_node, data_inputs):
     """
     NgraphBackend.backend_name = pytest.config.getoption('backend', default='CPU')
     if NgraphBackend.supports_ngraph_device(NgraphBackend.backend_name):
-        return NgraphBackend.run_node(onnx_node, data_inputs)
+        return NgraphBackend.run_node(onnx_node, data_inputs, **kwargs)
     else:
         raise RuntimeError('The requested nGraph backend <' + NgraphBackend.backend_name +
                            '> is not supported!')

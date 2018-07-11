@@ -47,3 +47,12 @@ def np_dtype_to_tensor_type_name(data_type):  # type: (np.dtype) -> str
     :return: String representation of TensorProto type name.
     """
     return TensorProto.DataType.Name(NP_TYPE_TO_TENSOR_TYPE[data_type])
+
+
+def np_dtype_to_tensor_type(data_type):  # type: (np.type) -> int
+    """Return TensorProto type for provided numpy dtype.
+
+    :param data_type: Numpy data type object.
+    :return: TensorProto.DataType enum value for corresponding type.
+    """
+    return NP_TYPE_TO_TENSOR_TYPE[data_type]

@@ -5,7 +5,7 @@ from distutils.core import setup
 from setuptools import find_packages
 
 setup(name='ngraph-onnx',
-      version='0.0.1',
+      version='0.2.0',
       description='ONNX support for ngraph',
       author='Intel',
       author_email='intelnervana@intel.com',

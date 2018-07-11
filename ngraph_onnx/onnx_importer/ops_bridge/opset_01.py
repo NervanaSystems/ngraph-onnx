@@ -39,6 +39,8 @@ from ngraph_onnx.onnx_importer.utils.reduction import make_reduction_op, get_red
 from ngraph_onnx.onnx_importer.utils.reshape import transpose, infer_dimensions, \
     reorder_axes, make_slice_op, flatten
 
+from ngraph_onnx.onnx_importer.utils.numeric_limits import NumericLimits
+
 if TYPE_CHECKING:
     from ngraph_onnx.onnx_importer.model_wrappers import NodeWrapper
 
@@ -487,13 +489,15 @@ def Sum(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngrap
 
 def Min(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Calculate element-wise min of the input tensors."""
-    initial_value_node = ng.constant(np.inf, get_dtype(ng_inputs[0].get_element_type()))
+    np_dtype = get_dtype(ng_inputs[0].get_element_type())
+    initial_value_node = ng.constant(NumericLimits.max(np_dtype), np_dtype)
     return reduce(ng.minimum, ng_inputs, initial_value_node)
 
 
 def Max(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Calculate element-wise max of the input tensors."""
-    initial_value_node = ng.constant(-np.inf, get_dtype(ng_inputs[0].get_element_type()))
+    np_dtype = get_dtype(ng_inputs[0].get_element_type())
+    initial_value_node = ng.constant(NumericLimits.min(np_dtype), np_dtype)
     return reduce(ng.maximum, ng_inputs, initial_value_node)
 
 
@@ -798,6 +802,38 @@ def Split(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Tup
         start_index = end_index
 
     return tuple(outputs)
+
+
+def DepthToSpace(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
+    """Rearranges (permutes) input tensor data from depth into blocks of spatial data.
+
+    Values from the depth dimension (assuming NCHW layout) are moved in spatial blocks to the
+    height and width dimensions.
+
+    :param onnx_node: The ONNX node representing this operation.
+    :param ng_inputs: The input tensors.
+    :return: Tensor with shape [N, C/(blocksize * blocksize), H * blocksize, W * blocksize].
+    """
+    data = ng_inputs[0]
+    block_size = onnx_node.get_attribute_value('blocksize')
+    if block_size is None:
+        raise ValueError('DepthToSpace node (%s): missing required attribute \"blocksize\"',
+                         onnx_node.name)
+    # Set default values to each dimension to be able to work with 3D or 4D data.
+    n, c, h, w = 1, 1, 1, 1
+    if len(data.shape) == 4:
+        n, c, h, w, = data.shape
+    elif len(data.shape) == 3:
+        c, h, w = data.shape
+    else:
+        raise ValueError('DepthToSpace node (%s): the provided tensor shape (%s) is not supported',
+                         onnx_node.name, str(data.shape))
+    # First we have to disperse the data from depth channel, then rearrange them so as appropriate
+    # chunks of data where close to their destination place. Finally squeeze data from
+    # respective dimensions.
+    flat_node = ng.reshape(data, [n, block_size, block_size, c // (block_size ** 2), h, w])
+    flat_node = reorder_axes(flat_node, [0, 3, 4, 1, 5, 2])
+    return ng.reshape(flat_node, [n, c // (block_size ** 2), h * block_size, w * block_size])
 
 
 # Misc
