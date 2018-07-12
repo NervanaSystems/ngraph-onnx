@@ -46,6 +46,13 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
+# OP STATUS
+# ArgMin-1        TODO
+# ArgMax-1        TODO
+# ConvTranspose-1 TODO
+# Hardmax-1       TODO
+
+
 # Unary Ops
 def Abs(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Apply f(x) = abs(x) to the input tensor elementwise."""
