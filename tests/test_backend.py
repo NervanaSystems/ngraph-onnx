@@ -53,38 +53,14 @@ backend_test.exclude('test_shufflenet_cpu')
 
 # Ops
 # Missing ops
-# Missing op 'Acos'
-backend_test.exclude('test_acos_cpu')
-backend_test.exclude('test_acos_example_cpu')
-
-# Missing op 'Asin'
-backend_test.exclude('test_asin_cpu')
-backend_test.exclude('test_asin_example_cpu')
-
-# Missing op 'Atan'
-backend_test.exclude('test_atan_cpu')
-backend_test.exclude('test_atan_example_cpu')
-
 # Missing op 'Cast' -> NC5-159
 backend_test.exclude('test_cast_DOUBLE_to_FLOAT16_cpu')
-backend_test.exclude('test_cast_DOUBLE_to_FLOAT_cpu')
-backend_test.exclude('test_cast_FLOAT_to_DOUBLE_cpu')
 backend_test.exclude('test_cast_FLOAT_to_FLOAT16_cpu')
 
 # Missing op 'ConvTranspose' -> NGRAPH-1840
-backend_test.exclude('test_convtranspose_1d_cpu')
-backend_test.exclude('test_convtranspose_3d_cpu')
-backend_test.exclude('test_convtranspose_cpu')
-backend_test.exclude('test_convtranspose_output_shape_cpu')
-backend_test.exclude('test_convtranspose_pad_cpu')
-backend_test.exclude('test_convtranspose_pads_cpu')
 backend_test.exclude('test_ConvTranspose2d_cpu')
 backend_test.exclude('test_ConvTranspose2d_no_bias_cpu')
 backend_test.exclude('test_operator_convtranspose_cpu')
-
-# Missing op 'Cos'
-backend_test.exclude('test_cos_cpu')
-backend_test.exclude('test_cos_example_cpu')
 
 # Missing op 'Gather' -> NC5-160
 backend_test.exclude('test_Embedding_cpu')
@@ -108,72 +84,18 @@ backend_test.exclude('test_hardmax_default_axis_cpu')
 backend_test.exclude('test_hardmax_example_cpu')
 backend_test.exclude('test_hardmax_one_hot_cpu')
 
-# Missing op 'Identity' -> NC5-178
-backend_test.exclude('test_identity_cpu')
-
 # Missing op 'InstanceNormalization' -> NC5-179
-backend_test.exclude('test_instancenorm_epsilon_cpu')
-backend_test.exclude('test_instancenorm_example_cpu')
 backend_test.exclude('test_operator_symbolic_override_cpu')
-
-# Missing op 'LRN' -> NGRAPH-1731
-backend_test.exclude('test_lrn_cpu')
-backend_test.exclude('test_lrn_default_cpu')
 
 # Missing op 'LSTM' -> NC5-180
 backend_test.exclude('test_lstm_defaults_cpu')
 backend_test.exclude('test_lstm_with_initial_bias_cpu')
 backend_test.exclude('test_lstm_with_peepholes_cpu')
 
-# Missing op 'Pow' -> NC5-163
-backend_test.exclude('test_operator_pow_cpu')
-backend_test.exclude('test_pow_cpu')
-backend_test.exclude('test_pow_bcast_array_cpu')
-backend_test.exclude('test_pow_bcast_scalar_cpu')
-backend_test.exclude('test_pow_example_cpu')
-
-# Missing op 'ReduceL1' -> NC5-181
-backend_test.exclude('test_reduce_l1_default_axes_keepdims_example_cpu')
-backend_test.exclude('test_reduce_l1_default_axes_keepdims_random_cpu')
-backend_test.exclude('test_reduce_l1_do_not_keepdims_example_cpu')
-backend_test.exclude('test_reduce_l1_do_not_keepdims_random_cpu')
-backend_test.exclude('test_reduce_l1_keep_dims_example_cpu')
-backend_test.exclude('test_reduce_l1_keep_dims_random_cpu')
-
-# Missing op 'ReduceL2' -> NC5-181
-backend_test.exclude('test_reduce_l2_default_axes_keepdims_example_cpu')
-backend_test.exclude('test_reduce_l2_default_axes_keepdims_random_cpu')
-backend_test.exclude('test_reduce_l2_do_not_keepdims_example_cpu')
-backend_test.exclude('test_reduce_l2_do_not_keepdims_random_cpu')
-backend_test.exclude('test_reduce_l2_keep_dims_example_cpu')
-backend_test.exclude('test_reduce_l2_keep_dims_random_cpu')
-
-# Missing op 'ReduceLogSum' -> NC5-181
-backend_test.exclude('test_reduce_log_sum_asc_axes_cpu')
-backend_test.exclude('test_reduce_log_sum_cpu')
-backend_test.exclude('test_reduce_log_sum_default_cpu')
-backend_test.exclude('test_reduce_log_sum_desc_axes_cpu')
-
-# Missing op 'ReduceSumSquare' -> NC5-181
-backend_test.exclude('test_reduce_sum_square_default_axes_keepdims_example_cpu')
-backend_test.exclude('test_reduce_sum_square_default_axes_keepdims_random_cpu')
-backend_test.exclude('test_reduce_sum_square_do_not_keepdims_example_cpu')
-backend_test.exclude('test_reduce_sum_square_do_not_keepdims_random_cpu')
-backend_test.exclude('test_reduce_sum_square_keepdims_example_cpu')
-backend_test.exclude('test_reduce_sum_square_keepdims_random_cpu')
-
 # Missing op 'RNN' -> NC5-182
 backend_test.exclude('test_rnn_seq_length_cpu')
 backend_test.exclude('test_simple_rnn_defaults_cpu')
 backend_test.exclude('test_simple_rnn_with_initial_bias_cpu')
-
-# Missing op 'Sin'
-backend_test.exclude('test_sin_cpu')
-backend_test.exclude('test_sin_example_cpu')
-
-# Missing op 'Tan'
-backend_test.exclude('test_tan_cpu')
-backend_test.exclude('test_tan_example_cpu')
 
 # Missing op 'Tile' -> NGRAPH-1909
 backend_test.exclude('test_operator_repeat_cpu')
@@ -186,9 +108,6 @@ backend_test.exclude('test_top_k_cpu')
 
 # Missing op 'Upsample' -> NGRAPH-1841
 backend_test.exclude('test_upsample_nearest_cpu')
-backend_test.exclude('test_Upsample_nearest_2d_cpu')
-backend_test.exclude('test_Upsample_nearest_scale_2d_cpu')
-backend_test.exclude('test_Upsample_nearest_tuple_2d_cpu')
 
 # Runtime problems
 # RuntimeError msg='Broadcast arg, shape, and axes are incompatible'
@@ -207,8 +126,6 @@ backend_test.exclude('test_Conv1d_pad1size1_cpu')
 backend_test.exclude('test_Conv1d_pad2_cpu')
 backend_test.exclude('test_Conv1d_pad2size1_cpu')
 backend_test.exclude('test_Conv1d_stride_cpu')
-backend_test.exclude('test_or_bcast4v4d_cpu')
-backend_test.exclude('test_xor_bcast4v4d_cpu')
 
 # RuntimeError msg='Dot axes do not have same length' -> NGRAPH-1838
 backend_test.exclude('test_matmul_3d_cpu')
@@ -221,8 +138,6 @@ backend_test.exclude('test_reshape_negative_dim_cpu')
 backend_test.exclude('test_reshape_one_dim_cpu')
 backend_test.exclude('test_reshape_reduced_dims_cpu')
 backend_test.exclude('test_reshape_reordered_dims_cpu')
-
-backend_test.exclude('test_batchnorm_example_cpu')
 
 # IndexError msg='list assignment index out of range'
 backend_test.exclude('test_prelu_example_cpu')
