@@ -53,16 +53,12 @@ backend_test.exclude('test_shufflenet_cpu')
 
 # Ops
 # Missing ops
-# Missing op 'Cast' -> NC5-159
-backend_test.exclude('test_cast_DOUBLE_to_FLOAT16_cpu')
-backend_test.exclude('test_cast_FLOAT_to_FLOAT16_cpu')
-
 # Missing op 'ConvTranspose' -> NGRAPH-1840
 backend_test.exclude('test_ConvTranspose2d_cpu')
 backend_test.exclude('test_ConvTranspose2d_no_bias_cpu')
 backend_test.exclude('test_operator_convtranspose_cpu')
 
-# Missing op 'Gather' -> NC5-160
+# Missing op 'Gather' -> NC5-121
 backend_test.exclude('test_Embedding_cpu')
 backend_test.exclude('test_Embedding_sparse_cpu')
 backend_test.exclude('test_gather_0_cpu')
@@ -110,6 +106,12 @@ backend_test.exclude('test_top_k_cpu')
 backend_test.exclude('test_upsample_nearest_cpu')
 
 # Runtime problems
+# NG_TYPE_ERROR msg='Unidentified data type %s' param='float16' -> NC5-229
+backend_test.exclude('test_cast_FLOAT16_to_DOUBLE_cpu')
+backend_test.exclude('test_cast_FLOAT16_to_FLOAT_cpu')
+backend_test.exclude('test_cast_DOUBLE_to_FLOAT16_cpu')
+backend_test.exclude('test_cast_FLOAT_to_FLOAT16_cpu')
+
 # RuntimeError msg='Broadcast arg, shape, and axes are incompatible'
 backend_test.exclude('test_gemm_broadcast_cpu')
 backend_test.exclude('test_operator_add_size1_broadcast_cpu')
@@ -141,10 +143,6 @@ backend_test.exclude('test_reshape_reordered_dims_cpu')
 
 # IndexError msg='list assignment index out of range'
 backend_test.exclude('test_prelu_example_cpu')
-
-# NG_TYPE_ERROR msg='Unidentified data type %s' param='float16'
-backend_test.exclude('test_cast_FLOAT16_to_DOUBLE_cpu')
-backend_test.exclude('test_cast_FLOAT16_to_FLOAT_cpu')
 
 # NotImplementedError msg='Pad node (%s): only constant padding is supported.' -> NGRAPH-1505
 backend_test.exclude('test_edge_pad_cpu')
