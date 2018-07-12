@@ -13,12 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ******************************************************************************
-
-from ngraph_onnx.onnx_importer.ops_bridge.opset_04 import Reshape as Reshape_v4
 from ngraph_onnx.onnx_importer.ops_bridge.opset_04 import *  # noqa
 
-import logging
-logger = logging.getLogger(__name__)
+import ngraph as ng
+from ngraph.impl.op import Constant as NgraphConstant
+from ngraph_onnx.onnx_importer.utils.reshape import infer_dimensions
 
 
 def Reshape(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
@@ -28,6 +27,16 @@ def Reshape(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> N
     the size of the tensor and the remaining dimensions. A dimension could also be 0, in which
     case the actual dimension value is going to be copied from the shape argument.
     """
-    logger.warning('Reshape node (%s) - dynamic output shape is not fully supported yet',
-                   onnx_node.name)
-    return Reshape_v4(onnx_node, ng_inputs)
+    data = ng_inputs[0]
+    output_shape = ng_inputs[1]
+    if isinstance(output_shape, NgraphConstant):
+        output_shape = output_shape.get_data().tolist()
+    else:
+        raise NotImplementedError('Reshape node (%s) doesn\'t support shape input of other type '
+                                  'than Constant.', onnx_node.name)
+
+    if output_shape == data.shape:
+        return data
+
+    output_shape = infer_dimensions(onnx_node.name, data.shape, output_shape)
+    return ng.reshape(data, output_shape)

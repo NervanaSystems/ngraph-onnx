@@ -20,16 +20,63 @@ import numpy as np
 import onnx
 import pytest
 
-from tests.utils import run_node, all_arrays_equal
+from tests.utils import all_arrays_equal, run_node, get_runtime
+from onnx.helper import make_node, make_graph, make_tensor_value_info, make_model
+from ngraph_onnx.onnx_importer.importer import import_onnx_model
 
 
 def test_reshape():
-    data = np.arange(2560).reshape(16, 4, 4, 10)
-    node = onnx.helper.make_node('Reshape', inputs=['x'], outputs=['y'], shape=(256, 10))
-    expected_output = data.reshape(256, 10)
+    input_data = np.arange(2560).reshape(16, 4, 4, 10)
+    reshape_node = onnx.helper.make_node('Reshape', inputs=['x'], outputs=['y'], shape=(256, 10))
+    expected_output = input_data.reshape(256, 10)
 
-    ng_results = run_node(node, [data], opset_version=4)
+    ng_results = run_node(reshape_node, [input_data], opset_version=4)
     assert np.array_equal(ng_results, [expected_output])
+
+
+def test_reshape_opset5():
+    original_shape = [2, 3, 4]
+    test_cases = {
+        'reordered_dims': np.array([4, 2, 3], dtype=np.int64),
+        'reduced_dims': np.array([3, 8], dtype=np.int64),
+        'extended_dims': np.array([3, 2, 2, 2], dtype=np.int64),
+        'one_dim': np.array([24], dtype=np.int64),
+        'negative_dim': np.array([6, -1, 2], dtype=np.int64),
+    }
+    input_data = np.random.random_sample(original_shape).astype(np.float32)
+
+    for test_name, shape in test_cases.items():
+        const_node = make_node('Constant', inputs=[], outputs=['const_shape'],
+                               value=onnx.helper.make_tensor(
+                                   name='const_tensor',
+                                   data_type=onnx.TensorProto.INT64,
+                                   dims=shape.shape,
+                                   vals=shape.flatten()))
+        reshape_node = onnx.helper.make_node('Reshape', inputs=['data', 'const_shape'],
+                                             outputs=['reshaped'])
+
+        graph = make_graph([const_node, reshape_node], 'test_graph',
+                           [make_tensor_value_info('data', onnx.TensorProto.FLOAT, input_data.shape)],
+                           [make_tensor_value_info('reshaped', onnx.TensorProto.FLOAT, ())])
+
+        model = make_model(graph, producer_name='ngraph ONNX Importer')
+        model.opset_import[0].version = 5
+        ng_model = import_onnx_model(model)[0]
+        runtime = get_runtime()
+        computation = runtime.computation(ng_model['output'], *ng_model['inputs'])
+        ng_results = computation(input_data)
+        expected_output = np.reshape(input_data, shape)
+        assert np.array_equal(ng_results, expected_output)
+
+
+def test_reshape_opset5_param_err():
+    original_shape = [2, 3, 4]
+    output_shape = np.array([4, 2, 3], dtype=np.int64)
+    input_data = np.random.random_sample(original_shape).astype(np.float32)
+    reshape_node = onnx.helper.make_node('Reshape', inputs=['x', 'y'], outputs=['z'])
+    # if reshape input is an instance of `Parameter` class then it should raise error
+    with pytest.raises(NotImplementedError):
+        run_node(reshape_node, [input_data, output_shape], opset_version=5)
 
 
 @pytest.mark.parametrize('axis,expected_output', [
