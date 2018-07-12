@@ -23,25 +23,25 @@ import pytest
 from tests.utils import run_node
 
 
-@pytest.mark.parametrize('onnx_op,numpy_func', [
-    ('And', np.logical_and),
-    ('Or', np.logical_or),
-    ('Xor', np.logical_xor),
-    ('Equal', np.equal),
-    ('Greater', np.greater),
-    ('Less', np.less),
+@pytest.mark.parametrize('onnx_op, numpy_func, data_type', [
+    ('And', np.logical_and, np.bool),
+    ('Or', np.logical_or, np.bool),
+    ('Xor', np.logical_xor, np.bool),
+    ('Equal', np.equal, np.int32),
+    ('Greater', np.greater, np.int32),
+    ('Less', np.less, np.int32),
 ])
-def test_logical(onnx_op, numpy_func):
+def test_logical(onnx_op, numpy_func, data_type):
     node = onnx.helper.make_node(onnx_op, inputs=['A', 'B'], outputs=['C'], broadcast=1)
 
-    input_a = np.array([[0, 1, -1], [0, 1, -1], [0, 1, -1]])
-    input_b = np.array([[0, 0, 0], [1, 1, 1], [-1, -1, -1]])
+    input_a = np.array([[0, 1, -1], [0, 1, -1], [0, 1, -1]]).astype(data_type)
+    input_b = np.array([[0, 0, 0], [1, 1, 1], [-1, -1, -1]]).astype(data_type)
     expected_output = numpy_func(input_a, input_b)
     ng_results = run_node(node, [input_a, input_b], opset_version=4)
     assert np.array_equal(ng_results, [expected_output])
 
-    input_a = np.array([[0, 1, -1], [0, 1, -1], [0, 1, -1]])
-    input_b = np.array(1)
+    input_a = np.array([[0, 1, -1], [0, 1, -1], [0, 1, -1]]).astype(data_type)
+    input_b = np.array(1).astype(data_type)
     expected_output = numpy_func(input_a, input_b)
     ng_results = run_node(node, [input_a, input_b], opset_version=4)
     assert np.array_equal(ng_results, [expected_output])
