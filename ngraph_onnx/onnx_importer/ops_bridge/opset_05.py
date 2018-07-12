@@ -16,7 +16,6 @@
 from ngraph_onnx.onnx_importer.ops_bridge.opset_04 import *  # noqa
 
 import ngraph as ng
-from ngraph.impl.op import Constant as NgraphConstant
 from ngraph_onnx.onnx_importer.utils.reshape import infer_dimensions
 
 
@@ -29,7 +28,8 @@ def Reshape(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> N
     """
     data = ng_inputs[0]
     output_shape = ng_inputs[1]
-    if isinstance(output_shape, NgraphConstant):
+    # Be input data type agnostic as long as it has correct interface.
+    if hasattr(output_shape, 'get_data'):
         output_shape = output_shape.get_data().tolist()
     else:
         raise NotImplementedError('Reshape node (%s) doesn\'t support shape input of other type '
