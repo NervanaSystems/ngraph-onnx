@@ -28,6 +28,7 @@ from __future__ import unicode_literals
 import numpy as np
 import ngraph as ng
 import onnx
+from cachetools.func import lru_cache
 
 from onnx.helper import make_tensor_value_info, make_graph, make_model
 from onnx.backend.base import Backend, BackendRep
@@ -66,10 +67,7 @@ class NgraphBackend(Backend):
                      if ngraph_device_name == ng_device), None)
 
     @classmethod
-    def _get_supported_devices(cls):  # type: () -> List[str]
-        return ng.impl.runtime.Backend.get_registered_devices()
-
-    @classmethod
+    @lru_cache(maxsize=16)
     def supports_ngraph_device(cls, ngraph_device_name):  # type: (str) -> bool
         """Check whether particular nGraph device is supported by current nGraph library.
 
@@ -77,19 +75,18 @@ class NgraphBackend(Backend):
         :return: True if current nGraph library supports ngraph_device_name.
         """
         # Check whether the backend was already created and if not try to create it.
-        if ngraph_device_name not in cls._get_supported_devices():
-            try:
-                ng.runtime(backend_name=ngraph_device_name)
-            except RuntimeError as e:
-                # Catch specific error raised when backend hasn't been registered yet with message
-                # like:
-                # 'Backend \'' + ngraph_device_name + '\' not found in registered backends',
-                # but using more permissive condition to protect against slight changes in error
-                # message content.
-                if str(ngraph_device_name) in str(e) and 'not found' in str(e):
-                    return False
-                else:
-                    raise e
+        try:
+            ng.runtime(backend_name=ngraph_device_name)
+        except RuntimeError as e:
+            # Catch specific error raised when backend hasn't been registered yet with message
+            # like:
+            # 'Backend \'' + ngraph_device_name + '\' not found in registered backends',
+            # but using more permissive condition to protect against slight changes in error
+            # message content.
+            if str(ngraph_device_name) in str(e) and 'not found' in str(e):
+                return False
+            else:
+                raise e
         return True
 
     @classmethod
