@@ -74,15 +74,11 @@ class NgraphBackend(Backend):
         :param ngraph_device_name: Name of nGraph device.
         :return: True if current nGraph library supports ngraph_device_name.
         """
-        # Check whether the backend was already created and if not try to create it.
         try:
             ng.runtime(backend_name=ngraph_device_name)
         except RuntimeError as e:
-            # Catch specific error raised when backend hasn't been registered yet with message
-            # like:
-            # 'Backend \'' + ngraph_device_name + '\' not found in registered backends',
-            # but using more permissive condition to protect against slight changes in error
-            # message content.
+            # Catch error raised when backend isn't available:
+            # 'Backend {ngraph_device_name} not found in registered backends'
             if str(ngraph_device_name) in str(e) and 'not found' in str(e):
                 return False
             else:
