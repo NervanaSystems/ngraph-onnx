@@ -48,7 +48,7 @@ backend_test.exclude('test_bvlc_alexnet_cpu')
 backend_test.exclude('test_inception_v1_cpu')
 backend_test.exclude('test_zfnet512_cpu')
 
-# UserInputError msg='Node (%s): provided axes count is different than input tensor rank.'
+# UserInputError msg='Node (%s): provided axes count is different than input tensor rank.' -> NC5-231
 backend_test.exclude('test_shufflenet_cpu')
 
 # Ops
@@ -112,14 +112,14 @@ backend_test.exclude('test_cast_FLOAT16_to_FLOAT_cpu')
 backend_test.exclude('test_cast_DOUBLE_to_FLOAT16_cpu')
 backend_test.exclude('test_cast_FLOAT_to_FLOAT16_cpu')
 
-# RuntimeError msg='Broadcast arg, shape, and axes are incompatible'
+# RuntimeError msg='Broadcast arg, shape, and axes are incompatible' -> NC5-232
 backend_test.exclude('test_gemm_broadcast_cpu')
 backend_test.exclude('test_operator_add_size1_broadcast_cpu')
 backend_test.exclude('test_operator_add_size1_singleton_broadcast_cpu')
 backend_test.exclude('test_operator_mm_cpu')
 backend_test.exclude('test_prelu_broadcast_cpu')
 
-# RuntimeError msg='Convolution padding-below rank does not match number of spatial dimensions.'
+# RuntimeError msg='Convolution padding-below rank does not match number of spatial dimensions.' -> NC5-233
 backend_test.exclude('test_Conv1d_cpu')
 backend_test.exclude('test_Conv1d_dilated_cpu')
 backend_test.exclude('test_Conv1d_groups_cpu')
@@ -141,7 +141,7 @@ backend_test.exclude('test_reshape_one_dim_cpu')
 backend_test.exclude('test_reshape_reduced_dims_cpu')
 backend_test.exclude('test_reshape_reordered_dims_cpu')
 
-# IndexError msg='list assignment index out of range'
+# IndexError msg='list assignment index out of range' -> NC5-232
 backend_test.exclude('test_prelu_example_cpu')
 
 # NotImplementedError msg='Pad node (%s): only constant padding is supported.' -> NGRAPH-1505
@@ -151,10 +151,10 @@ backend_test.exclude('test_reflect_pad_cpu')
 backend_test.exclude('test_ReflectionPad2d_cpu')
 backend_test.exclude('test_ReplicationPad2d_cpu')
 
-# UserInputError msg='Node (%s): provided axes count is different than input tensor rank.'
+# UserInputError msg='Node (%s): provided axes count is different than input tensor rank.' -> NC5-231
 backend_test.exclude('test_PixelShuffle_cpu')
 
-# ValueError msg='LogSoftmax node (%s): provided axis attribute is out of input tensor dimensions range.'
+# ValueError msg='LogSoftmax node (%s): provided axis attribute is out of input tensor dimensions range.' -> NC5-230
 backend_test.exclude('test_log_softmax_lastdim_cpu')
 
 
