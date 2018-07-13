@@ -490,3 +490,42 @@ def test_cast_errors():
     model = make_model(graph, producer_name='NgraphBackend')
     with pytest.raises(ValueError):
         import_onnx_model(model)[0]
+
+
+@pytest.mark.parametrize('value_type', [
+    np.float32,
+    np.float64,
+])
+def test_constant(value_type):
+    values = np.random.randn(5, 5).astype(value_type)
+    node = onnx.helper.make_node(
+        'Constant',
+        inputs=[],
+        outputs=['values'],
+        value=onnx.helper.make_tensor(
+            name='const_tensor',
+            data_type=onnx.mapping.NP_TYPE_TO_TENSOR_TYPE[np.dtype(value_type)],
+            dims=values.shape,
+            vals=values.flatten()))
+
+    ng_results = run_node(node, [])
+    assert np.allclose(ng_results, [values])
+
+
+# https://github.com/onnx/onnx/issues/1190
+@pytest.mark.xfail(reason='/onnx/helper.py:152: TypeError: <value> has type '
+                          'numpy.float16, but expected one of: int, long')
+def test_constant_err():
+    values = np.random.randn(5, 5).astype(np.float16)
+    node = onnx.helper.make_node(
+        'Constant',
+        inputs=[],
+        outputs=['values'],
+        value=onnx.helper.make_tensor(
+            name='const_tensor',
+            data_type=onnx.mapping.NP_TYPE_TO_TENSOR_TYPE[np.dtype(np.float16)],
+            dims=values.shape,
+            vals=values.flatten()))
+
+    ng_results = run_node(node, [])
+    assert np.allclose(ng_results, [values])

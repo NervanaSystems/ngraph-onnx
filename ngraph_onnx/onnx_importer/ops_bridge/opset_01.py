@@ -30,7 +30,6 @@ import ngraph as ng
 
 from ngraph_onnx.onnx_importer.utils.binary import broadcast_for_binary_operation
 from ngraph_onnx.onnx_importer.utils.conv import make_convolution_op
-from ngraph_onnx.onnx_importer.utils.decorators import refactoring_required
 from ngraph_onnx.onnx_importer.utils.matmul import reshape_for_matmul
 from ngraph_onnx.onnx_importer.utils.types import onnx_tensor_type_to_numpy_type
 from ngraph_onnx.onnx_importer.utils.misc import split_pads_into_pairs
@@ -45,6 +44,53 @@ if TYPE_CHECKING:
     from ngraph_onnx.onnx_importer.model_wrappers import NodeWrapper
 
 logger = logging.getLogger(__name__)
+
+# OP STATUS
+# ArgMax-1                    TODO
+# ArgMin-1                    TODO
+# ConvTranspose-1             TODO
+# GRU-1                       TODO
+# Gather-1                    TODO
+# GlobalLpPool-1              TODO
+# Hardmax-1                   TODO
+# InstanceNormalization-1     TODO
+# LRN-1                       TODO
+# LSTM-1                      TODO
+# LpNormalization-1           TODO
+# LpPool-1                    TODO
+# MaxRoiPool-1                TODO
+# RNN-1                       TODO
+# RandomNormal-1              TODO
+# RandomNormalLike-1          TODO
+# RandomUniform-1             TODO
+# RandomUniformLike-1         TODO
+# SpaceToDepth-1              TODO
+# Tile-1                      TODO
+# TopK-1                      TODO
+# Upsample-1                  TODO
+
+# EXPERIMENTAL OPS
+# Affine-1                    TODO
+# ATen-1                      TODO
+# ConstantFill-1              TODO
+# Crop-1                      TODO
+# GRUUnit-1                   TODO
+# GivenTensorFill-1           TODO
+# If-1                        TODO
+# ImageScaler-1               TODO
+# Loop-1                      TODO
+# LoopIndexTensor-1           TODO
+# MeanVarianceNormalization-1 TODO
+# ParametricSoftplus-1        TODO
+# Scale-1                     TODO
+# ScaledTanh-1                TODO
+
+
+# OP STATUS
+# ArgMin-1        TODO
+# ArgMax-1        TODO
+# ConvTranspose-1 TODO
+# Hardmax-1       TODO
 
 
 # Unary Ops
@@ -249,26 +295,6 @@ def Identity(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> 
     return ng_inputs[0]
 
 
-@refactoring_required
-def Hardmax(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
-    """Compute the hardmax values for each layer in the batch of the given input.
-
-    :param onnx_node: The ONNX node representing this operation.
-    :param ng_inputs: The input tensors.
-    :return: The tensor with applied hardmax operation.
-    """
-    data = ng_inputs[0]
-    axis = onnx_node.get_attribute_value('axis', 1)
-    if axis < 0 or axis >= len(data.shape):
-        raise ValueError('Hardmax node (%s): provided axis attribute is out of input tensor'
-                         ' dimensions range.', onnx_node.name)
-    # coerce to 2D tensor if needed
-    if len(data.shape) > 2 or axis != 1:
-        data = flatten(data, axis)
-    # Need support for nGraph ArgMax operation.
-    pass
-
-
 def HardSigmoid(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Apply f(x) = max(0, min(1, alpha * x + beta)) function to tensor element-wise.
 
@@ -397,20 +423,6 @@ def ReduceL2(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> 
     return ng.sqrt(sum_node)
 
 
-@refactoring_required
-def ArgMin(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
-    """Compute the indices of the min elements of the input tensor along the provided axes."""
-    return None  # tmp
-    # return make_reduction_op(ng.argmin, onnx_node, ng_inputs[0])
-
-
-@refactoring_required
-def ArgMax(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
-    """Compute the indices of the max elements of the input tensor along the provided axes."""
-    return None  # tmp
-    # return make_reduction_op(ng.argmax, onnx_node, ng_inputs[0])
-
-
 # Binary Ops
 def Add(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Perform element-wise binary addition."""
@@ -516,13 +528,6 @@ def Mean(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngra
 
 
 # Matrix multiplication
-@refactoring_required
-def Dot(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
-    """Calculate matrix product, similar to numpy.dot."""
-    logger.warning('Dot node (%s): Dot operation is deprecated, use MatMul.', onnx_node.name)
-    return MatMul(onnx_node, ng_inputs)
-
-
 def MatMul(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Calculate matrix product, similar to numpy.matmul."""
     left, right = ng_inputs
@@ -571,13 +576,6 @@ def Dropout(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> N
 def Conv(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Calculate output of a convolution operation based on an input tensor and a filter."""
     return make_convolution_op(onnx_node, ng_inputs)
-
-
-@refactoring_required
-def ConvTranspose(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
-    """Calculate output of a transpose convolution operation based on an input tensor and a filter."""
-    return None  # tmp
-    # return cast_to_pos_axes(make_convolution_op(onnx_node, ng_inputs, transpose=True))
 
 
 def Pad(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
