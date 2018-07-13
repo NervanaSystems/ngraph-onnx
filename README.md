@@ -47,7 +47,7 @@ Build ngraph and install it into `$HOME/ngraph_dist`:
     $ git clone https://github.com/NervanaSystems/ngraph.git
     $ mkdir ngraph/build
     $ cd ngraph/build
-    $ cmake ../ -DNGRAPH_USE_PREBUILT_LLVM=TRUE
+    $ cmake ../ -DNGRAPH_USE_PREBUILT_LLVM=TRUE -DCMAKE_INSTALL_PREFIX=$HOME/ngraph_dist
     $ make -j 8
     $ make install
 
