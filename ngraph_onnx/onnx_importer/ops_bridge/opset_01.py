@@ -47,41 +47,44 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 # OP STATUS
-# Affine-1                    TODO
 # ArgMax-1                    TODO
 # ArgMin-1                    TODO
-# ConstantFill-1              TODO
 # ConvTranspose-1             TODO
-# Crop-1                      TODO
 # GRU-1                       TODO
-# GRUUnit-1                   TODO
 # Gather-1                    TODO
-# GivenTensorFill-1           TODO
 # GlobalLpPool-1              TODO
 # Hardmax-1                   TODO
-# If-1                        TODO
-# ImageScaler-1               TODO
 # InstanceNormalization-1     TODO
 # LRN-1                       TODO
 # LSTM-1                      TODO
-# Loop-1                      TODO
-# LoopIndexTensor-1           TODO
 # LpNormalization-1           TODO
 # LpPool-1                    TODO
 # MaxRoiPool-1                TODO
-# MeanVarianceNormalization-1 TODO
-# ParametricSoftplus-1        TODO
 # RNN-1                       TODO
 # RandomNormal-1              TODO
 # RandomNormalLike-1          TODO
 # RandomUniform-1             TODO
 # RandomUniformLike-1         TODO
-# Scale-1                     TODO
-# ScaledTanh-1                TODO
 # SpaceToDepth-1              TODO
 # Tile-1                      TODO
 # TopK-1                      TODO
 # Upsample-1                  TODO
+
+# EXPERIMENTAL OPS
+# Affine-1                    TODO
+# ATen-1                      TODO
+# ConstantFill-1              TODO
+# Crop-1                      TODO
+# GRUUnit-1                   TODO
+# GivenTensorFill-1           TODO
+# If-1                        TODO
+# ImageScaler-1               TODO
+# Loop-1                      TODO
+# LoopIndexTensor-1           TODO
+# MeanVarianceNormalization-1 TODO
+# ParametricSoftplus-1        TODO
+# Scale-1                     TODO
+# ScaledTanh-1                TODO
 
 
 # Unary Ops
