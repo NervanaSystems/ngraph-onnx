@@ -38,7 +38,7 @@ def make_ng_nodes(node_factory, onnx_node):  # type: (ModuleType, NodeWrapper) -
 
     try:
         ng_node_factory_function = getattr(node_factory, op_type)
-    except KeyError:
+    except AttributeError:
         raise NotImplementedError('Unknown operation: %s', op_type)
 
     ng_inputs = onnx_node.get_ng_inputs()
