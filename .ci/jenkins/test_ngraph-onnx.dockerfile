@@ -24,7 +24,7 @@ COPY . /root/ngraph-onnx
 WORKDIR /root
 RUN git clone https://github.com/NervanaSystems/ngraph.git && mkdir /root/ngraph/build
 WORKDIR /root/ngraph/build
-RUN cmake ../ -DNGRAPH_USE_PREBUILT_LLVM=TRUE
+RUN cmake ../ -DNGRAPH_USE_PREBUILT_LLVM=TRUE -DCMAKE_INSTALL_PREFIX=/root/ngraph_dist
 RUN make -j 8
 RUN make install
 
