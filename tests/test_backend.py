@@ -41,15 +41,13 @@ backend_test = onnx.backend.test.BackendTest(NgraphBackend, __name__)
 # backend_test.exclude('test_resnet50_cpu')
 # backend_test.exclude('test_squeezenet_cpu')
 # backend_test.exclude('test_vgg19_cpu')
+# backend_test.exclude('test_shufflenet_cpu')
 
 # Failing
 # Missing op 'LRN' -> NGRAPH-1731
 backend_test.exclude('test_bvlc_alexnet_cpu')
 backend_test.exclude('test_inception_v1_cpu')
 backend_test.exclude('test_zfnet512_cpu')
-
-# UserInputError msg='Node (%s): provided axes count is different than input tensor rank.' -> NC5-231
-backend_test.exclude('test_shufflenet_cpu')
 
 # Ops
 # Missing ops
