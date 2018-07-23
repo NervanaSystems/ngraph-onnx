@@ -58,8 +58,14 @@ def get_pads(onnx_node, kernel_shape=None):
     if len(pads) == 0:
         pads = [0] * len(kernel_shape)
 
-    # Attribute 'auto_pad' is deprecated, but is currently used by CNTK
-    if auto_pad:
+    auto_pad_modes = [
+        'VALID',
+        'SAME_UPPER',
+        'SAME_LOWER',
+    ]
+
+    # Attribute 'auto_pad' is deprecated, but is currently used by CNTK.
+    if auto_pad in auto_pad_modes:
         if auto_pad == 'VALID':
             pads = [0, 0] * len(kernel_shape)
 
