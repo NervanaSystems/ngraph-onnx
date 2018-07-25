@@ -19,3 +19,10 @@ import pytest
 def pytest_addoption(parser):
     parser.addoption('--backend', default='CPU',
                      choices=['INTERPRETER', 'CPU', 'GPU', 'ARGON'], help='Select from available backends')
+
+
+def pytest_configure(config):
+    config.gpu_skip = pytest.mark.skipif(config.getvalue('backend') == 'GPU')
+    config.cpu_skip = pytest.mark.skipif(config.getvalue('backend') == 'CPU')
+    config.nnp_skip = pytest.mark.skipif(config.getvalue('backend') == 'NNP')
+    config.interpreter_skip = pytest.mark.skipif(config.getvalue('backend') == 'INTERPRETER')

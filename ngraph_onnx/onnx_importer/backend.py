@@ -42,7 +42,7 @@ class NgraphBackend(Backend):
     """Takes an ONNX model with inputs, perform a computation, and then return the output."""
 
     # The requested (nGraph) backend to be used instead of hardcoded by ONNX test Runner.
-    backend_name = None  # type: str
+    backend_name = 'CPU'  # type: str
 
     _ngraph_onnx_device_map = [
         # (<ngraph_backend_name>, <onnx_device_name>)
