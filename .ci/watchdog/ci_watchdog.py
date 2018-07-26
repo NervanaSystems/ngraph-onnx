@@ -132,9 +132,9 @@ def main(args):
                     break
             except:
                 log.exception("\tFailed to verify status \"%s\" for PR#%s", stat.description, str(pr.number))
-        for stat in other_statuses:
-            if "error" in stat.state:
-                communicate_fail("Onnx CI failed for PR #{}. Failed context: {}".format(pr.number, stat.context), pr.html_url, slack_app)
+        # for stat in other_statuses:
+        #     if "error" in stat.state:
+        #         communicate_fail("Onnx CI failed for PR #{}. Failed context: {}".format(pr.number, stat.context), pr.html_url, slack_app)
     return 0
 
 
