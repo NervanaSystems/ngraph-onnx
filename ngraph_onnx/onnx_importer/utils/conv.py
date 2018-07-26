@@ -31,7 +31,7 @@ import ngraph as ng
 
 from ngraph.utils.types import get_dtype
 
-log = logging.getLogger(__file__)
+log = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from ngraph_onnx.onnx_importer.model_wrappers import NodeWrapper
