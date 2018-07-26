@@ -30,7 +30,7 @@ from ngraph_onnx.onnx_importer.utils.conv import get_pads, get_strides, get_kern
 if TYPE_CHECKING:
     from ngraph_onnx.onnx_importer.model_wrappers import NodeWrapper
 
-log = logging.getLogger(__file__)
+log = logging.getLogger(__name__)
 
 
 def get_op_type(onnx_node):  # type: (NodeWrapper) -> str
