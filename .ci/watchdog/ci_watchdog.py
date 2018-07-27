@@ -111,7 +111,7 @@ def main(args):
                     build_no = retrieve_build_number(stat.target_url, job_name)
                     log.info("\tBuild %s: FINISHED", str(build_no))
                     if valid_footer not in build_output(jenk,build_no, job_name):
-                        communicate_fail("Onnx CI job build #{}, for PR #{} does not contain valid summary footer!".format(build_no, pr.number), pr.html_url, slack_app)
+                        #communicate_fail("Onnx CI job build #{}, for PR #{} does not contain valid summary footer!".format(build_no, pr.number), pr.html_url, slack_app)
                     else:
                         log.info("\tCI build %s for PR #%s finished successfully.", str(build_no), str(pr.number))
                     break
