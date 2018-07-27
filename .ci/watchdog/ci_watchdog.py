@@ -110,8 +110,8 @@ def main(args):
                 if "Build finished" in stat.description:
                     build_no = retrieve_build_number(stat.target_url, job_name)
                     log.info("\tBuild %s: FINISHED", str(build_no))
-                    if valid_footer not in build_output(jenk,build_no, job_name):
-                        #communicate_fail("Onnx CI job build #{}, for PR #{} does not contain valid summary footer!".format(build_no, pr.number), pr.html_url, slack_app)
+                    if "FAILURE" in (jenk.get_build_info(job_name, build_no)["result"]):
+                        communicate_fail("Onnx CI job build #{}, for PR #{}, failed to run tests!".format(build_no, pr.number), pr.html_url, slack_app)
                     else:
                         log.info("\tCI build %s for PR #%s finished successfully.", str(build_no), str(pr.number))
                     break
