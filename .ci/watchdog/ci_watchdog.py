@@ -34,6 +34,7 @@ import argparse
 import sys
 import json
 from xml.dom.minidom import parseString
+import requests
 
 log = logging.getLogger(__file__)
 ch = logging.StreamHandler()
@@ -48,23 +49,40 @@ github_token_file = "/home/lab_nerval/tokens/github_token"
 jenkins_server = "http://10.91.54.11:8080/"
 jenkins_token_file = "/home/lab_nerval/tokens/scheduler"
 jenkins_user = 'lab_nerval'
+jenkins_request_url = jenkins_server + "label/ci&&onnx/api/json?pretty=true"
 
 ci_host_config="/tmp/onnx_ci_watchdog.json"
 # default value for time for updating hosts (in hours)
 ci_host_config_update = 24
 
+def get_idle_ci_hosts(jenk, jenkins_request_url=jenkins_request_url)
+    try:
+        log.info("Sending request to Jenkins: %s", jenkins_request_url)
+        r = requests.Request(method='GET',url=jenkins_request_url)
+        response = jenk.jenkins_request(r).json()
+        return (response['totalExecutors'] - response['busyExecutors'])
+    except Exception as e:
+        log.exception("Failed to send request to Jenkins!\nException message: %s",str(e))
+        return -1
+
 # Communicate fail through slack only if it hasn't been reported yet
-def communicate_fail(message, pr, slack_app, config):
+def communicate_fail(message, pr, slack_app, config, message_severity=3):
     pr_update = pr.updated_at
     if pr.number not in config['pr_reports'] or pr_update > config['pr_reports'][pr.number]:
         config['pr_reports'][pr.number] = datetime.datetime.now()
-        log.info("[DEBUG] [INFO] %s", message)
-        slack_app.send_message("!!! Onnx_CI CRITICAL FAILURE !!!\n" + message + "\n" + pr.html_url, final=True, severity=3)
+        log.info(message)
+        if message_severity is 3:
+            message_header = "!!! Onnx_CI CRITICAL FAILURE !!!"
+        elif message_severity is 2:
+            message_header = "Onnx_CI WARNING"
+        else:
+            message_header = "Onnx_CI INFO"
+        slack_app.send_message(message_header + "\n" + message + "\n" + pr.html_url, final=True, severity=message_severity)
     return config
 
-def build_output(jenkins, build_number, job):
+def build_output(jenk, build_number, job):
     try:
-        output = jenkins.get_build_console_output(job,build_number)
+        output = jenk.get_build_console_output(job,build_number)
     except:
         log.exception("Failed to retrieve console output for build: %s", str(build_number))
         output = ""
@@ -79,22 +97,6 @@ def retrieve_build_number(url,job):
         except:
             log.exception("Failed to retrieve build number from url link: %s", url)
             return -1
-
-# Get hosts labeled in Jenkins with 'ci' and 'onnx'. Return them in format for storing information in watchdog config file
-def get_ci_hosts(jenkins, now_datetime)
-    log.info("Reading NGraph-ONNX CI hosts.")
-    nodes = jenkins.get_nodes()
-    ci_hosts = []
-    for node in nodes:
-        name = node["name"]
-        if name == "master":
-            continue
-        node_conf = parseString(jenkins.get_node_config(name))
-        labels = (node_conf.getElementsByTagName("label")[0].firstChild.wholeText).split(' ')
-        if 'ci' in labels and 'onnx' in labels:
-            ci_hosts.append(name)
-    hosts_dict = {'hosts': ci_hosts,'timestamp': now_datetime}
-    return ci_hosts
 
 # Return config structure cleaned of old PRs
 def cleanup_prs(config, current_prs):
@@ -111,7 +113,7 @@ def read_config_file(ci_host_config=ci_host_config):
         data = json.load(file)
     else:
         log.info("No config file.")
-        data = { 'ci_hosts': {'hosts': [],'timestamp': datetime.datetime.fromtimestamp(0)}, 'pr_reports': {} }
+        data = { 'pr_reports': {} }
     return data
 
 # Write config data structure to file
@@ -142,9 +144,6 @@ def main(args):
     ci_job = jenk.get_job_info(job_name)
     # Read config file
     config = read_config_file()
-    # Update hosts in config if older than 24 hours
-    if now_time - config['ci_hosts']['timestamp'] > hosts_update:
-        config['ci_hosts'] = get_ci_hosts(jenk, now_time)
     # List of current PR numbers for easier access
     current_prs = []
 
@@ -180,26 +179,32 @@ def main(args):
                     build_info = jenk.get_build_info(job_name, build_no)
                     # If build finished in Jenkins but is in progress in GitHub
                     if build_info['result']:
-                        config = communicate_fail("Onnx CI job build #{}, for PR #{} finished, but failed to inform GitHub of its results!".format(build_no, pr.number), pr, slack_app)
+                        config = communicate_fail("Onnx CI job build #{}, for PR #{} finished, but failed to inform GitHub of its results!".format(build_no, pr.number), pr, slack_app, config)
                         break
                     build_datetime = datetime.datetime.fromtimestamp(build_info['timestamp']/1000.0)
                     # If build still waiting in queue
                     queueId = build_info['queueId']
-                    queueItem = jenk.get_queue_item(queueId)
                     try:
-                        if "why" in queueItem and now_time - build_datetime > ci_start_treshold:
-                            config = communicate_fail("Onnx CI job build #{}, for PR #{} still waiting in queue!".format(build_no, pr.number), pr, slack_app)
+                        queueItem = jenk.get_queue_item(queueId)
+                        # 'why' present if job is in queue and doesnt have executor yet
+                        if "why" in queueItem:
+                            if now_time - build_datetime > ci_start_treshold:
+                                config = communicate_fail("Onnx CI job build #{}, for PR #{} waiting in queue after {} minutes".format(build_no, pr.number, str(ci_start_treshold)), pr, slack_app, config, message_severity=2)
+                                break
+                            if get_idle_ci_hosts(jenk) > 0:
+                                config = communicate_fail("Onnx CI job build #{}, for PR #{} waiting in queue, despite idle executors!".format(build_no, pr.number), pr, slack_app, config)
+                                break
                     except:
                         pass
                     log.info("\tBuild %s: IN PROGRESS, started: %s", str(build_no), str(build_start_time))
                     if now_time - build_datetime > build_duration_treshold:
                         # CI job take too long, possibly froze - communiate failure
-                        config = communicate_fail("Onnx CI job build #{}, for PR #{} started, but did not finish in designated time!".format(build_no, pr.number), pr, slack_app)
+                        config = communicate_fail("Onnx CI job build #{}, for PR #{} started, but did not finish in designated time of {} minutes!".format(build_no, pr.number, str(build_duration_treshold)), pr, slack_app, config)
                     break
                 # CI waiting to start
                 elif "Awaiting Jenkins" in stat.description and (now_time - stat.updated_at > ci_start_treshold):
                     # CI job failed to start for given amount of time
-                    config = communicate_fail("Onnx CI job for PR #{} failed to start in designated time!".format(pr.number), pr, slack_app)
+                    config = communicate_fail("Onnx CI job for PR #{} still awaiting Jenkins after {} minutes!".format(pr.number, str(ci_start_treshold)), pr, slack_app, config)
                     break
             except:
                 log.exception("\tFailed to verify status \"%s\" for PR#%s", stat.description, str(pr.number))
