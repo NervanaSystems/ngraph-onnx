@@ -79,7 +79,7 @@ def get_idle_ci_hosts(jenk, jenkins_request_url=jenkins_request_url):
 # Communicate fail through slack only if it hasn't been reported yet
 def communicate_fail(message, pr, slack_app, config, message_severity=3):
     pr_timestamp = time.mktime(pr.updated_at.timetuple())
-    if pr.number not in config['pr_reports'] or pr_timestamp > config['pr_reports'][str(pr.number)]:
+    if str(pr.number) not in config['pr_reports'] or pr_timestamp > config['pr_reports'][str(pr.number)]:
         config['pr_reports'][str(pr.number)] = pr_timestamp
         log.info(message)
         if message_severity is 3:
