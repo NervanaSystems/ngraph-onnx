@@ -157,6 +157,7 @@ def main(args):
     # Time tresholds
     build_duration_treshold = datetime.timedelta(minutes=60)
     ci_start_treshold = datetime.timedelta(minutes=10)
+    awaiting_jenkins_treshold = datetime.timedelta(minutes=5)
     now_time = get_git_time(git)
     # Load jenkins token and log in, retrieve job list
     jenk = jenkins.Jenkins(jenkins_server,username=jenkins_user,password=jenkins_token)
@@ -175,8 +176,8 @@ def main(args):
         # Filter statuses to contain only those related to Jenkins CI and check if CI in Jenkins started
         jenk_statuses = [stat for stat in statuses if "Jenkins CI" in stat.context]
         other_statuses = [stat for stat in statuses if not "Jenkins CI" in stat.context]
-        if not jenk_statuses:
-            config = communicate_fail("\tJenkins CI report for PR#{} not present on GitHub!".format(pr.number), pr, slack_app, config)
+        if not jenk_statuses and (now_time - pr.updated_at > awaiting_jenkins_treshold):
+            config = communicate_fail("Jenkins CI report for PR#{} not present on GitHub!".format(pr.number), pr, slack_app, config)
         for stat in jenk_statuses:
             # If CI build finished
             try:
