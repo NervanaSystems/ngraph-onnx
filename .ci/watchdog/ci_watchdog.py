@@ -179,7 +179,7 @@ def main(args):
             # If CI build finished
             try:
                 if "Build finished" in stat.description:
-                    build_no = retrieve_build_number(stat.target_url, job_name)
+                    build_no = retrieve_build_number(jenk, stat.target_url, job_name)
                     if build_no < 0:
                         break
                     log.info("\tBuild %s: FINISHED", str(build_no))
@@ -195,7 +195,7 @@ def main(args):
                     break
                 # CI build in progress                
                 elif "Testing in progress" in stat.description:
-                    build_no = retrieve_build_number(stat.target_url, job_name)
+                    build_no = retrieve_build_number(jenk, stat.target_url, job_name)
                     if build_no < 0:
                         break
                     build_info = jenk.get_build_info(job_name, build_no)
