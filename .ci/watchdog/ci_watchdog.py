@@ -99,15 +99,20 @@ def build_output(jenk, build_number, job):
         output = ""
     return output
 
-def retrieve_build_number(url,job):
+def retrieve_build_number(jenk,url,job):
+    ci_job = jenk.get_job_info(job)
+    oldest_build = ci_job['builds'][-1]['number']
     # Retrieve the build number
-        matchObj = re.search("(?:/" + job + "/)([0-9]+)",url)
-        try:
-            number = int(matchObj.group(1))
-            return number
-        except:
-            log.exception("Failed to retrieve build number from url link: %s", url)
-            return -1
+    matchObj = re.search("(?:/" + job + "/)([0-9]+)",url)
+    try:
+        number = int(matchObj.group(1))
+        if number < oldest_build:
+           log.exception("Build number: %s doesnt exist, the oldest build is: %s", str(build_number), str(oldest_build))
+           raise ValueError
+        return number
+    except:
+        log.exception("Failed to retrieve build number from url link: %s", url)
+        return -1
 
 # Return config structure cleaned of old PRs
 def cleanup_prs(config, current_prs):
@@ -153,7 +158,6 @@ def main(args):
     now_time = get_git_time(git)
     # Load jenkins token and log in, retrieve job list
     jenk = jenkins.Jenkins(jenkins_server,username=jenkins_user,password=jenkins_token)
-    ci_job = jenk.get_job_info(job_name)
     # Read config file
     config = read_config_file()
     # List of current PR numbers for easier access
@@ -176,6 +180,8 @@ def main(args):
             try:
                 if "Build finished" in stat.description:
                     build_no = retrieve_build_number(stat.target_url, job_name)
+                    if build_no < 0:
+                        break
                     log.info("\tBuild %s: FINISHED", str(build_no))
                     console_output = build_output(jenk, build_no, job_name)
                     if not console_output:
@@ -190,11 +196,9 @@ def main(args):
                 # CI build in progress                
                 elif "Testing in progress" in stat.description:
                     build_no = retrieve_build_number(stat.target_url, job_name)
-                    try:
-                        build_info = jenk.get_build_info(job_name, build_no)
-                    except:
-                        log.exception("Failed to retrieve build info for build: %s", str(build_number))
+                    if build_no < 0:
                         break
+                    build_info = jenk.get_build_info(job_name, build_no)
                     # If build finished in Jenkins but is in progress in GitHub
                     if build_info['result']:
                         config = communicate_fail("Onnx CI job build #{}, for PR #{} finished, but failed to inform GitHub of its results!".format(build_no, pr.number), pr, slack_app, config)
@@ -207,7 +211,7 @@ def main(args):
                         # 'why' present if job is in queue and doesnt have executor yet
                         if "why" in queueItem:
                             if now_time - build_datetime > ci_start_treshold:
-                                config = communicate_fail("Onnx CI job build #{}, for PR #{} waiting in queue after {} minutes".format(build_no, pr.number, str(ci_start_treshold)), pr, slack_app, config, message_severity=2)
+                                config = communicate_fail("Onnx CI job build #{}, for PR #{} waiting in queue after {} minutes".format(build_no, pr.number, str(now_time - build_datetime)), pr, slack_app, config, message_severity=2)
                                 break
                             if get_idle_ci_hosts(jenk) > 0:
                                 config = communicate_fail("Onnx CI job build #{}, for PR #{} waiting in queue, despite idle executors!".format(build_no, pr.number), pr, slack_app, config)
@@ -222,7 +226,7 @@ def main(args):
                 # CI waiting to start
                 elif "Awaiting Jenkins" in stat.description and (now_time - stat.updated_at > ci_start_treshold):
                     # CI job failed to start for given amount of time
-                    config = communicate_fail("Onnx CI job for PR #{} still awaiting Jenkins after {} minutes!".format(pr.number, str(ci_start_treshold)), pr, slack_app, config)
+                    config = communicate_fail("Onnx CI job for PR #{} still awaiting Jenkins after {} minutes!".format(pr.number, str(now_time - stat.updated_at)), pr, slack_app, config)
                     break
             except:
                 log.exception("\tFailed to verify status \"%s\" for PR#%s", stat.description, str(pr.number))
