@@ -133,8 +133,9 @@ def read_config_file(ci_host_config=ci_host_config):
     return data
 
 # Write config data structure to file
-def update_config(config_dict):
-    file = open(ci_host_config,"w+")
+def update_config(config_dict, ci_host_config=ci_host_config):
+    log.info("Writting to config file.")
+    file = open(ci_host_config, "w+")
     json.dump(config_dict, file)
 
 def main(args):
@@ -174,8 +175,7 @@ def main(args):
         jenk_statuses = [stat for stat in statuses if "Jenkins CI" in stat.context]
         other_statuses = [stat for stat in statuses if not "Jenkins CI" in stat.context]
         if not jenk_statuses:
-            log.error("\tJenkins CI for PR#%s not scheduled!", pr.number)
-            config = communicate_fail("\tJenkins CI for PR#%s not scheduled!".format(build_no, pr.number), pr, slack_app)
+            config = communicate_fail("\tJenkins CI for PR#{} not scheduled!".format(pr.number), pr, slack_app, config)
         for stat in jenk_statuses:
             # If CI build finished
             try:
@@ -189,7 +189,7 @@ def main(args):
                         break
                     #if "FAILURE" in (jenk.get_build_info(job_name, build_no)["result"]):
                     if "test session starts" not in build_output(jenk, build_no, job_name):
-                        config = communicate_fail("Onnx CI job build #{}, for PR #{}, failed to run tests!".format(build_no, pr.number), pr, slack_app)
+                        config = communicate_fail("Onnx CI job build #{}, for PR #{}, failed to run tests!".format(build_no, pr.number), pr, slack_app, config)
                         log.info("\tCI build %s for PR #%s finished with failure.", str(build_no), str(pr.number))
                     else:
                         log.info("\tCI build %s for PR #%s finished successfully.", str(build_no), str(pr.number))
