@@ -221,7 +221,7 @@ def main(args):
                                 break
                     except:
                         pass
-                    log.info("\tBuild %s: IN PROGRESS, started: %s", str(build_no), str(build_start_time))
+                    log.info("\tBuild %s: IN PROGRESS, started: %s", str(build_no), str(build_datetime))
                     if now_time - build_datetime > build_duration_treshold:
                         # CI job take too long, possibly froze - communiate failure
                         config = communicate_fail("Onnx CI job build #{}, for PR #{} started, but did not finish in designated time of {} minutes!".format(build_no, pr.number, str(build_duration_treshold)), pr, slack_app, config)
