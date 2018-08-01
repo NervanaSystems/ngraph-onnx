@@ -177,7 +177,9 @@ def main(args):
                 if "Build finished" in stat.description:
                     build_no = retrieve_build_number(stat.target_url, job_name)
                     log.info("\tBuild %s: FINISHED", str(build_no))
-                    console_output = jenk.get_build_console_output(job_name, build_no)
+                    console_output = build_output(jenk, build_no, job_name)
+                    if not console_output:
+                        break
                     #if "FAILURE" in (jenk.get_build_info(job_name, build_no)["result"]):
                     if "test session starts" not in build_output(jenk, build_no, job_name):
                         #config = communicate_fail("Onnx CI job build #{}, for PR #{}, failed to run tests!".format(build_no, pr.number), pr, slack_app)
@@ -188,7 +190,11 @@ def main(args):
                 # CI build in progress                
                 elif "Testing in progress" in stat.description:
                     build_no = retrieve_build_number(stat.target_url, job_name)
-                    build_info = jenk.get_build_info(job_name, build_no)
+                    try:
+                        build_info = jenk.get_build_info(job_name, build_no)
+                    except:
+                        log.exception("Failed to retrieve build info for build: %s", str(build_number))
+                        break
                     # If build finished in Jenkins but is in progress in GitHub
                     if build_info['result']:
                         config = communicate_fail("Onnx CI job build #{}, for PR #{} finished, but failed to inform GitHub of its results!".format(build_no, pr.number), pr, slack_app, config)
