@@ -845,7 +845,7 @@ def BatchNormalization(onnx_node, ng_inputs):  # type: (NodeWrapper, List[Ngraph
 
     is_test = onnx_node.get_attribute_value('is_test', 1)
     spatial = onnx_node.get_attribute_value('spatial', 1)
-    epsilon = onnx_node.get_attribute_value('epsilon', 1e-3)
+    epsilon = onnx_node.get_attribute_value('epsilon', 1e-5)
 
     # @TODO: Implement learning mode support
     # momentum = onnx_node.get_attribute_value('momentum', 0.99)
