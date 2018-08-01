@@ -31,7 +31,7 @@ from multiprocessing.pool import ThreadPool
 
 class SlackCommunicator:
     def __init__(self, slack_token):
-        self.channel = "onnx_ci_watchdog"
+        self.channel = "ngraph-onnx-ci-alerts"
         self.thread_id = None
         self.thread_infos = 0
         self.thread_warnings = 0

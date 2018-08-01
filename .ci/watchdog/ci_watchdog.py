@@ -88,7 +88,8 @@ def communicate_fail(message, pr, slack_app, config, message_severity=3):
             message_header = "Onnx_CI WARNING"
         else:
             message_header = "Onnx_CI INFO"
-        slack_app.send_message(message_header + "\n" + message + "\n" + pr.html_url, final=True, severity=message_severity)
+        send = message_header + "\n" + message + "\n" + pr.html_url
+        slack_app.send_message(send, final=True, severity=message_severity)
     return config
 
 def build_output(jenk, build_number, job):
