@@ -174,7 +174,8 @@ def main(args):
         jenk_statuses = [stat for stat in statuses if "Jenkins CI" in stat.context]
         other_statuses = [stat for stat in statuses if not "Jenkins CI" in stat.context]
         if not jenk_statuses:
-            log.info("\tJenkins CI for PR#%s not scheduled yet.", pr.number)
+            log.error("\tJenkins CI for PR#%s not scheduled!", pr.number)
+            config = communicate_fail("\tJenkins CI for PR#%s not scheduled!".format(build_no, pr.number), pr, slack_app)
         for stat in jenk_statuses:
             # If CI build finished
             try:
