@@ -116,7 +116,7 @@ def retrieve_build_number(jenk,url,job):
 
 # Return config structure cleaned of old PRs
 def cleanup_prs(config, current_prs):
-    for pr in config['pr_reports'].keys():
+    for pr in config['pr_reports'].copy().keys()
         if pr not in current_prs:
             config['pr_reports'].pop(pr)
     return config
