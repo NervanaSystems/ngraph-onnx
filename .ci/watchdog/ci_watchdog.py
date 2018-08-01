@@ -107,7 +107,7 @@ def retrieve_build_number(jenk,url,job):
     try:
         number = int(matchObj.group(1))
         if number < oldest_build:
-           log.exception("Build number: %s doesnt exist, the oldest build is: %s", str(build_number), str(oldest_build))
+           log.exception("Build number: %s doesnt exist, the oldest build is: %s", str(number), str(oldest_build))
            raise ValueError
         return number
     except:
