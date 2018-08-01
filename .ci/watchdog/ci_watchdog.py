@@ -79,8 +79,8 @@ def get_idle_ci_hosts(jenk, jenkins_request_url=jenkins_request_url):
 # Communicate fail through slack only if it hasn't been reported yet
 def communicate_fail(message, pr, slack_app, config, message_severity=3):
     pr_timestamp = time.mktime(pr.updated_at.timetuple())
-    if pr.number not in config['pr_reports'] or pr_timestamp > config['pr_reports'][pr.number]:
-        config['pr_reports'][pr.number] = pr_timestamp
+    if pr.number not in config['pr_reports'] or pr_timestamp > config['pr_reports'][str(pr.number)]:
+        config['pr_reports'][str(pr.number)] = pr_timestamp
         log.info(message)
         if message_severity is 3:
             message_header = "!!! Onnx_CI CRITICAL FAILURE !!!"
@@ -116,7 +116,7 @@ def retrieve_build_number(jenk,url,job):
 
 # Return config structure cleaned of old PRs
 def cleanup_prs(config, current_prs):
-    for pr in config['pr_reports'].copy().keys()
+    for pr in config['pr_reports'].copy().keys():
         if pr not in current_prs:
             config['pr_reports'].pop(pr)
     return config
@@ -167,7 +167,7 @@ def main(args):
     # --- MAIN LOGIC ---
     # Check all pull requests
     for pr in pulls:
-        current_prs.append(pr.number)
+        current_prs.append(str(pr.number))
         log.info("Checking PR#%s", pr.number)
         last_commit = (pr.get_commits().reversed)[0]
         statuses = last_commit.get_statuses()
@@ -175,7 +175,7 @@ def main(args):
         jenk_statuses = [stat for stat in statuses if "Jenkins CI" in stat.context]
         other_statuses = [stat for stat in statuses if not "Jenkins CI" in stat.context]
         if not jenk_statuses:
-            config = communicate_fail("\tJenkins CI for PR#{} not scheduled!".format(pr.number), pr, slack_app, config)
+            config = communicate_fail("\tJenkins CI report for PR#{} not present on GitHub!".format(pr.number), pr, slack_app, config)
         for stat in jenk_statuses:
             # If CI build finished
             try:
