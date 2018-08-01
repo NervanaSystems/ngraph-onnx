@@ -27,13 +27,14 @@
 from github import Github
 import jenkins
 import datetime
+import time
 import re
 import logging
 from SlackCommunicator import SlackCommunicator
 import argparse
 import sys
+import os
 import json
-from xml.dom.minidom import parseString
 import requests
 
 log = logging.getLogger(__file__)
@@ -55,7 +56,17 @@ ci_host_config="/tmp/onnx_ci_watchdog.json"
 # default value for time for updating hosts (in hours)
 ci_host_config_update = 24
 
-def get_idle_ci_hosts(jenk, jenkins_request_url=jenkins_request_url)
+def get_git_time(git):
+    datetime_string = (git.get_api_status().raw_headers)['date']
+    try:
+        datetime_object =  datetime.datetime.strptime(datetime_string, '%a, %d %b %Y %H:%M:%S %Z')
+    except:
+        log.exception("Failed to parse date retrieved from GitHub: %s", str(datetime_string))
+        datetime_object = datetime.datetime.now()
+        log.info("Falling back to local time GitHub: %s", str(datetime_object))
+    return datetime_object
+    
+def get_idle_ci_hosts(jenk, jenkins_request_url=jenkins_request_url):
     try:
         log.info("Sending request to Jenkins: %s", jenkins_request_url)
         r = requests.Request(method='GET',url=jenkins_request_url)
@@ -67,9 +78,9 @@ def get_idle_ci_hosts(jenk, jenkins_request_url=jenkins_request_url)
 
 # Communicate fail through slack only if it hasn't been reported yet
 def communicate_fail(message, pr, slack_app, config, message_severity=3):
-    pr_update = pr.updated_at
-    if pr.number not in config['pr_reports'] or pr_update > config['pr_reports'][pr.number]:
-        config['pr_reports'][pr.number] = datetime.datetime.now()
+    pr_timestamp = time.mktime(pr.updated_at.timetuple())
+    if pr.number not in config['pr_reports'] or pr_timestamp > config['pr_reports'][pr.number]:
+        config['pr_reports'][pr.number] = pr_timestamp
         log.info(message)
         if message_severity is 3:
             message_header = "!!! Onnx_CI CRITICAL FAILURE !!!"
@@ -131,14 +142,15 @@ def main(args):
     hosts_update = datetime.timedelta(hours=args.hosts_update)
     # Default variables
     job_name = 'Onnx_CI'
-    build_duration_treshold = datetime.timedelta(minutes=60)
-    ci_start_treshold = datetime.timedelta(minutes=10)
-    now_time = datetime.datetime.now()
     # Create Slack api object
     slack_app = SlackCommunicator(slack_token)
     # Load github token and log in, retrieve pull requests
     git = Github(github_token)
     pulls = git.get_organization('NervanaSystems').get_repo('ngraph-onnx').get_pulls()
+    # Time tresholds
+    build_duration_treshold = datetime.timedelta(minutes=60)
+    ci_start_treshold = datetime.timedelta(minutes=10)
+    now_time = get_git_time(git)
     # Load jenkins token and log in, retrieve job list
     jenk = jenkins.Jenkins(jenkins_server,username=jenkins_user,password=jenkins_token)
     ci_job = jenk.get_job_info(job_name)
