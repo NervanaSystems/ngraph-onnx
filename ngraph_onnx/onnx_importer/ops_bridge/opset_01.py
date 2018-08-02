@@ -860,6 +860,18 @@ def BatchNormalization(onnx_node, ng_inputs):  # type: (NodeWrapper, List[Ngraph
     return ng.batch_norm(epsilon, scale, bias, x, mean, var, False)
 
 
+def LRN(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
+    """Carry out LRN."""
+    data = ng_inputs[0]
+
+    alpha = onnx_node.get_attribute_value('alpha', 1e-4)
+    beta = onnx_node.get_attribute_value('beta', 0.75)
+    bias = onnx_node.get_attribute_value('bias', 1.0)
+    size = onnx_node.get_attribute_value('size')
+
+    return ng.lrn(data, alpha, beta, bias, size)
+
+
 def Shape(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Return input shape."""
     # Dtype int64 is required for ONNX unit tests.
