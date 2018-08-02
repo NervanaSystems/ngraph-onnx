@@ -51,11 +51,6 @@ backend_test.exclude('test_zfnet512_cpu')
 
 # Ops
 # Missing ops
-# Missing op 'ConvTranspose' -> NGRAPH-1840
-backend_test.exclude('test_ConvTranspose2d_cpu')
-backend_test.exclude('test_ConvTranspose2d_no_bias_cpu')
-backend_test.exclude('test_operator_convtranspose_cpu')
-
 # Missing op 'Gather' -> NC5-121
 backend_test.exclude('test_Embedding_cpu')
 backend_test.exclude('test_Embedding_sparse_cpu')
