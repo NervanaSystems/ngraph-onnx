@@ -69,9 +69,11 @@ def Cleanup() {
 
 
 node ('onnx_ci') {
-    CloneRepo()
-    CreateBase()
-    CreateTest()
-    Execute()
-    Cleanup()
+    timeout(activity: true, time: 60) {
+        CloneRepo()
+        CreateBase()
+        CreateTest()
+        Execute()
+        Cleanup()
+    }
 }
