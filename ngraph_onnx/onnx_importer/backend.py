@@ -34,6 +34,7 @@ from onnx.helper import make_tensor_value_info, make_graph, make_model
 from onnx.backend.base import Backend, BackendRep
 from typing import Any, Dict, List, Optional, Sequence, Text, Tuple
 
+from ngraph.impl import Function
 from ngraph_onnx.onnx_importer.importer import import_onnx_model
 from ngraph_onnx.onnx_importer.utils.types import np_dtype_to_tensor_type
 
@@ -58,8 +59,8 @@ class NgraphBackend(Backend):
         # type: (onnx.ModelProto, str, Dict) -> NgraphBackendRep
         """Prepare backend representation of ONNX model."""
         super(NgraphBackend, cls).prepare(onnx_model, device, **kwargs)
-        ng_model = import_onnx_model(onnx_model)
-        return NgraphBackendRep(ng_model, cls.backend_name)
+        ng_model_functions = import_onnx_model(onnx_model)
+        return NgraphBackendRep(ng_model_functions, cls.backend_name)
 
     @classmethod
     def _get_onnx_device_name(cls, ngraph_device_name):  # type: (str) -> Optional[str]
@@ -147,13 +148,12 @@ class NgraphBackend(Backend):
 class NgraphBackendRep(BackendRep):
     """A handle which Backend returns after preparing to execute a model repeatedly."""
 
-    def __init__(self, ng_model, device='CPU'):  # type: (List[Dict], str) -> None
+    def __init__(self, ng_model_functions, device='CPU'):  # type: (List[Function], str) -> None
         super(NgraphBackendRep, self).__init__()
         self.device = self._get_ngraph_device_name(device)
-        self.model = ng_model
+        self.ng_model_functions = ng_model_functions
         self.runtime = ng.runtime(backend_name=self.device)
-        self.computations = [self.runtime.computation(model['output'], *model['inputs']) for
-                             model in ng_model]
+        self.computations = [self.runtime.computation_function(ng_function) for ng_function in ng_model_functions]
 
     def run(self, inputs, **kwargs):  # type: (List[np.ndarray], Dict) -> List[np.ndarray]
         """Execute computation on the backend representation of model."""

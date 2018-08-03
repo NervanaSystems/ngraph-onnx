@@ -14,12 +14,13 @@
 # limitations under the License.
 # ******************************************************************************
 import onnx
-from typing import List, Dict
+from typing import List
 
-from ngraph_onnx.onnx_importer.model_wrappers import ModelWrapper
+from ngraph.impl import Function
+from ngraph.impl.onnx_import import onnx_import
 
 
-def import_onnx_model(onnx_protobuf):  # type: (onnx.ModelProto) -> List[Dict]
+def import_onnx_model(onnx_protobuf):  # type: (onnx.ModelProto) -> List[Function]
     """
     Import an ONNX Protocol Buffers model and convert it into a list of ngraph operations.
 
@@ -50,16 +51,14 @@ def import_onnx_model(onnx_protobuf):  # type: (onnx.ModelProto) -> List[Dict]
     :param onnx_protobuf: ONNX Protocol Buffers model (onnx_pb2.ModelProto object)
     :return: list of dicts representing ngraph Ops and their inputs
     """
-    model = ModelWrapper(onnx_protobuf)
-    return model.graph.get_ng_model()
+    return onnx_import.load_onnx_model(onnx_protobuf.SerializeToString())
 
 
-def import_onnx_file(filename):  # type: (str) -> List[Dict]
+def import_onnx_file(filename):  # type: (str) -> List[Function]
     """
     Import ONNX model from a Protocol Buffers file and convert to ngraph operations.
 
     :param filename: path to an ONNX file
     :return: List of imported ngraph Ops (see docs for import_onnx_model).
     """
-    onnx_protobuf = onnx.load(filename)
-    return import_onnx_model(onnx_protobuf)
+    return onnx_import.load_onnx_model_file(filename)

@@ -352,9 +352,9 @@ def test_identity():
                         make_tensor_value_info('B', onnx.TensorProto.FLOAT, shape)],
                        [make_tensor_value_info('Y', onnx.TensorProto.FLOAT, shape)])
     model = make_model(graph, producer_name='ngraph ONNX Importer')
-    ng_model = import_onnx_model(model)[0]
+    ng_model_function = import_onnx_model(model)[0]
     runtime = get_runtime()
-    computation = runtime.computation(ng_model['output'], *ng_model['inputs'])
+    computation = runtime.computation_function(ng_model_function)
     ng_results = computation(input_data, input_data)
     expected_result = np.abs(input_data + input_data)
 

@@ -60,10 +60,9 @@ def run_model(onnx_model, data_inputs):
     """
     NgraphBackend.backend_name = pytest.config.getoption('backend', default='CPU')
     if NgraphBackend.supports_ngraph_device(NgraphBackend.backend_name):
-        ng_model = import_onnx_model(onnx_model)
+        ng_model_functions = import_onnx_model(onnx_model)
         runtime = get_runtime()
-        computations = [runtime.computation(model['output'], *model['inputs']) for
-                        model in ng_model]
+        computations = [runtime.computation_function(ng_function) for ng_function in ng_model_functions]
         return [computation(*data_inputs) for computation in computations]
     else:
         raise RuntimeError('The requested nGraph backend <' + NgraphBackend.backend_name +
