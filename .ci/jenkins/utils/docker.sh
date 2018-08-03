@@ -74,17 +74,18 @@ docker.build() {
     fi
 
     # Add http_proxy if exists
-    if [ -z ${http_proxy} ]; then
-        BUILD_ARGS+="--build-arg http_proxy=${http_proxy}"
+    if [ -n ${http_proxy} ]; then
+        BUILD_ARGS+="--build-arg http_proxy=${http_proxy} "
     fi
 
     # Add https_proxy if exists
-    if [ -z ${https_proxy} ]; then
-        BUILD_ARGS+="--build-arg https_proxy=${https_proxy}"
+    if [ -n ${https_proxy} ]; then
+        BUILD_ARGS+="--build-arg https_proxy=${https_proxy} "
     fi
 
+    # If build_cores_number was not passed - detect number of build cores
     if [ -z ${build_cores_number} ]; then
-        BUILD_ARGS+="--build-arg BUILD_CORES_NUMBER=$(lscpu --parse=CORE | grep -v '#' | sort | uniq | wc -l)"
+        BUILD_ARGS+="--build-arg BUILD_CORES_NUMBER=$(lscpu --parse=CORE | grep -v '#' | sort | uniq | wc -l) "
     fi
 
     docker build ${BUILD_ARGS} -f "${WORKDIR}/${dockerfile_path}" -t "${image_name}" .

@@ -17,39 +17,18 @@
 
 // CI settings
 PROJECT_NAME = "ngraph-onnx"
-REPOSITORY_GIT_ADDRESS = "git@github.com:NervanaSystems/${PROJECT_NAME}.git"
+WORKDIR = "${WORKSPACE}/${BUILD_NUMBER}/${PROJECT_NAME}"
+CI_ROOT = ".ci/jenkins"
 DOCKER_CONTAINER_NAME = "jenkins_${PROJECT_NAME}_ci"
-JENKINS_GITHUB_CREDENTIAL_ID = "f9f1f2ce-47b8-47cb-8fa1-c22d16179dce"
 
-UTILS = load ".ci/jenkins/utils/utils.groovy"
+UTILS = load "${CI_ROOT}/utils/utils.groovy"
 result = 'SUCCESS'
 
 
-def CloneRepository(String jenkins_github_credential_id, String repository_git_address) {
-    configurationMaps = []
-    configurationMaps.add([
-        "name": "clone_repositories",
-        "repository_git_address": repository_git_address,
-        "jenkins_github_credential_id": jenkins_github_credential_id
-    ])
-
-    Closure cloneRepositories = {
-        dir("${PROJECT_NAME}/") {
-            checkout([$class: 'GitSCM',
-            branches: [[name: "$ghprbActualCommit"]],
-            doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', timeout: 30]], submoduleCfg: [],
-            userRemoteConfigs: [[credentialsId: "${configMap["jenkins_github_credential_id"]}",
-            refspec: '+refs/pull/*:refs/remotes/origin/pr/*', url: "${configMap["repository_git_address"]}"]]])
-        }
-    }
-    UTILS.CreateStage("Clone_repository", cloneRepositories, configurationMaps)
-}
-
 def BuildImage(configurationMaps) {
     Closure buildMethod = { configMap ->
-        UTILS.PropagateStatus("Clone_repository", "clone_repositories")
         sh """
-            .ci/jenkins/utils/docker.sh build \
+            ${CI_ROOT}/utils/docker.sh build \
                                 --name=${configMap["projectName"]} \
                                 --version=${configMap["name"]} \
                                 --dockerfile_path=${configMap["dockerfilePath"]}
@@ -63,11 +42,11 @@ def RunDockerContainers(configurationMaps) {
         UTILS.PropagateStatus("Build_Image", configMap["name"])
         sh """
             mkdir -p ${HOME}/ONNX_CI
-            .ci/jenkins/utils/docker.sh start \
+            ${CI_ROOT}/utils/docker.sh start \
                                 --name=${configMap["projectName"]} \
                                 --version=${configMap["name"]} \
                                 --container_name=${configMap["dockerContainerName"]} \
-                                --volumes="-v ${WORKSPACE}:/logs -v ${HOME}/ONNX_CI:/home"
+                                --volumes="-v ${WORKSPACE}/${BUILD_NUMBER}:/logs -v ${HOME}/ONNX_CI:/home -v ${WORKDIR}:/root"
         """
     }
     UTILS.CreateStage("Run_docker_containers", runContainerMethod, configurationMaps)
@@ -77,45 +56,45 @@ def BuildNgraph(configurationMaps) {
     Closure buildNgraphMethod = { configMap ->
         UTILS.PropagateStatus("Run_docker_containers", configMap["dockerContainerName"])
         sh """
-            docker cp .ci/jenkins/update_ngraph.sh ${configMap["dockerContainerName"]}:/home
-            docker exec bash /home/update_ngraph.sh
+            docker cp ${CI_ROOT}/update_ngraph.sh ${configMap["dockerContainerName"]}:/home
+            docker exec ${configMap["dockerContainerName"]} ./home/update_ngraph.sh
         """
     }
     UTILS.CreateStage("Build_NGraph", buildNgraphMethod, configurationMaps)
 }
 
 def RunToxTests(configurationMaps) {
-    Closure prepareEnvMethod = { configMap ->
+    Closure runToxTestsMethod = { configMap ->
         UTILS.PropagateStatus("Build_NGraph", configMap["dockerContainerName"])
         sh """
-            NGRAPH_WHL=$(docker exec ${configMap["dockerContainerName"]} find /~/ngraph/python/dist/ -name 'ngraph*.whl')
-            docker exec -e TOX_INSTALL_NGRAPH_FROM=${NGRAPH_WHL} ${configMap["dockerContainerName"]} tox
+            NGRAPH_WHL=\$(docker exec ${configMap["dockerContainerName"]} find /home/ngraph/python/dist/ -name 'ngraph*.whl')
+            docker exec -e TOX_INSTALL_NGRAPH_FROM=\${NGRAPH_WHL} ${configMap["dockerContainerName"]} tox -c /root
         """
     }
-    UTILS.CreateStage("Run_tox_tests", prepareEnvMethod, configurationMaps)
+    UTILS.CreateStage("Run_tox_tests", runToxTestsMethod, configurationMaps)
 }
 
 def Cleanup(configurationMaps) {
     Closure cleanupMethod = { configMap ->
         sh """
-            ./utils/docker.sh chmod --container_name=${configMap["dockerContainerName"]} --directory="/logs" --options="-R 777" || true
-            ./utils/docker.sh stop --container_name=${configMap["dockerContainerName"]} || true
-            ./utils/docker.sh remove --container_name=${configMap["dockerContainerName"]} || true
-            ./utils/docker.sh clean_up || true
+            ${CI_ROOT}/utils/docker.sh chmod --container_name=${configMap["dockerContainerName"]} --directory="/logs" --options="-R 777" || true
+            ${CI_ROOT}/utils/docker.sh stop --container_name=${configMap["dockerContainerName"]} || true
+            ${CI_ROOT}/utils/docker.sh remove --container_name=${configMap["dockerContainerName"]} || true
+            ${CI_ROOT}/utils/docker.sh clean_up || true
         """
     }
     UTILS.CreateStage("Cleanup", cleanupMethod, configurationMaps)
 }
 
-def main(String projectName, String dockerContainerName, String jenkins_github_credential_id, String repository_git_address) {
+def main(String projectName, String projectRoot, String dockerContainerName) {
     timeout(activity: true, time: 60) {
-        def configurationMaps = UTILS.GetDockerEnvList(projectName, dockerContainerName)
-        CloneRepository(jenkins_github_credential_id, repository_git_address)
+        def configurationMaps = UTILS.GetDockerEnvList(projectName, dockerContainerName, projectRoot)
         BuildImage(configurationMaps)
         RunDockerContainers(configurationMaps)
-        RunTests(configurationMaps)
+        BuildNgraph(configurationMaps)
+        RunToxTests(configurationMaps)
         Cleanup(configurationMaps)
     }
 }
 
-main(PROJECT_NAME, DOCKER_CONTAINER_NAME, JENKINS_GITHUB_CREDENTIAL_ID, REPOSITORY_GIT_ADDRESS)
+main(PROJECT_NAME, CI_ROOT, DOCKER_CONTAINER_NAME)

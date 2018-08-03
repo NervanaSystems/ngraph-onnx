@@ -16,8 +16,8 @@
 // and approved by Intel in writing.
 STAGES_STATUS_MAP = [:]
 
-def GetDockerEnvList(String projectName, String dockerContainerNamePrefix) {
-    def rawList = findFiles(glob: "${projectName}/dockerfiles/*.dockerfile")
+def GetDockerEnvList(String projectName, String dockerContainerNamePrefix, String projectRoot = projectName) {
+    def rawList = findFiles(glob: "${projectRoot}/dockerfiles/*.dockerfile")
     def envList = []
     for (int i = 0; i < rawList.size(); ++i) {
         def name = rawList[i].name - '.dockerfile'

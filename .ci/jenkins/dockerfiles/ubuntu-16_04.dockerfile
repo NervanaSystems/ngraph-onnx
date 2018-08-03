@@ -1,7 +1,6 @@
 FROM ubuntu:16.04
 
 ARG HOME=/root
-ARG BUILD_CORES_NUMBER=8
 ARG http_proxy
 ARG https_proxy
 ENV http_proxy ${http_proxy}
@@ -28,3 +27,6 @@ RUN pip install --upgrade pip setuptools wheel && \
 RUN apt-get -y install protobuf-compiler libprotobuf-dev && \
     apt-get clean autoclean && \
     apt-get autoremove -y
+
+# Install tox
+RUN pip install tox

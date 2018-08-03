@@ -18,16 +18,19 @@
 
 # Install nGraph in /root/ngraph
 cd /home
-if [ -d ./ngraph ]; then
+if [ -e ./ngraph ]; then
     cd ./ngraph
-    git pull
+    # If ngraph repo is up to date, and wheel exist - no need to rebuild it so exit
+    if [[ $(git pull) == *"Already up-to-date"* && -n $(find /home/ngraph/python/dist/ -name 'ngraph*.whl') ]]; then
+        exit 0
+    fi
 else
     git clone https://github.com/NervanaSystems/ngraph.git
     cd ./ngraph
 fi
 mkdir -p ./build
 cd ./build
-cmake ../ -DNGRAPH_USE_PREBUILT_LLVM=TRUE -DCMAKE_INSTALL_PREFIX=/root/ngraph_dist
+cmake ../ -DNGRAPH_USE_PREBUILT_LLVM=TRUE -DCMAKE_INSTALL_PREFIX=/home/ngraph_dist
 make -j 8
 make install
 
@@ -38,19 +41,9 @@ if [ -d ./pybind11 ]; then
     git pull
     cd ..
 else
-    git clone https://github.com/jagerman/pybind11.git
+    git clone --recursive -b allow-nonconstructible-holders https://github.com/jagerman/pybind11.git
 fi
 
-export PYBIND_HEADERS_PATH="/root/ngraph/python/pybind11"
-export NGRAPH_CPP_BUILD_PATH="/root/ngraph_dist"
+export PYBIND_HEADERS_PATH="/home/ngraph/python/pybind11"
+export NGRAPH_CPP_BUILD_PATH="/home/ngraph_dist"
 python3 setup.py bdist_wheel
-
-cd /home
-pip install tox
-if [ -d ./ngraph-onnx ]; then
-    cd ./ngraph-onnx
-    git pull
-else
-    git clone https://github.com/jagerman/pybind11.git
-    cd ./ngraph-onnx
-fi
