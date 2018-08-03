@@ -584,12 +584,13 @@ def ConvTranspose(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]
     padding_below, padding_above = get_pads(onnx_node)
 
     output_padding = onnx_node.get_attribute_value('output_padding')
+    if output_padding is None:
+        raise ValueError('ConvTranspose node (s%): output_padding attribute is required.', onnx_node.name)
 
-    weights_shape = list(weights.shape)
     data_shape = list(data.shape)
+    weights_shape = list(weights.shape)
 
     num_spatial_dims = len(data.shape) - 2
-
     data_dilation_strides = [1, 1]
 
     data_batch_shape = [1] * (num_spatial_dims + 2)
@@ -597,6 +598,18 @@ def ConvTranspose(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]
     data_batch_shape[1] = weights_shape[1]
 
     for i in range(num_spatial_dims):
+        # Calculating spatial dims of data output shape for ngraph conv backprop op
+        # | pb + s(ds-1) + op - d(ws-1)+1 |
+        # | ----------------------------- | + 1
+        # |_            dds              _|
+        #
+        # d   - dilation
+        # ds  - data shape
+        # dds - data dilation strides
+        # op  - putput padding
+        # pb  - padding below
+        # s   - strides
+        # ws  - weights shape
         data_batch_shape[i + 2] = ((padding_below[i] + ((data_shape[i + 2] - 1) * strides[i] + 1) + output_padding[i]) -
                                    ((weights_shape[i + 2] - 1) * dilation[i] + 1) + 1) // data_dilation_strides[i] + 1
 
