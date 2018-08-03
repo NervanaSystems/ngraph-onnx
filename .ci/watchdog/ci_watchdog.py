@@ -183,18 +183,7 @@ def main(args):
             try:
                 if "Build finished" in stat.description:
                     build_no = retrieve_build_number(jenk, stat.target_url, job_name)
-                    if build_no < 0:
-                        break
                     log.info("\tBuild %s: FINISHED", str(build_no))
-                    console_output = build_output(jenk, build_no, job_name)
-                    if not console_output:
-                        break
-                    #if "FAILURE" in (jenk.get_build_info(job_name, build_no)["result"]):
-                    if "summary" not in build_output(jenk, build_no, job_name):
-                        config = communicate_fail("Onnx CI job build #{}, for PR #{}, failed to run tests!".format(build_no, pr.number), pr, slack_app, config)
-                        log.info("\tCI build %s for PR #%s finished with failure.", str(build_no), str(pr.number))
-                    else:
-                        log.info("\tCI build %s for PR #%s finished successfully.", str(build_no), str(pr.number))
                     break
                 # CI build in progress                
                 elif "Testing in progress" in stat.description:
