@@ -190,7 +190,7 @@ def main(args):
                     if not console_output:
                         break
                     #if "FAILURE" in (jenk.get_build_info(job_name, build_no)["result"]):
-                    if "test session starts" not in build_output(jenk, build_no, job_name):
+                    if "summary" not in build_output(jenk, build_no, job_name):
                         config = communicate_fail("Onnx CI job build #{}, for PR #{}, failed to run tests!".format(build_no, pr.number), pr, slack_app, config)
                         log.info("\tCI build %s for PR #%s finished with failure.", str(build_no), str(pr.number))
                     else:
