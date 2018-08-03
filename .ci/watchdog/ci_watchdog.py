@@ -51,6 +51,7 @@ jenkins_server = "http://10.91.54.11:8080/"
 jenkins_token_file = "/home/lab_nerval/tokens/scheduler"
 jenkins_user = 'lab_nerval'
 jenkins_request_url = jenkins_server + "label/ci&&onnx/api/json?pretty=true"
+jenkins_cooldown=1
 
 ci_host_config="/tmp/onnx_ci_watchdog.json"
 # default value for time for updating hosts (in hours)
@@ -70,6 +71,7 @@ def get_idle_ci_hosts(jenk, jenkins_request_url=jenkins_request_url):
     try:
         log.info("Sending request to Jenkins: %s", jenkins_request_url)
         r = requests.Request(method='GET',url=jenkins_request_url)
+        time.sleep(jenkins_cooldown)
         response = jenk.jenkins_request(r).json()
         return (response['totalExecutors'] - response['busyExecutors'])
     except Exception as e:
@@ -94,6 +96,8 @@ def communicate_fail(message, pr, slack_app, config, message_severity=3):
 
 def build_output(jenk, build_number, job):
     try:
+        # Jenkins doesn't like being probed frequently so chill...
+        time.sleep(jenkins_cooldown)
         output = jenk.get_build_console_output(job,build_number)
     except:
         log.exception("Failed to retrieve console output for build: %s", str(build_number))
@@ -101,6 +105,8 @@ def build_output(jenk, build_number, job):
     return output
 
 def retrieve_build_number(jenk,url,job):
+    # Jenkins doesn't like being probed frequently so chill...
+    time.sleep(jenkins_cooldown)
     ci_job = jenk.get_job_info(job)
     oldest_build = ci_job['builds'][-1]['number']
     # Retrieve the build number
@@ -190,6 +196,7 @@ def main(args):
                     build_no = retrieve_build_number(jenk, stat.target_url, job_name)
                     if build_no < 0:
                         break
+                    time.sleep(jenkins_cooldown)
                     build_info = jenk.get_build_info(job_name, build_no)
                     # If build finished in Jenkins but is in progress in GitHub
                     if build_info['result']:
@@ -199,6 +206,7 @@ def main(args):
                     # If build still waiting in queue
                     queueId = build_info['queueId']
                     try:
+                        time.sleep(jenkins_cooldown)
                         queueItem = jenk.get_queue_item(queueId)
                         # 'why' present if job is in queue and doesnt have executor yet
                         if "why" in queueItem:
