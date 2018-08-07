@@ -31,16 +31,12 @@ fi
 mkdir -p ./build
 cd ./build
 cmake ../ -DNGRAPH_USE_PREBUILT_LLVM=TRUE -DCMAKE_INSTALL_PREFIX=/home/ngraph_dist
-make -j 8
+make -j $(lscpu --parse=CORE | grep -v '#' | sort | uniq | wc -l)
 make install
 
 # Build nGraph wheel
 cd /home/ngraph/python
-if [ -d ./pybind11 ]; then
-    cd ./pybind11
-    git pull
-    cd ..
-else
+if [ ! -d ./pybind11 ]; then
     git clone --recursive -b allow-nonconstructible-holders https://github.com/jagerman/pybind11.git
 fi
 

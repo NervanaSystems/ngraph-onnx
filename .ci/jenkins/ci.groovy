@@ -86,6 +86,34 @@ def Cleanup(configurationMaps) {
     UTILS.CreateStage("Cleanup", cleanupMethod, configurationMaps)
 }
 
+def Notify() {
+    configurationMaps = []
+    configurationMaps.add([
+        "name": "notify"
+    ])
+    Closure notifyMethod = { configMap ->
+        UTILS.PropagateStatus("Cleanup", configMap["dockerContainerName"])
+        if(currentBuild.result != "FAILURE") {
+            currentBuild.result = "SUCCESS"
+        }
+        emailext (
+            subject: "NGraph-Onnx CI: PR $ghprbPullId",
+            body: """
+                <table style="width:100%">
+                    <tr><td>Status:</td> <td>${currentBuild.result}</td></tr>
+                    <tr><td>Repository</td> <td>$ghprbGhRepository</td></tr>
+                    <tr><td>Branch:</td> <td>$ghprbSourceBranch</td></tr>
+                    <tr><td>Pull Request:</td> <td>$ghprbPullId</td></tr>
+                    <tr><td>Commit SHA:</td> <td>$ghprbActualCommit</td></tr>
+                    <tr><td>Link:</td> <td>$ghprbPullLink</td></tr>
+                </table>
+            """,
+            to: "$ghprbActualCommitAuthorEmail"
+        )
+    }
+    UTILS.CreateStage("Notify", notifyMethod, configurationMaps)
+}
+
 def main(String projectName, String projectRoot, String dockerContainerName) {
     timeout(activity: true, time: 60) {
         def configurationMaps = UTILS.GetDockerEnvList(projectName, dockerContainerName, projectRoot)
@@ -94,6 +122,7 @@ def main(String projectName, String projectRoot, String dockerContainerName) {
         BuildNgraph(configurationMaps)
         RunToxTests(configurationMaps)
         Cleanup(configurationMaps)
+        Notify()
     }
 }
 

@@ -13,16 +13,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ******************************************************************************
-import pytest
 
+FROM ubuntu:16.04
 
-def pytest_addoption(parser):
-    parser.addoption('--backend', default='CPU',
-                     choices=['INTERPRETER', 'CPU', 'GPU', 'ARGON'], help='Select from available backends')
+ARG http_proxy
+ARG https_proxy
+ENV http_proxy=${http_proxy} https_proxy=${https_proxy} HTTP_PROXY=${http_proxy} HTTPS_PROXY=${https_proxy}
 
+# nGraph dependencies
+RUN apt-get -y update --fix-missing && \
+    apt-get -y install git build-essential cmake clang-3.9 git curl zlib1g zlib1g-dev libtinfo-dev \
+                       python python3 python-pip python3-pip python-dev python3-dev python-virtualenv \
+                       protobuf-compiler libprotobuf-dev && \
+    apt -y autoremove && \
+    apt clean all
 
-def pytest_configure(config):
-    config.gpu_skip = pytest.mark.skipif(config.getvalue('backend') == 'GPU')
-    config.cpu_skip = pytest.mark.skipif(config.getvalue('backend') == 'CPU')
-    config.nnp_skip = pytest.mark.skipif(config.getvalue('backend') == 'NNP')
-    config.interpreter_skip = pytest.mark.skipif(config.getvalue('backend') == 'INTERPRETER')
+RUN pip install --upgrade pip setuptools wheel && pip3 install --upgrade pip setuptools wheel
+
+RUN git clone --recursive -b allow-nonconstructible-holders https://github.com/jagerman/pybind11.git /root/pybind11

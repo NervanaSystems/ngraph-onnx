@@ -13,4 +13,10 @@ node('ci && onnx'){
         }
         load "${CI_ROOT}/ci.groovy"
     }
+    stage("Cleanup build directory") {
+        sh """
+            cd $WORKSPACE/$BUILD_NUMBER
+            rm -rf ..?* .[!.]* *
+        """
+    }
 }
