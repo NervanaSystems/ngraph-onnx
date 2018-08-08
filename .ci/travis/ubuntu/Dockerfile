@@ -22,7 +22,7 @@ RUN git clone https://github.com/NervanaSystems/ngraph.git
 RUN mkdir /root/ngraph/build
 WORKDIR /root/ngraph/build
 RUN cmake ../ -DNGRAPH_USE_PREBUILT_LLVM=TRUE -DCMAKE_INSTALL_PREFIX=/root/ngraph_dist
-RUN make -j 8
+RUN make
 RUN make install
 
 # Build nGraph Wheel
