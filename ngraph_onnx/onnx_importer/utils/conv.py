@@ -31,7 +31,7 @@ import ngraph as ng
 
 from ngraph.utils.types import get_dtype
 
-log = logging.getLogger(__file__)
+log = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from ngraph_onnx.onnx_importer.model_wrappers import NodeWrapper
@@ -58,23 +58,22 @@ def get_pads(onnx_node, kernel_shape=None):
     if len(pads) == 0:
         pads = [0] * len(kernel_shape)
 
-    # Attribute 'auto_pad' is deprecated, but is currently used by CNTK
-    if auto_pad:
-        if auto_pad == 'VALID':
-            pads = [0, 0] * len(kernel_shape)
+    # Attribute 'auto_pad' is deprecated, but is currently used by CNTK.
+    if auto_pad == 'VALID':
+        pads = [0, 0] * len(kernel_shape)
 
-        else:
-            # SAME_UPPER or SAME_LOWER mean pad the input so that the output size match the input.
-            # In case of odd number add the extra padding at the end for SAME_UPPER and at the
-            # beginning for SAME_LOWER.
-            def pad_value(kernel_dim):  # type: (int) -> float
-                return (kernel_dim - 1.0) / 2.0
+    elif auto_pad == 'SAME_UPPER' or auto_pad == 'SAME_LOWER':
+        # SAME_UPPER or SAME_LOWER mean pad the input so that the output size match the input.
+        # In case of odd number add the extra padding at the end for SAME_UPPER and at the
+        # beginning for SAME_LOWER.
+        def pad_value(kernel_dim):  # type: (int) -> float
+            return (kernel_dim - 1.0) / 2.0
 
-            pads_starts = [floor(pad_value(dim)) if auto_pad == 'SAME_UPPER' else
-                           ceil(pad_value(dim)) for dim in kernel_shape]
-            pads_ends = [ceil(pad_value(dim)) if auto_pad == 'SAME_UPPER' else
-                         floor(pad_value(dim)) for dim in kernel_shape]
-            pads = pads_starts + pads_ends
+        pads_starts = [floor(pad_value(dim)) if auto_pad == 'SAME_UPPER' else
+                       ceil(pad_value(dim)) for dim in kernel_shape]
+        pads_ends = [ceil(pad_value(dim)) if auto_pad == 'SAME_UPPER' else
+                     floor(pad_value(dim)) for dim in kernel_shape]
+        pads = pads_starts + pads_ends
 
     if len(pads) <= 3:
         padding_above = pads
