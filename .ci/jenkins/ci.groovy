@@ -108,7 +108,7 @@ def Notify() {
                     <tr><td>Link:</td> <td>$ghprbPullLink</td></tr>
                 </table>
             """,
-            to: "$ghprbActualCommitAuthorEmail"
+            to: "$ghprbPullAuthorEmail"
         )
     }
     UTILS.CreateStage("Notify", notifyMethod, configurationMaps)
