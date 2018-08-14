@@ -52,23 +52,25 @@ def RunDockerContainers(configurationMaps) {
     UTILS.CreateStage("Run_docker_containers", runContainerMethod, configurationMaps)
 }
 
-def BuildNgraph(configurationMaps) {
-    Closure buildNgraphMethod = { configMap ->
+def PrepareEnvironment(configurationMaps) {
+    Closure prepareEnvironmentMethod = { configMap ->
         UTILS.PropagateStatus("Run_docker_containers", configMap["dockerContainerName"])
         sh """
-            docker cp ${CI_ROOT}/update_ngraph.sh ${configMap["dockerContainerName"]}:/home
-            docker exec ${configMap["dockerContainerName"]} ./home/update_ngraph.sh
+            docker cp ${CI_ROOT}/prepare_environment.sh ${configMap["dockerContainerName"]}:/home
+            docker exec ${configMap["dockerContainerName"]} ./home/prepare_environment.sh
         """
     }
-    UTILS.CreateStage("Build_NGraph", buildNgraphMethod, configurationMaps)
+    UTILS.CreateStage("Prepare_environment", prepareEnvironmentMethod, configurationMaps)
 }
 
 def RunToxTests(configurationMaps) {
     Closure runToxTestsMethod = { configMap ->
-        UTILS.PropagateStatus("Build_NGraph", configMap["dockerContainerName"])
+        UTILS.PropagateStatus("Prepare_environment", configMap["dockerContainerName"])
         sh """
             NGRAPH_WHL=\$(docker exec ${configMap["dockerContainerName"]} find /home/ngraph/python/dist/ -name 'ngraph*.whl')
             docker exec -e TOX_INSTALL_NGRAPH_FROM=\${NGRAPH_WHL} ${configMap["dockerContainerName"]} tox -c /root
+            mkdir -p ~/ONNX_CI/onnx_models/
+            docker cp ${configMap["dockerContainerName"]}:/root/.onnx/ ~/ONNX_CI/onnx_models/
         """
     }
     UTILS.CreateStage("Run_tox_tests", runToxTestsMethod, configurationMaps)
@@ -120,7 +122,7 @@ def main(String projectName, String projectRoot, String dockerContainerName) {
         def configurationMaps = UTILS.GetDockerEnvList(projectName, dockerContainerName, projectRoot)
         BuildImage(configurationMaps)
         RunDockerContainers(configurationMaps)
-        BuildNgraph(configurationMaps)
+        PrepareEnvironment(configurationMaps)
         RunToxTests(configurationMaps)
         Cleanup(configurationMaps)
         Notify()

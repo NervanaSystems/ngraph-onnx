@@ -43,3 +43,8 @@ fi
 export PYBIND_HEADERS_PATH="/home/ngraph/python/pybind11"
 export NGRAPH_CPP_BUILD_PATH="/home/ngraph_dist"
 python3 setup.py bdist_wheel
+
+# Copy Onnx models
+if [ -d /home/onnx_models/.onnx ]; then
+    rsync -avhz /home/onnx_models/.onnx /root/
+fi
