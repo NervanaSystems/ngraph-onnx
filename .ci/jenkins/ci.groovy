@@ -91,6 +91,7 @@ def Notify() {
     configurationMaps.add([
         "name": "notify"
     ])
+    String notifyPeople = "$ghprbPullAuthorEmail, $ghprbActualCommitAuthorEmail"
     Closure notifyMethod = { configMap ->
         UTILS.PropagateStatus("Cleanup", configMap["dockerContainerName"])
         if(currentBuild.result != "FAILURE") {
@@ -108,7 +109,7 @@ def Notify() {
                     <tr><td>Link:</td> <td>$ghprbPullLink</td></tr>
                 </table>
             """,
-            to: "$ghprbPullAuthorEmail"
+            to: "${notifyPeople}"
         )
     }
     UTILS.CreateStage("Notify", notifyMethod, configurationMaps)
