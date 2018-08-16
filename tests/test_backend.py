@@ -42,20 +42,12 @@ backend_test = onnx.backend.test.BackendTest(NgraphBackend, __name__)
 # backend_test.exclude('test_squeezenet_cpu')
 # backend_test.exclude('test_vgg19_cpu')
 # backend_test.exclude('test_shufflenet_cpu')
-
-# Failing
-# Missing op 'LRN' -> NGRAPH-1731
-backend_test.exclude('test_bvlc_alexnet_cpu')
-backend_test.exclude('test_inception_v1_cpu')
-backend_test.exclude('test_zfnet512_cpu')
+# backend_test.exclude('test_bvlc_alexnet_cpu')
+# backend_test.exclude('test_inception_v1_cpu')
+# backend_test.exclude('test_zfnet512_cpu')
 
 # Ops
 # Missing ops
-# Missing op 'ConvTranspose' -> NGRAPH-1840
-backend_test.exclude('test_ConvTranspose2d_cpu')
-backend_test.exclude('test_ConvTranspose2d_no_bias_cpu')
-backend_test.exclude('test_operator_convtranspose_cpu')
-
 # Missing op 'Gather' -> NC5-121
 backend_test.exclude('test_Embedding_cpu')
 backend_test.exclude('test_Embedding_sparse_cpu')
