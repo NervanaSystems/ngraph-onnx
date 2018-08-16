@@ -29,7 +29,7 @@ from ngraph.impl import Node as NgraphNode
 import ngraph as ng
 
 from ngraph_onnx.onnx_importer.utils.binary import broadcast_for_binary_operation
-from ngraph_onnx.onnx_importer.utils.conv import make_convolution_op
+from ngraph_onnx.onnx_importer.utils.conv import make_convolution_op, get_strides, get_dilations, get_pads
 from ngraph_onnx.onnx_importer.utils.matmul import reshape_for_matmul
 from ngraph_onnx.onnx_importer.utils.types import onnx_tensor_type_to_numpy_type
 from ngraph_onnx.onnx_importer.utils.misc import split_pads_into_pairs
@@ -569,6 +569,62 @@ def Dropout(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> N
 def Conv(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
     """Calculate output of a convolution operation based on an input tensor and a filter."""
     return make_convolution_op(onnx_node, ng_inputs)
+
+
+def ConvTranspose(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
+    """Calculate convolution transpose."""
+    if len(ng_inputs) == 3:
+        data, weights, bias = ng_inputs
+    elif len(ng_inputs) == 2:
+        data, weights = ng_inputs
+        bias = ng.constant(0, dtype=get_dtype(data.get_element_type()))
+
+    strides = get_strides(onnx_node)
+    dilation = get_dilations(onnx_node)
+    padding_below, padding_above = get_pads(onnx_node)
+
+    output_padding = onnx_node.get_attribute_value('output_padding')
+    if output_padding is None:
+        raise ValueError('ConvTranspose node (s%): output_padding attribute is required.', onnx_node.name)
+
+    data_shape = list(data.shape)
+    weights_shape = list(weights.shape)
+
+    num_spatial_dims = len(data.shape) - 2
+    data_dilation_strides = [1, 1]
+
+    data_batch_shape = [1] * (num_spatial_dims + 2)
+    data_batch_shape[0] = data_shape[0]
+    data_batch_shape[1] = weights_shape[1]
+
+    for i in range(num_spatial_dims):
+        # Calculating spatial dims of data output shape for ngraph conv backprop op
+        # | pb + s(ds-1) + op - d(ws-1)+1 |
+        # | ----------------------------- | + 1
+        # |_            dds              _|
+        #
+        # d   - dilation
+        # ds  - data shape
+        # dds - data dilation strides
+        # op  - putput padding
+        # pb  - padding below
+        # s   - strides
+        # ws  - weights shape
+        data_batch_shape[i + 2] = ((padding_below[i] + ((data_shape[i + 2] - 1) * strides[i] + 1) + output_padding[i]) -
+                                   ((weights_shape[i + 2] - 1) * dilation[i] + 1) + 1) // data_dilation_strides[i] + 1
+
+    transconv = ng.convolution_backprop_data(data_batch_shape,
+                                             weights,
+                                             data,
+                                             strides,
+                                             dilation,
+                                             padding_below,
+                                             padding_above,
+                                             data_dilation_strides)
+    if len(bias.shape) > 0:
+        return transconv + ng.broadcast_to(bias, transconv.shape, 1)
+    else:
+        return transconv
 
 
 def Pad(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
