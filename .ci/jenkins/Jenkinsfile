@@ -15,6 +15,8 @@
 // otherwise. Any license under such intellectual property rights must be express
 // and approved by Intel in writing.
 
+// Set LABEL variable if empty or not declared
+try{ if(LABEL.trim() == "") {throw new Exception();} }catch(Exception e){LABEL="onnx && ci"}; echo "${LABEL}"
 // CI settings and constants
 PROJECT_NAME = "ngraph-onnx"            
 CI_ROOT = ".ci/jenkins"
@@ -85,8 +87,8 @@ def RunToxTests(configurationMaps) {
     UTILS.CreateStage("Run_tox_tests", runToxTestsMethod, configurationMaps)
 }
 
-def Cleanup() {
-    stage("Cleanup"){
+def Cleanup(configurationMaps) {
+    Closure cleanupMethod = { configMap ->
         sh """
             cd ${HOME}/ONNX_CI
             ./docker.sh chmod --container_name=${configMap["dockerContainerName"]} --directory="/logs" --options="-R 777" || true
@@ -94,10 +96,11 @@ def Cleanup() {
             ./docker.sh stop --container_name=${configMap["dockerContainerName"]} || true
             ./docker.sh remove --container_name=${configMap["dockerContainerName"]} || true
             ./docker.sh clean_up || true
-            rm docker.sh prepare_environment.sh
+            rm ${HOME}/ONNX_CI/docker.sh ${HOME}/ONNX_CI/prepare_environment.sh
             rm -rf ${WORKSPACE}/${BUILD_NUMBER}
         """
     }
+    UTILS.CreateStage("Cleanup", cleanupMethod, configurationMaps)
 }
 
 def Notify() {
@@ -128,19 +131,20 @@ def Notify() {
     UTILS.CreateStage("Notify", notifyMethod, configurationMaps)
 }
 
-def main(String projectName, String projectRoot, String dockerContainerName, String jenkins_github_credential_id, String repository_git_address) {
-    node('ci && onnx') {
+def main(String label, String projectName, String projectRoot, String dockerContainerName, String jenkins_github_credential_id, String repository_git_address) {
+    node(label) {
         timeout(activity: true, time: 60) {        
             WORKDIR = "${WORKSPACE}/${BUILD_NUMBER}/${PROJECT_NAME}"
+            def configurationMaps;
             try {
                 dir ("${WORKDIR}") {
                     CloneRepository(jenkins_github_credential_id, repository_git_address)
-
                     // Load CI API
                     UTILS = load "${CI_ROOT}/utils/utils.groovy"
                     result = 'SUCCESS'
-                    
+                    // Create configuration maps
                     def configurationMaps = UTILS.GetDockerEnvList(projectName, dockerContainerName, projectRoot)
+                    // Execute CI steps
                     BuildImage(configurationMaps)
                     RunDockerContainers(configurationMaps)
                     PrepareEnvironment(configurationMaps)
@@ -148,11 +152,11 @@ def main(String projectName, String projectRoot, String dockerContainerName, Str
                     Notify()
                 }
             }
-            catch(e) {
-                Cleanup()
+            finally {
+                Cleanup(configurationMaps)
             }
         }
     }
 }
 
-main(PROJECT_NAME, CI_ROOT, DOCKER_CONTAINER_NAME, JENKINS_GITHUB_CREDENTIAL_ID, REPOSITORY_GIT_ADDRESS)
+main(LABEL, PROJECT_NAME, CI_ROOT, DOCKER_CONTAINER_NAME, JENKINS_GITHUB_CREDENTIAL_ID, REPOSITORY_GIT_ADDRESS)

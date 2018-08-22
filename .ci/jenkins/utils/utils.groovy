@@ -18,7 +18,7 @@ STAGES_STATUS_MAP = [:]
 
 def GetDockerEnvList(String projectName, String dockerContainerNamePrefix, String projectRoot = projectName) {
     /**
-    * Generates map for method using configurationMaps.
+    * This method generates configuration map list using dockerfiles available in dockerfiles directory
     *
     * @param projectName name of the project used in paths and configuration map.
     * @param dockerContainerNamePrefix docker container name prefix.
