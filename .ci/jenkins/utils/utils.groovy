@@ -17,6 +17,14 @@
 STAGES_STATUS_MAP = [:]
 
 def GetDockerEnvList(String projectName, String dockerContainerNamePrefix, String projectRoot = projectName) {
+    /**
+    * This method generates configuration map list using dockerfiles available in dockerfiles directory
+    *
+    * @param projectName name of the project used in paths and configuration map.
+    * @param dockerContainerNamePrefix docker container name prefix.
+    * @param projectRoot path to project root containing directory with dockerfiles to run
+    */
+
     def rawList = findFiles(glob: "${projectRoot}/dockerfiles/*.dockerfile")
     def envList = []
     for (int i = 0; i < rawList.size(); ++i) {
@@ -119,6 +127,10 @@ def PropagateStatus(String parentStageName, String parentConfigurationName) {
 }
 
 def ShowStatusMap() {
+    /**
+    * Display status map for every defined stage.
+    */
+
     echo "${STAGES_STATUS_MAP}"
 }
 
