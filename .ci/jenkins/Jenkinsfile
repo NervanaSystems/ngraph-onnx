@@ -149,11 +149,11 @@ def main(String label, String projectName, String projectRoot, String dockerCont
                     RunDockerContainers(configurationMaps)
                     PrepareEnvironment(configurationMaps)
                     RunToxTests(configurationMaps)
-                    Notify()
                 }
             }
             finally {
                 Cleanup(configurationMaps)
+                Notify()
             }
         }
     }
