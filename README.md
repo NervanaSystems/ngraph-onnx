@@ -147,13 +147,11 @@ array([[ 1.312082 , -1.6729496,  4.2079577,  1.4012241, -3.5463796,
 
 * ArgMax
 * ArgMin
-* ConvTranspose
 * GRU
 * Gather
 * GlobalLpPool
 * Hardmax
 * InstanceNormalization
-* LRN
 * LSTM
 * LpNormalization
 * LpPool
