@@ -62,7 +62,7 @@ def run_model(onnx_model, data_inputs):
     if NgraphBackend.supports_ngraph_device(NgraphBackend.backend_name):
         ng_model_functions = import_onnx_model(onnx_model)
         runtime = get_runtime()
-        computations = [runtime.computation_function(ng_function) for ng_function in ng_model_functions]
+        computations = [runtime.computation(ng_function) for ng_function in ng_model_functions]
         return [computation(*data_inputs) for computation in computations]
     else:
         raise RuntimeError('The requested nGraph backend <' + NgraphBackend.backend_name +

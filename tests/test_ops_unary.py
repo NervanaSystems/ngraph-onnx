@@ -354,7 +354,7 @@ def test_identity():
     model = make_model(graph, producer_name='ngraph ONNX Importer')
     ng_model_function = import_onnx_model(model)[0]
     runtime = get_runtime()
-    computation = runtime.computation_function(ng_model_function)
+    computation = runtime.computation(ng_model_function)
     ng_results = computation(input_data, input_data)
     expected_result = np.abs(input_data + input_data)
 

@@ -39,7 +39,7 @@ def test_simple_graph():
     ng_model_function = import_onnx_model(model)[0]
 
     runtime = get_runtime()
-    computation = runtime.computation_function(ng_model_function)
+    computation = runtime.computation(ng_model_function)
     assert np.array_equal(computation(1, 2, 3), np.array([6.0], dtype=np.float32))
     assert np.array_equal(computation(4, 5, 6), np.array([15.0], dtype=np.float32))
 

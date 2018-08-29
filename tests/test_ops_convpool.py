@@ -55,7 +55,7 @@ def import_and_compute_conv(x, weights, transpose=False, **attributes):
     onnx_model = make_onnx_model_for_conv_op(x.shape, weights.shape,
                                              transpose=transpose, **attributes)
     ng_model_function = import_onnx_model(onnx_model)[0]
-    computation = get_runtime().computation_function(ng_model_function)
+    computation = get_runtime().computation(ng_model_function)
     return computation(x, weights)
 
 

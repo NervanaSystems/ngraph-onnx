@@ -153,7 +153,7 @@ class NgraphBackendRep(BackendRep):
         self.device = self._get_ngraph_device_name(device)
         self.ng_model_functions = ng_model_functions
         self.runtime = ng.runtime(backend_name=self.device)
-        self.computations = [self.runtime.computation_function(ng_function) for ng_function in ng_model_functions]
+        self.computations = [self.runtime.computation(ng_function) for ng_function in ng_model_functions]
 
     def run(self, inputs, **kwargs):  # type: (List[np.ndarray], Dict) -> List[np.ndarray]
         """Execute computation on the backend representation of model."""
