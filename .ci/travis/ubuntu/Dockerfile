@@ -21,7 +21,7 @@ WORKDIR /root
 RUN git clone https://github.com/NervanaSystems/ngraph.git
 RUN mkdir /root/ngraph/build
 WORKDIR /root/ngraph/build
-RUN cmake ../ -DNGRAPH_USE_PREBUILT_LLVM=TRUE -DCMAKE_INSTALL_PREFIX=/root/ngraph_dist
+RUN cmake ../ -DNGRAPH_CPU_ENABLE=FALSE -DNGRAPH_USE_PREBUILT_LLVM=TRUE -DCMAKE_INSTALL_PREFIX=/root/ngraph_dist
 RUN make -j 8
 RUN make install
 
@@ -36,4 +36,4 @@ RUN python3 setup.py bdist_wheel
 COPY . /root/ngraph-onnx
 WORKDIR /root/ngraph-onnx
 RUN pip install tox
-CMD TOX_INSTALL_NGRAPH_FROM=`find /root/ngraph/python/dist/ -name 'ngraph*.whl'` tox
+CMD NGRAPH_BACKEND=INTERPRETER TOX_INSTALL_NGRAPH_FROM=`find /root/ngraph/python/dist/ -name 'ngraph*.whl'` tox

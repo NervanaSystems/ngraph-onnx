@@ -25,7 +25,8 @@ import pytest
 from ngraph_onnx.onnx_importer.backend import NgraphBackend
 
 # Set backend device name to be used instead of hardcoded by ONNX BackendTest class ones.
-NgraphBackend.backend_name = pytest.config.getoption('backend', default='CPU')
+selected_backend_name = pytest.config.getoption('backend', default='CPU')
+NgraphBackend.backend_name = selected_backend_name
 
 # This is a pytest magic variable to load extra plugins
 # Uncomment the line below to enable the ONNX compatibility report
@@ -33,18 +34,6 @@ NgraphBackend.backend_name = pytest.config.getoption('backend', default='CPU')
 
 # import all test cases at global scope to make them visible to python.unittest
 backend_test = onnx.backend.test.BackendTest(NgraphBackend, __name__)
-
-# Big model tests
-# Passing
-# backend_test.exclude('test_densenet121_cpu')
-# backend_test.exclude('test_inception_v2_cpu')
-# backend_test.exclude('test_resnet50_cpu')
-# backend_test.exclude('test_squeezenet_cpu')
-# backend_test.exclude('test_vgg19_cpu')
-# backend_test.exclude('test_shufflenet_cpu')
-# backend_test.exclude('test_bvlc_alexnet_cpu')
-# backend_test.exclude('test_inception_v1_cpu')
-# backend_test.exclude('test_zfnet512_cpu')
 
 # Ops
 # Missing ops
@@ -147,5 +136,18 @@ backend_test.exclude('test_PixelShuffle_cpu')
 # ValueError msg='LogSoftmax node (%s): provided axis attribute is out of input tensor dimensions range.' -> NC5-230
 backend_test.exclude('test_log_softmax_lastdim_cpu')
 
+# Tests which fail or are very slow on the INTERPRETER backend
+if selected_backend_name == 'INTERPRETER':
+    backend_test.exclude('test_densenet121_cpu')
+    backend_test.exclude('test_inception_v2_cpu')
+    backend_test.exclude('test_resnet50_cpu')
+    backend_test.exclude('test_squeezenet_cpu')
+    backend_test.exclude('test_vgg19_cpu')
+    backend_test.exclude('test_shufflenet_cpu')
+    backend_test.exclude('test_bvlc_alexnet_cpu')
+    backend_test.exclude('test_inception_v1_cpu')
+    backend_test.exclude('test_zfnet512_cpu')
+    backend_test.exclude('test_operator_conv_cpu')
+    backend_test.exclude('test_slice_start_out_of_bounds_cpu')
 
 globals().update(backend_test.enable_report().test_cases)
