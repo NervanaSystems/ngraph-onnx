@@ -35,6 +35,20 @@ NgraphBackend.backend_name = selected_backend_name
 # import all test cases at global scope to make them visible to python.unittest
 backend_test = onnx.backend.test.BackendTest(NgraphBackend, __name__)
 
+
+# Big model tests
+# Passing
+# backend_test.exclude('test_densenet121_cpu')
+# backend_test.exclude('test_inception_v2_cpu')
+# backend_test.exclude('test_resnet50_cpu')
+# backend_test.exclude('test_squeezenet_cpu')
+# backend_test.exclude('test_vgg19_cpu')
+# backend_test.exclude('test_shufflenet_cpu')
+# backend_test.exclude('test_bvlc_alexnet_cpu')
+# backend_test.exclude('test_inception_v1_cpu')
+# backend_test.exclude('test_zfnet512_cpu')
+
+
 # Ops
 # Missing ops
 # Missing op 'Gather' -> NC5-121
