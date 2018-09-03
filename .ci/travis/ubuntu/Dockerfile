@@ -28,7 +28,6 @@ RUN apt-get update && apt-get install -y \
   python-virtualenv && \
   apt-get clean autoclean && apt-get autoremove -y
 
-RUN pip install --upgrade pip setuptools wheel
 RUN pip3 install --upgrade pip setuptools wheel
 
 # ONNX dependencies
