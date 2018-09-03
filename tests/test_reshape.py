@@ -61,9 +61,9 @@ def test_reshape_opset5():
 
         model = make_model(graph, producer_name='ngraph ONNX Importer')
         model.opset_import[0].version = 5
-        ng_model = import_onnx_model(model)[0]
+        ng_model_function = import_onnx_model(model)[0]
         runtime = get_runtime()
-        computation = runtime.computation(ng_model['output'], *ng_model['inputs'])
+        computation = runtime.computation(ng_model_function)
         ng_results = computation(input_data)
         expected_output = np.reshape(input_data, shape)
         assert np.array_equal(ng_results, expected_output)

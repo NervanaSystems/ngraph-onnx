@@ -205,10 +205,11 @@ class ValueInfoWrapper(WrapperBaseClass):
     @lru_cache(maxsize=1)
     def get_ng_constant(self):  # type: () -> NgraphNode
         """Create an ngraph variable node for this value."""
+        dtype = self.get_dtype()
         if not self.has_initializer:
             raise ValueError('Cannot create a constant without an initial value.')
 
-        return ng.constant(self.get_initializer().to_array(), dtype=self.get_dtype())
+        return ng.constant(self.get_initializer().to_array(), dtype=dtype)
 
     def get_ng_node(self):  # type: () -> NgraphNode
         """Create an ngraph placeholder or variable node for this value."""

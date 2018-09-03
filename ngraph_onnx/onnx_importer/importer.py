@@ -14,52 +14,27 @@
 # limitations under the License.
 # ******************************************************************************
 import onnx
-from typing import List, Dict
+from typing import List
 
-from ngraph_onnx.onnx_importer.model_wrappers import ModelWrapper
+from ngraph.impl import Function
+from ngraph.impl.onnx_import import load_onnx_model, load_onnx_model_file
 
 
-def import_onnx_model(onnx_protobuf):  # type: (onnx.ModelProto) -> List[Dict]
+def import_onnx_model(onnx_protobuf):  # type: (onnx.ModelProto) -> List[Function]
     """
-    Import an ONNX Protocol Buffers model and convert it into a list of ngraph operations.
-
-    An ONNX model defines a set of output nodes. Each output node will be added to the
-    returned list as a dict with the following fields:
-
-    * 'name' - name of the output, as specified in the imported ONNX model
-    * 'inputs' - a list of ngraph placeholder ops, used to feed data into the model
-    * 'output' - ngraph Op representing the output of the model
-
-    Usage example:
-
-    >>> onnx_protobuf = onnx.load('y_equals_a_plus_b.onnx.pb')
-    >>> import_onnx_model(onnx_protobuf)
-    [{
-        'name': 'Y',
-        'inputs': [<AssignableTensorOp(placeholder):4552991464>,
-                   <AssignableTensorOp(placeholder):4510192360>],
-        'output': <Add(Add_0):4552894504>
-    }]
-
-    >>> ng_model = import_onnx_model(model)[0]
-    >>> transformer = ng.transformers.make_transformer()
-    >>> computation = transformer.computation(ng_model['output'], *ng_model['inputs'])
-    >>> computation(4, 6)
-    array([ 10.], dtype=float32)
+    Import an ONNX Protocol Buffers model and convert it into a list of ngraph Functions.
 
     :param onnx_protobuf: ONNX Protocol Buffers model (onnx_pb2.ModelProto object)
-    :return: list of dicts representing ngraph Ops and their inputs
+    :return: list of ngraph Functions representing computations for each output.
     """
-    model = ModelWrapper(onnx_protobuf)
-    return model.graph.get_ng_model()
+    return load_onnx_model(onnx_protobuf.SerializeToString())
 
 
-def import_onnx_file(filename):  # type: (str) -> List[Dict]
+def import_onnx_file(filename):  # type: (str) -> List[Function]
     """
-    Import ONNX model from a Protocol Buffers file and convert to ngraph operations.
+    Import ONNX model from a Protocol Buffers file and convert to ngraph functions.
 
     :param filename: path to an ONNX file
-    :return: List of imported ngraph Ops (see docs for import_onnx_model).
+    :return: List of imported ngraph Functions (see docs for import_onnx_model).
     """
-    onnx_protobuf = onnx.load(filename)
-    return import_onnx_model(onnx_protobuf)
+    return load_onnx_model_file(filename)
