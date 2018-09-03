@@ -3,13 +3,31 @@ FROM ubuntu:16.04
 RUN apt-get -y update
 
 # nGraph dependencies
-RUN apt-get -y install git build-essential cmake clang-3.9 git curl zlib1g zlib1g-dev libtinfo-dev
+# nGraph dependencies
+RUN apt-get update && apt-get install -y \
+  build-essential \
+  cmake \
+  clang-3.9 \
+  clang-format-3.9 \
+  git \
+  curl \
+  zlib1g \
+  zlib1g-dev \
+  libtinfo-dev \
+  unzip \
+  autoconf \
+  automake \
+  libtool && \
+  apt-get clean autoclean && apt-get autoremove -y
 
 # Python dependencies
-RUN apt-get -y install python python3
-RUN apt-get -y install python-pip python3-pip
-RUN apt-get -y install python-dev python3-dev
-RUN apt-get -y install python-virtualenv
+RUN apt-get update && apt-get install -y \
+  python3 \
+  python3-dev \
+  python3-pip \
+  python-virtualenv && \
+  apt-get clean autoclean && apt-get autoremove -y
+
 RUN pip install --upgrade pip setuptools wheel
 RUN pip3 install --upgrade pip setuptools wheel
 
