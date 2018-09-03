@@ -30,7 +30,7 @@ else
 fi
 mkdir -p ./build
 cd ./build
-cmake ../ -DNGRAPH_USE_PREBUILT_LLVM=TRUE -DCMAKE_INSTALL_PREFIX=/home/ngraph_dist
+cmake ../ -DNGRAPH_USE_PREBUILT_LLVM=TRUE -DNGRAPH_ONNX_IMPORT_ENABLE=TRUE -DCMAKE_INSTALL_PREFIX=/home/ngraph_dist
 make -j $(lscpu --parse=CORE | grep -v '#' | sort | uniq | wc -l)
 make install
 

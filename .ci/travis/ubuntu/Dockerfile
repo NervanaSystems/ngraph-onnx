@@ -3,12 +3,10 @@ FROM ubuntu:16.04
 RUN apt-get -y update
 
 # nGraph dependencies
-# nGraph dependencies
 RUN apt-get update && apt-get install -y \
   build-essential \
   cmake \
   clang-3.9 \
-  clang-format-3.9 \
   git \
   curl \
   zlib1g \
@@ -39,7 +37,7 @@ RUN git clone https://github.com/NervanaSystems/ngraph.git
 RUN mkdir /root/ngraph/build
 WORKDIR /root/ngraph/build
 RUN cmake ../ -DNGRAPH_CPU_ENABLE=FALSE -DNGRAPH_USE_PREBUILT_LLVM=TRUE -DNGRAPH_ONNX_IMPORT_ENABLE=TRUE -DCMAKE_INSTALL_PREFIX=/root/ngraph_dist
-RUN make -j 8
+RUN make -j"$(nproc)"
 RUN make install
 
 # Build nGraph Wheel

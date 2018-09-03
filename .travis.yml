@@ -1,3 +1,6 @@
+git:
+  depth: false
+
 sudo: required
 
 language: python
@@ -5,10 +8,8 @@ language: python
 services:
   - docker
 
-before_install:
+install:
   - docker build -t test_ngraph_onnx -f .ci/travis/ubuntu/Dockerfile .
-
-install: true
 
 script:
   - docker run test_ngraph_onnx
