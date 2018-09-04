@@ -3,14 +3,29 @@ FROM ubuntu:16.04
 RUN apt-get -y update
 
 # nGraph dependencies
-RUN apt-get -y install git build-essential cmake clang-3.9 git curl zlib1g zlib1g-dev libtinfo-dev
+RUN apt-get update && apt-get install -y \
+  build-essential \
+  cmake \
+  clang-3.9 \
+  git \
+  curl \
+  zlib1g \
+  zlib1g-dev \
+  libtinfo-dev \
+  unzip \
+  autoconf \
+  automake \
+  libtool && \
+  apt-get clean autoclean && apt-get autoremove -y
 
 # Python dependencies
-RUN apt-get -y install python python3
-RUN apt-get -y install python-pip python3-pip
-RUN apt-get -y install python-dev python3-dev
-RUN apt-get -y install python-virtualenv
-RUN pip install --upgrade pip setuptools wheel
+RUN apt-get update && apt-get install -y \
+  python3 \
+  python3-dev \
+  python3-pip \
+  python-virtualenv && \
+  apt-get clean autoclean && apt-get autoremove -y
+
 RUN pip3 install --upgrade pip setuptools wheel
 
 # ONNX dependencies
@@ -21,8 +36,8 @@ WORKDIR /root
 RUN git clone https://github.com/NervanaSystems/ngraph.git
 RUN mkdir /root/ngraph/build
 WORKDIR /root/ngraph/build
-RUN cmake ../ -DNGRAPH_CPU_ENABLE=FALSE -DNGRAPH_USE_PREBUILT_LLVM=TRUE -DCMAKE_INSTALL_PREFIX=/root/ngraph_dist
-RUN make -j 8
+RUN cmake ../ -DNGRAPH_CPU_ENABLE=FALSE -DNGRAPH_USE_PREBUILT_LLVM=TRUE -DNGRAPH_ONNX_IMPORT_ENABLE=TRUE -DCMAKE_INSTALL_PREFIX=/root/ngraph_dist
+RUN make -j"$(nproc)"
 RUN make install
 
 # Build nGraph Wheel
