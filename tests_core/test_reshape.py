@@ -25,7 +25,6 @@ from onnx.helper import make_node, make_graph, make_tensor_value_info, make_mode
 from ngraph_onnx.core_importer.importer import import_onnx_model
 
 
-@pytest.mark.xfail(reason='Refactoring to nGraph core importer.')
 def test_reshape():
     input_data = np.arange(2560).reshape(16, 4, 4, 10)
     reshape_node = onnx.helper.make_node('Reshape', inputs=['x'], outputs=['y'], shape=(256, 10))
@@ -35,7 +34,6 @@ def test_reshape():
     assert np.array_equal(ng_results, [expected_output])
 
 
-@pytest.mark.xfail(reason='Refactoring to nGraph core importer.')
 def test_reshape_opset5():
     original_shape = [2, 3, 4]
     test_cases = {
