@@ -30,7 +30,6 @@ def import_and_compute(op_type, input_data, **node_attrs):
     return run_node(node, data_inputs).pop()
 
 
-@pytest.mark.xfail(reason='Refactoring to nGraph core importer.')
 def test_reduce_max():
     data = np.array([[[5, 1], [20, 2]], [[30, 1], [40, 2]], [[55, 1], [60, 2]]], dtype=np.float32)
 
@@ -54,7 +53,6 @@ def test_reduce_max():
                           np.max(data, keepdims=False, axis=(0, 1, 2)))
 
 
-@pytest.mark.xfail(reason='Refactoring to nGraph core importer.')
 def test_reduce_max_keepdims():
     data = np.array([[[5, 1], [20, 2]], [[30, 1], [40, 2]], [[55, 1], [60, 2]]], dtype=np.float32)
 
@@ -77,7 +75,6 @@ def test_reduce_max_keepdims():
                           np.max(data, keepdims=True, axis=(0, 1, 2)))
 
 
-@pytest.mark.xfail(reason='Refactoring to nGraph core importer.')
 def test_reduce_min():
     data = np.array([[[5, 1], [20, 2]], [[30, 1], [40, 2]], [[55, 1], [60, 2]]], dtype=np.float32)
 
@@ -101,7 +98,6 @@ def test_reduce_min():
                           np.min(data, keepdims=False, axis=(0, 1, 2)))
 
 
-@pytest.mark.xfail(reason='Refactoring to nGraph core importer.')
 def test_reduce_mean():
     data = np.array([[[5, 1], [20, 2]], [[30, 1], [40, 2]], [[55, 1], [60, 2]]], dtype=np.float32)
 
@@ -125,7 +121,6 @@ def test_reduce_mean():
                           np.mean(data, keepdims=False, axis=(0, 1, 2)))
 
 
-@pytest.mark.xfail(reason='Refactoring to nGraph core importer.')
 def test_reduce_sum():
     data = np.array([[[5, 1], [20, 2]], [[30, 1], [40, 2]], [[55, 1], [60, 2]]], dtype=np.float32)
 
@@ -142,7 +137,6 @@ def test_reduce_sum():
                           np.sum(data, keepdims=False, axis=(0, 1, 2)))
 
 
-@pytest.mark.xfail(reason='Refactoring to nGraph core importer.')
 def test_reduce_sum_keepdims():
     data = np.array([[[5, 1], [20, 2]], [[30, 1], [40, 2]], [[55, 1], [60, 2]]], dtype=np.float32)
 
@@ -158,7 +152,6 @@ def test_reduce_sum_keepdims():
                           np.sum(data, keepdims=True, axis=(0, 1, 2)))
 
 
-@pytest.mark.xfail(reason='Refactoring to nGraph core importer.')
 def test_reduce_prod():
     data = np.array([[[5, 1], [20, 2]], [[30, 1], [40, 2]], [[55, 1], [60, 2]]], dtype=np.float32)
 
@@ -182,7 +175,6 @@ def test_reduce_prod():
                           np.prod(data, keepdims=False, axis=(0, 1, 2)))
 
 
-@pytest.mark.xfail(reason='Refactoring to nGraph core importer.')
 @pytest.mark.parametrize('reduction_axes', [
     (0,),
     (0, 2),
@@ -207,7 +199,6 @@ def test_reduce_l1(reduction_axes):
     assert np.allclose(expected, ng_result)
 
 
-@pytest.mark.xfail(reason='Refactoring to nGraph core importer.')
 def test_reduce_l1_default_axes():
     shape = [2, 4, 3, 2]
     np.random.seed(133391)
@@ -226,7 +217,6 @@ def test_reduce_l1_default_axes():
     assert np.allclose(expected, ng_result)
 
 
-@pytest.mark.xfail(reason='Refactoring to nGraph core importer.')
 @pytest.mark.parametrize('reduction_axes', [
     (0,),
     (0, 2),
@@ -252,7 +242,6 @@ def test_reduce_l2(reduction_axes):
     assert np.allclose(expected, ng_result)
 
 
-@pytest.mark.xfail(reason='Refactoring to nGraph core importer.')
 def test_reduce_l2_default_axes():
     shape = [2, 4, 3, 2]
     np.random.seed(133391)
@@ -271,7 +260,6 @@ def test_reduce_l2_default_axes():
     assert np.allclose(expected, ng_result)
 
 
-@pytest.mark.xfail(reason='Refactoring to nGraph core importer.')
 @pytest.mark.parametrize('reduction_axes', [
     (0,),
     (0, 2),
@@ -296,7 +284,6 @@ def test_reduce_log_sum(reduction_axes):
     assert np.allclose(expected, ng_result)
 
 
-@pytest.mark.xfail(reason='Refactoring to nGraph core importer.')
 def test_reduce_log_sum_default_axes():
     shape = [2, 4, 3, 2]
     np.random.seed(133391)
@@ -315,7 +302,6 @@ def test_reduce_log_sum_default_axes():
     assert np.allclose(expected, ng_result)
 
 
-@pytest.mark.xfail(reason='Refactoring to nGraph core importer.')
 def test_reduce_log_sum_exp():
     data = np.array([[[5, 1], [20, 2]], [[30, 1], [40, 2]], [[55, 1], [60, 2]]], dtype=np.float32)
 
@@ -340,7 +326,6 @@ def test_reduce_log_sum_exp():
                           logsumexp(data, keepdims=False, axis=(0, 1, 2)))
 
 
-@pytest.mark.xfail(reason='Refactoring to nGraph core importer.')
 @pytest.mark.parametrize('reduction_axes', [
     (0,),
     (0, 2),
@@ -365,7 +350,6 @@ def test_reduce_sum_square(reduction_axes):
     assert np.allclose(expected, ng_result)
 
 
-@pytest.mark.xfail(reason='Refactoring to nGraph core importer.')
 def test_reduce_sum_square_default_axes():
     shape = [2, 4, 3, 2]
     np.random.seed(133391)
