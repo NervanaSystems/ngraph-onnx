@@ -23,7 +23,6 @@ import pytest
 from tests_core.utils import run_node
 
 
-@pytest.mark.xfail(reason='Refactoring to nGraph core importer.')
 @pytest.mark.parametrize('onnx_op, numpy_func, data_type', [
     ('And', np.logical_and, np.bool),
     ('Or', np.logical_or, np.bool),
@@ -48,7 +47,6 @@ def test_logical(onnx_op, numpy_func, data_type):
     assert np.array_equal(ng_results, [expected_output])
 
 
-@pytest.mark.xfail(reason='Refactoring to nGraph core importer.')
 def test_logical_not():
     input_data = np.array([[0, 1, -1], [0, 1, -1], [0, 1, -1]])
     expected_output = np.logical_not(input_data)
