@@ -23,6 +23,10 @@ if [ -e ./ngraph ]; then
     # If ngraph repo is up to date, and wheel exist - no need to rebuild it so exit
     if [[ $(git pull) == *"Already up-to-date"* && -n $(find /home/ngraph/python/dist/ -name 'ngraph*.whl') ]]; then
         exit 0
+    else
+    # Remove old wheel
+    NGRAPH_WHL = $(find /home/ngraph/python/dist/ -name 'ngraph*.whl' -printf '%Ts\t%p\n' | sort -nr | cut -f2 | head -n1)
+    rm ${NGRAPH_WHL}
     fi
 else
     git clone https://github.com/NervanaSystems/ngraph.git
