@@ -25,7 +25,7 @@ if [ -e ./ngraph ]; then
         exit 0
     else
     # Remove old wheel
-    NGRAPH_WHL = $(find /home/ngraph/python/dist/ -name 'ngraph*.whl' -printf '%Ts\t%p\n' | sort -nr | cut -f2 | head -n1)
+    NGRAPH_WHL = $(find /home/ngraph/python/dist/ -name 'ngraph*.whl' -printf '%Ts\t%p\n' | sort -nr | cut -f2)
     rm ${NGRAPH_WHL}
     fi
 else
