@@ -16,6 +16,8 @@
 # otherwise. Any license under such intellectual property rights must be express
 # and approved by Intel in writing.
 
+set -x
+
 # Install nGraph in /root/ngraph
 cd /home
 if [ -e ./ngraph ]; then
