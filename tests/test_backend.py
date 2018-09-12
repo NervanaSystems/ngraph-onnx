@@ -35,6 +35,15 @@ NgraphBackend.backend_name = selected_backend_name
 # import all test cases at global scope to make them visible to python.unittest
 backend_test = onnx.backend.test.BackendTest(NgraphBackend, __name__)
 
+# New tests added in ONNX 1.3
+backend_test.exclude('test_argmax')
+backend_test.exclude('test_argmin')
+backend_test.exclude('test_convtranspose')
+backend_test.exclude('test_expand_dim')
+backend_test.exclude('test_expand_shape')
+backend_test.exclude('test_instancenorm')
+backend_test.exclude('test_maxpool_with_argmax')
+backend_test.exclude('test_mvn')
 
 # Big model tests
 # Passing
