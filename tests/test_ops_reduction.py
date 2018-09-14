@@ -20,7 +20,7 @@ import onnx
 import numpy as np
 import pytest
 
-from scipy.misc import logsumexp
+from scipy.special import logsumexp
 from tests.utils import run_node
 
 
