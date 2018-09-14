@@ -124,8 +124,6 @@ backend_test.exclude('test_tanh')
 backend_test.exclude('test_thresholdedrelu')
 backend_test.exclude('test_tile')
 backend_test.exclude('test_top_k')
-backend_test.exclude('test_transpose')
-backend_test.exclude('test_transpose_default')
 backend_test.exclude('test_upsample_nearest')
 
 

@@ -103,7 +103,6 @@ def test_flatten_exception():
         run_node(node, [data])
 
 
-@pytest.mark.xfail(reason='Refactoring to nGraph core importer.')
 def test_transpose():
     data = np.arange(120).reshape(2, 3, 4, 5)
 
