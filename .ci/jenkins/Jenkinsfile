@@ -81,7 +81,9 @@ def RunToxTests(configurationMaps) {
             NGRAPH_WHL=\$(docker exec ${configMap["dockerContainerName"]} bash -c "find  /home/ngraph/python/dist/ -name 'ngraph*.whl' -printf '%Ts\t%p\n' | sort -nr | cut -f2 | head -n1")
             docker exec -e TOX_INSTALL_NGRAPH_FROM=\${NGRAPH_WHL} ${configMap["dockerContainerName"]} tox -c /root
             mkdir -p ~/ONNX_CI/onnx_models/
-            docker cp ${configMap["dockerContainerName"]}:/root/.onnx/ ~/ONNX_CI/onnx_models/
+            if [ -e ${WORKDIR}/.onnx ]; then
+                docker cp ${configMap["dockerContainerName"]}:/root/.onnx/ ~/ONNX_CI/onnx_models/
+            fi
         """
     }
     UTILS.CreateStage("Run_tox_tests", runToxTestsMethod, configurationMaps)
