@@ -21,7 +21,7 @@ import numpy as np
 import pytest
 
 from scipy.special import logsumexp
-from tests.utils import run_node
+from tests_core.utils import run_node
 
 
 def import_and_compute(op_type, input_data, **node_attrs):

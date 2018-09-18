@@ -16,6 +16,8 @@
 # otherwise. Any license under such intellectual property rights must be express
 # and approved by Intel in writing.
 
+set -x
+
 # Install nGraph in /root/ngraph
 cd /home
 if [ -e ./ngraph ]; then
@@ -23,6 +25,9 @@ if [ -e ./ngraph ]; then
     # If ngraph repo is up to date, and wheel exist - no need to rebuild it so exit
     if [[ $(git pull) == *"Already up-to-date"* && -n $(find /home/ngraph/python/dist/ -name 'ngraph*.whl') ]]; then
         exit 0
+    else
+    # Remove old wheel files
+    rm /home/ngraph/python/dist/ngraph*.whl
     fi
 else
     git clone https://github.com/NervanaSystems/ngraph.git
@@ -30,7 +35,7 @@ else
 fi
 mkdir -p ./build
 cd ./build
-cmake ../ -DNGRAPH_USE_PREBUILT_LLVM=TRUE -DCMAKE_INSTALL_PREFIX=/home/ngraph_dist
+cmake ../ -DNGRAPH_USE_PREBUILT_LLVM=TRUE -DNGRAPH_ONNX_IMPORT_ENABLE=TRUE -DCMAKE_INSTALL_PREFIX=/home/ngraph_dist
 make -j $(lscpu --parse=CORE | grep -v '#' | sort | uniq | wc -l)
 make install
 
