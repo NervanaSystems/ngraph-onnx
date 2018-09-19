@@ -91,9 +91,8 @@ def test_supports_device_gpu():
     assert NgraphBackend.supports_device('CUDA')
 
 
-@pytest.mark.xfail(reason='Refactoring to nGraph core importer.')
-def test_run_model():
-    a_shape, b_shape, c_shape, d_shape, out_shape = _get_data_shapes()
+def test_run_model(_get_data_shapes):
+    a_shape, b_shape, c_shape, d_shape, out_shape = _get_data_shapes
     input_a, input_b, input_c, input_d = _get_input_data(a_shape, b_shape, c_shape, d_shape)
 
     model = _get_simple_model(a_shape, b_shape, c_shape, d_shape, out_shape)
@@ -104,7 +103,6 @@ def test_run_model():
     assert np.allclose(ng_results, [expected])
 
 
-@pytest.mark.xfail(reason='Refactoring to nGraph core importer.')
 def test_run_node():
     input_data = _get_input_data([2, 3, 4, 5])
     node = onnx.helper.make_node('Abs', inputs=['x'], outputs=['y'])
@@ -113,9 +111,8 @@ def test_run_node():
     assert np.array_equal(ng_results, expected)
 
 
-@pytest.mark.xfail(reason='Refactoring to nGraph core importer.')
-def test_prepare():
-    a_shape, b_shape, c_shape, d_shape, out_shape = _get_data_shapes()
+def test_prepare(_get_data_shapes):
+    a_shape, b_shape, c_shape, d_shape, out_shape = _get_data_shapes
     model = _get_simple_model(a_shape, b_shape, c_shape, d_shape, out_shape)
     backend = NgraphBackend.prepare(model)
 
