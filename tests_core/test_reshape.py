@@ -117,7 +117,6 @@ def test_transpose():
     assert np.array_equal(ng_results, [expected_output])
 
 
-@pytest.mark.xfail(reason='Refactoring to nGraph core importer.')
 @pytest.config.interpreter_skip(reason='Do not run on INTERPRETER')
 def test_slice():
     data = np.array([[1, 2, 3, 4], [5, 6, 7, 8]])
