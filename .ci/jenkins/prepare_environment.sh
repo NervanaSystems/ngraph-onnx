@@ -16,38 +16,65 @@
 # otherwise. Any license under such intellectual property rights must be express
 # and approved by Intel in writing.
 
+REBUILD_NGRAPH="FALSE"
+
+PATTERN='[-a-zA-Z0-9_]*='
+for i in "$@"
+do
+    case $i in
+        --help*)
+            printf "Following parameters are available:
+    
+            --help  displays this message
+            --rebuild-ngraph rebuild nGraph 
+            "
+            exit 0
+        ;;
+        --rebuild-ngraph)
+            REBUILD_NGRAPH="TRUE"
+        ;;
+    esac
+done
+
 set -x
 
-# Install nGraph in /root/ngraph
-cd /home
-if [ -e ./ngraph ]; then
-    cd ./ngraph
-    # If ngraph repo is up to date, and wheel exist - no need to rebuild it so exit
-    if [[ $(git pull) == *"Already up-to-date"* && -n $(find /home/ngraph/python/dist/ -name 'ngraph*.whl') ]]; then
-        exit 0
-    else
-    # Remove old wheel files
-    rm /home/ngraph/python/dist/ngraph*.whl
+function build_ngraph() {
+    # directory containing ngraph repo
+    local ngraph_directory="$1"
+    cd "${ngraph_directory}/ngraph"
+    mkdir -p ./build
+    cd ./build
+    cmake ../ -DNGRAPH_USE_PREBUILT_LLVM=TRUE -DNGRAPH_ONNX_IMPORT_ENABLE=TRUE -DCMAKE_INSTALL_PREFIX="${ngraph_directory}/ngraph_dist"
+    rm -f "${ngraph_directory}"/ngraph/python/dist/ngraph*.whl
+    make -j $(lscpu --parse=CORE | grep -v '#' | sort | uniq | wc -l)
+    make install
+    cd "${ngraph_directory}/ngraph/python"
+    if [ ! -d ./pybind11 ]; then
+        git clone --recursive -b allow-nonconstructible-holders https://github.com/jagerman/pybind11.git
     fi
+    export PYBIND_HEADERS_PATH="${ngraph_directory}/ngraph/python/pybind11"
+    export NGRAPH_CPP_BUILD_PATH="${ngraph_directory}/ngraph_dist"
+    python3 setup.py bdist_wheel
+}
+
+# IF REBUILD NGRAPH IS FALSE - REUSE IT
+if [[ "${REBUILD_NGRAPH}" == "TRUE" ]]; then
+    git clone https://github.com/NervanaSystems/ngraph.git -b master /root/ngraph
+    build_ngraph "/root"
 else
-    git clone https://github.com/NervanaSystems/ngraph.git
-    cd ./ngraph
+    # Install nGraph in /home/ngraph
+    cd /home
+    if [ -e ./ngraph ]; then
+        cd ./ngraph
+        # If ngraph repo is up to date, and wheel exist - no need to rebuild it so exit
+        if [[ $(git pull) == *"Already up-to-date"* && -n $(find /home/ngraph/python/dist/ -name 'ngraph*.whl') ]]; then
+            exit 0
+        fi
+    else
+        git clone https://github.com/NervanaSystems/ngraph.git
+    fi
+    build_ngraph "/home"
 fi
-mkdir -p ./build
-cd ./build
-cmake ../ -DNGRAPH_USE_PREBUILT_LLVM=TRUE -DNGRAPH_ONNX_IMPORT_ENABLE=TRUE -DCMAKE_INSTALL_PREFIX=/home/ngraph_dist
-make -j $(lscpu --parse=CORE | grep -v '#' | sort | uniq | wc -l)
-make install
-
-# Build nGraph wheel
-cd /home/ngraph/python
-if [ ! -d ./pybind11 ]; then
-    git clone --recursive -b allow-nonconstructible-holders https://github.com/jagerman/pybind11.git
-fi
-
-export PYBIND_HEADERS_PATH="/home/ngraph/python/pybind11"
-export NGRAPH_CPP_BUILD_PATH="/home/ngraph_dist"
-python3 setup.py bdist_wheel
 
 # Copy Onnx models
 if [ -d /home/onnx_models/.onnx ]; then
