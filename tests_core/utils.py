@@ -91,8 +91,8 @@ def get_node_model(op_type, *input_data, opset=1, num_outputs=1, **node_attribut
 
     input_tensors = [make_tensor_value_info(name, onnx.TensorProto.FLOAT, value.shape)
                      for name, value in zip(onnx_node.input, node_inputs)]
-    output_tensors = [make_tensor_value_info(name, onnx.TensorProto.FLOAT, value.shape)
-                      for name, value in zip(onnx_node.output, ())]  # type: ignore
+    output_tensors = [make_tensor_value_info(name, onnx.TensorProto.FLOAT, ())
+                      for name in onnx_node.output]  # type: ignore
 
     graph = make_graph([onnx_node], 'compute_graph', input_tensors, output_tensors)
     model = make_model(graph, producer_name='Ngraph ONNX Importer')
