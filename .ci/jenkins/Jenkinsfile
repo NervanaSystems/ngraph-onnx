@@ -103,7 +103,7 @@ def Cleanup(configurationMaps) {
             ./docker.sh stop --container_name=${configMap["dockerContainerName"]} || true
             ./docker.sh remove --container_name=${configMap["dockerContainerName"]} || true
             ./docker.sh clean_up || true
-            rm ${HOME}/ONNX_CI/docker.sh ${HOME}/ONNX_CI/prepare_environment.sh
+            rm -f ${HOME}/ONNX_CI/docker.sh
             rm -rf ${WORKSPACE}/${BUILD_NUMBER}
         """
     }
