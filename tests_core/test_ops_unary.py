@@ -28,7 +28,6 @@ from ngraph_onnx.core_importer.utils.types import np_dtype_to_tensor_type_name
 from ngraph.exceptions import NgraphTypeError
 
 
-@pytest.mark.xfail(reason='Refactoring to nGraph core importer.')
 @pytest.mark.parametrize('input_data', [
     np.array([-4, 0, 5, -10]),
     np.array([[-4, 0, 5, -10], [-4, 0, 5, -10]]),
@@ -41,7 +40,6 @@ def test_abs(input_data):
     assert np.array_equal(ng_results, [expected_output])
 
 
-@pytest.mark.xfail(reason='Refactoring to nGraph core importer.')
 @pytest.mark.parametrize('input_data', [
     np.array([4, 0, 5, 10]),
     np.array([[4, 0, 5, 10], [4, 0, 5, 10]]),
@@ -55,7 +53,6 @@ def test_sqrt(input_data):
     assert np.allclose(ng_results, [expected_output])
 
 
-@pytest.mark.xfail(reason='Refactoring to nGraph core importer.')
 @pytest.mark.parametrize('input_data', [
     np.array([4, 0, 5, 10]),
     np.array([[4, 0, 5, 10], [4, 0, 5, 10]]),
@@ -69,7 +66,6 @@ def test_exp(input_data):
     assert np.allclose(ng_results, [expected_output])
 
 
-@pytest.mark.xfail(reason='Refactoring to nGraph core importer.')
 @pytest.mark.parametrize('input_data', [
     np.array([4, 2, 5, 10]),
     np.array([[4, 1, 5, 10], [4, 2, 5, 10]]),
@@ -83,7 +79,6 @@ def test_log(input_data):
     assert np.allclose(ng_results, [expected_output])
 
 
-@pytest.mark.xfail(reason='Refactoring to nGraph core importer.')
 @pytest.mark.parametrize('input_data', [
     np.array([-4, 0, 5, -10]),
     np.array([[-4, 0, 5, -10], [-4, 0, 5, -10]]),
@@ -96,7 +91,6 @@ def test_neg(input_data):
     assert np.array_equal(ng_results, [expected_output])
 
 
-@pytest.mark.xfail(reason='Refactoring to nGraph core importer.')
 @pytest.mark.parametrize('input_data', [
     np.array([-4.2, 0.43, 5.99, -10.01]),
     np.array([[-4.5, 0.99, 5.01, -10.00], [-4.5, 0.5, 5.1, 10.01]]),
@@ -109,7 +103,6 @@ def test_floor(input_data):
     assert np.array_equal(ng_results, [expected_output])
 
 
-@pytest.mark.xfail(reason='Refactoring to nGraph core importer.')
 @pytest.mark.parametrize('input_data', [
     np.array([-4.2, 0, 5.99, -10.01]),
     np.array([[-4.5, 0.99, 5.01, -10.00], [-4.5, 0.5, 5.1, 10.01]]),
@@ -122,7 +115,6 @@ def test_ceil(input_data):
     assert np.array_equal(ng_results, [expected_output])
 
 
-@pytest.mark.xfail(reason='Refactoring to nGraph core importer.')
 @pytest.mark.parametrize('min_value, max_value', [
     (np.finfo(np.float32).min, np.finfo(np.float32).max),
     (-0.5, 0.5),
@@ -140,7 +132,6 @@ def test_clip(min_value, max_value):
     assert np.allclose(ng_results, [expected])
 
 
-@pytest.mark.xfail(reason='Refactoring to nGraph core importer.')
 def test_clip_default():
     np.random.seed(133391)
     data = -100. + np.random.randn(3, 4, 5).astype(np.float32) * 200.0
@@ -156,7 +147,6 @@ def test_clip_default():
     assert np.allclose(ng_results, [expected])
 
 
-@pytest.mark.xfail(reason='Refactoring to nGraph core importer.')
 @pytest.mark.parametrize('input_data', [
     np.array([-4.2, 1, 5.99, -10.01]),
     np.array([[-4.5, 0.99, 5.01, -10.00], [-4.5, 0.5, 5.1, 10.01]]),
@@ -203,11 +193,11 @@ def test_hardmax_special_cases():
     ng_results = run_node(node, [data])
     assert np.allclose(ng_results, [expected])
 
-    with pytest.raises(ValueError):
+    with pytest.raises(RuntimeError):
         node = onnx.helper.make_node('Hardmax', inputs=['x'], outputs=['y'], axis=-1)
         ng_results = run_node(node, [data])
 
-    with pytest.raises(ValueError):
+    with pytest.raises(RuntimeError):
         node = onnx.helper.make_node('Hardmax', inputs=['x'], outputs=['y'], axis=3)
         ng_results = run_node(node, [data])
 
@@ -220,7 +210,6 @@ def test_hardmax_special_cases():
     assert np.allclose(ng_results, [expected])
 
 
-@pytest.mark.xfail(reason='Refactoring to nGraph core importer.')
 def test_hardsigmoid():
     def hardsigmoid(data, alpha=float(0.2), beta=float(0.5)):
         return np.clip(alpha * data + beta, 0, 1)
@@ -242,7 +231,6 @@ def test_hardsigmoid():
     assert np.allclose(ng_results, [expected])
 
 
-@pytest.mark.xfail(reason='Refactoring to nGraph core importer.')
 def test_softmax():
     def softmax_2d(x):
         max_x = np.max(x, axis=1).reshape((-1, 1))
@@ -277,12 +265,11 @@ def test_softmax():
     ng_results = run_node(node, [data])
     assert np.allclose(ng_results, [expected])
 
-    with pytest.raises(ValueError):
+    with pytest.raises(RuntimeError):
         node = onnx.helper.make_node('Softmax', inputs=['x'], outputs=['y'], axis=3)
         ng_results = run_node(node, [data])
 
 
-@pytest.mark.xfail(reason='Refactoring to nGraph core importer.')
 def test_logsoftmax():
     def logsoftmax_2d(x):
         max_x = np.max(x, axis=1).reshape((-1, 1))
@@ -312,16 +299,11 @@ def test_logsoftmax():
     ng_results = run_node(node, [data])
     assert np.allclose(ng_results, [expected])
 
-    with pytest.raises(ValueError):
-        node = onnx.helper.make_node('LogSoftmax', inputs=['x'], outputs=['y'], axis=-1)
-        ng_results = run_node(node, [data])
-
-    with pytest.raises(ValueError):
+    with pytest.raises(RuntimeError):
         node = onnx.helper.make_node('LogSoftmax', inputs=['x'], outputs=['y'], axis=3)
         ng_results = run_node(node, [data])
 
 
-@pytest.mark.xfail(reason='Refactoring to nGraph core importer.')
 def test_softplus():
     def softplus(x):
         return np.log(np.exp(x) + 1)
@@ -335,7 +317,6 @@ def test_softplus():
     assert np.allclose(ng_results, [expected])
 
 
-@pytest.mark.xfail(reason='Refactoring to nGraph core importer.')
 def test_softsign():
     def softsign(x):
         return x / (1 + np.abs(x))
@@ -349,7 +330,6 @@ def test_softsign():
     assert np.allclose(ng_results, [expected])
 
 
-@pytest.mark.xfail(reason='Refactoring to nGraph core importer.')
 def test_identity():
     np.random.seed(133391)
     shape = [2, 4]
@@ -377,7 +357,6 @@ def test_identity():
     assert np.array_equal(ng_results, expected_result)
 
 
-@pytest.mark.xfail(reason='Refactoring to nGraph core importer.')
 @pytest.mark.parametrize('val_type, input_data', [
     (np.dtype(bool), np.zeros((2, 2), dtype=int)),
 ])
@@ -389,12 +368,7 @@ def test_cast_to_bool(val_type, input_data):
     result = run_model(model, [input_data])
     assert np.allclose(result, expected)
 
-    model = get_node_model('Cast', input_data, opset=5, to=np_dtype_to_tensor_type_name(val_type))
-    result = run_model(model, [input_data])
-    assert np.allclose(result, expected)
 
-
-@pytest.mark.xfail(reason='Refactoring to nGraph core importer.')
 @pytest.mark.parametrize('val_type, range_start, range_end, in_dtype', [
     (np.dtype(np.float32), -8, 8, np.dtype(np.int32)),
     (np.dtype(np.float64), -16383, 16383, np.dtype(np.int64)),
@@ -409,12 +383,7 @@ def test_cast_to_float(val_type, range_start, range_end, in_dtype):
     result = run_model(model, [input_data])
     assert np.allclose(result, expected)
 
-    model = get_node_model('Cast', input_data, opset=5, to=np_dtype_to_tensor_type_name(in_dtype))
-    result = run_model(model, [input_data])
-    assert np.allclose(result, expected)
 
-
-@pytest.mark.xfail(reason='Refactoring to nGraph core importer.')
 @pytest.mark.parametrize('val_type', [
     np.dtype(np.int8),
     np.dtype(np.int16),
@@ -431,12 +400,7 @@ def test_cast_to_int(val_type):
     result = run_model(model, [input_data])
     assert np.allclose(result, expected)
 
-    model = get_node_model('Cast', input_data, opset=5, to=np_dtype_to_tensor_type_name(val_type))
-    result = run_model(model, [input_data])
-    assert np.allclose(result, expected)
 
-
-@pytest.mark.xfail(reason='Refactoring to nGraph core importer.')
 @pytest.mark.parametrize('val_type', [
     np.dtype(np.uint8),
     np.dtype(np.uint16),
@@ -453,12 +417,7 @@ def test_cast_to_uint(val_type):
     result = run_model(model, [input_data])
     assert np.allclose(result, expected)
 
-    model = get_node_model('Cast', input_data, opset=5, to=np_dtype_to_tensor_type_name(val_type))
-    result = run_model(model, [input_data])
-    assert np.allclose(result, expected)
 
-
-@pytest.mark.xfail(reason='Refactoring to nGraph core importer.')
 def test_cast_errors():
     np.random.seed(133391)
     input_data = np.ceil(np.random.rand(2, 3, 4) * 16)
@@ -472,7 +431,7 @@ def test_cast_errors():
 
     graph = make_graph([node], 'compute_graph', input_tensors, output_tensors)
     model = make_model(graph, producer_name='NgraphBackend')
-    with pytest.raises(ValueError):
+    with pytest.raises(RuntimeError):
         import_onnx_model(model)[0]
 
     # unsupported data type representation
@@ -484,7 +443,7 @@ def test_cast_errors():
 
     graph = make_graph([node], 'compute_graph', input_tensors, output_tensors)
     model = make_model(graph, producer_name='NgraphBackend')
-    with pytest.raises(ValueError):
+    with pytest.raises(RuntimeError):
         import_onnx_model(model)[0]
 
     # unsupported input tensor data type:
@@ -496,7 +455,7 @@ def test_cast_errors():
 
     graph = make_graph([node], 'compute_graph', input_tensors, output_tensors)
     model = make_model(graph, producer_name='NgraphBackend')
-    with pytest.raises((ValueError, NgraphTypeError)):
+    with pytest.raises((RuntimeError, NgraphTypeError)):
         import_onnx_model(model)[0]
 
     # unsupported output tensor data type:
@@ -509,7 +468,7 @@ def test_cast_errors():
 
     graph = make_graph([node], 'compute_graph', input_tensors, output_tensors)
     model = make_model(graph, producer_name='NgraphBackend')
-    with pytest.raises(ValueError):
+    with pytest.raises(RuntimeError):
         import_onnx_model(model)[0]
 
 
