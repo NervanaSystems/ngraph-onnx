@@ -217,7 +217,6 @@ def test_concat():
             assert np.array_equal(ng_results, [expected_output])
 
 
-@pytest.mark.xfail(reason='Refactoring to nGraph core importer.')
 def test_squeeze():
     data = np.arange(6).reshape(1, 2, 3, 1)
     expected_output = data.reshape(2, 3)
@@ -231,23 +230,6 @@ def test_squeeze():
     node = onnx.helper.make_node('Squeeze', inputs=['x'], outputs=['y'], axes=[0])
     ng_results = run_node(node, [data])
     assert np.array_equal(ng_results, [expected_output])
-
-
-@pytest.mark.xfail(reason='Refactoring to nGraph core importer.')
-def test_squeeze_exceptions():
-    data = np.random.randn(1, 3, 4, 5).astype(np.float32)
-
-    node = onnx.helper.make_node('Squeeze', inputs=['x'], outputs=['y'], axes=[-1])
-    with pytest.raises(ValueError):
-        run_node(node, [data])
-
-    node = onnx.helper.make_node('Squeeze', inputs=['x'], outputs=['y'], axes=[4])
-    with pytest.raises(ValueError):
-        run_node(node, [data])
-
-    node = onnx.helper.make_node('Squeeze', inputs=['x'], outputs=['y'], axes=[1])
-    with pytest.raises(ValueError):
-        run_node(node, [data])
 
 
 @pytest.mark.xfail(reason='Refactoring to nGraph core importer.')
