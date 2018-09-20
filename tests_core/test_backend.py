@@ -91,13 +91,9 @@ backend_test.exclude('test_selu')
 backend_test.exclude('test_simple_rnn')
 backend_test.exclude('test_sin')
 backend_test.exclude('test_size')
-backend_test.exclude('test_slice')
-backend_test.exclude('test_squeeze')
 backend_test.exclude('test_tan')
 backend_test.exclude('test_tile')
 backend_test.exclude('test_top_k')
-backend_test.exclude('test_transpose')
-backend_test.exclude('test_transpose_default')
 backend_test.exclude('test_upsample_nearest')
 
 
