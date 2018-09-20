@@ -30,7 +30,7 @@ from Watchdog import Watchdog
 
 SLACK_TOKEN_FILE = "/home/lab_nerval/tokens/slack_token"
 GITHUB_TOKEN_FILE = "/home/lab_nerval/tokens/github_token"
-JENKINS_TOKEN_FILE = "/home/lab_nerval/tokens/github_token"
+JENKINS_TOKEN_FILE = "/home/lab_nerval/tokens/scheduler"
 DEFAULT_CI_JOB_NAME = "nGraph-ONNX-CI"
 
 def main(args):

@@ -29,6 +29,8 @@ import time
 import re
 import logging
 from SlackCommunicator import SlackCommunicator
+from JenkinsWrapper import JenkinsWrapper
+from GitWrapper import GitWrapper
 import argparse
 import sys
 import os
@@ -79,7 +81,7 @@ class Watchdog:
             self._queue_message(str(e), message_severity=999)
         self._send_message()
 
-    def _check_prs(self, pulls)
+    def _check_prs(self, pulls):
         current_prs = []
         # --- MAIN LOGIC ---
         # Check all pull requests

@@ -27,6 +27,7 @@
 from time import sleep
 from github import Github
 import datetime
+import logging
 
 # Logging
 log = logging.getLogger(__file__)
@@ -44,7 +45,7 @@ class GitWrapper:
         self.repository = repository
         self.project = project
 
-    def _try_git(self, method, extraArgs=()):
+    def _try_git(self, method, extraArgs=[]):
         attempt = 0
         while(attempt < _RETRY_LIMIT):
             try:
@@ -52,6 +53,7 @@ class GitWrapper:
                 return result
             except:
                 attempt = attempt + 1
+                log.warning("Failed to execute " + method.__name__ + " attempt: " + str(attempt))
             sleep(_RETRY_COOLDOWN)
         raise RuntimeError("Unable to execute " + method.__name__ + " after " + str(_RETRY_LIMIT) + " retries.")
 
@@ -66,5 +68,5 @@ class GitWrapper:
 
     @property
     def pull_requests(self):
-        method = self.git.get_organization(self.repository).get_repo(self.project).get_pulls()
+        method = self.git.get_organization(self.repository).get_repo(self.project).get_pulls
         return self._try_git(method)

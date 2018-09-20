@@ -27,6 +27,7 @@
 from time import sleep
 import requests
 import jenkins
+import logging
 
 # Logging
 log = logging.getLogger(__file__)
@@ -44,35 +45,35 @@ class JenkinsWrapper:
     def __init__(self, jenkins_token):
         self.jenkins = jenkins.Jenkins(_JENKINS_SERVER, username=_JENKINS_USER, password=jenkins_token)
 
-    def _try_jenkins(self, method, extraArgs=()):
+    def _try_jenkins(self, method, args=[]):
         attempt = 0
         while(attempt < _RETRY_LIMIT):
             try:
-                result = method(*extraArgs)
-                return result
+                return method(*args)
             except:
                 attempt = attempt + 1
+                log.warning("Failed to execute " + method.__name__ + " attempt: " + str(attempt))
             sleep(_RETRY_COOLDOWN)
         raise RuntimeError("Unable to execute " + method.__name__ + " after " + str(_RETRY_LIMIT) + " retries.")
 
     def get_build_console_output(self, job_name, build_number):
-        self._try_jenkins(self.jenkins.get_build_console_output,(job_name, build_number))
+        return self._try_jenkins(self.jenkins.get_build_console_output,[job_name, build_number])
 
     def get_job_info(self, job_name):
-        self._try_jenkins(self.jenkins.get_job_info,(job_name))
+        return self._try_jenkins(self.jenkins.get_job_info,[job_name])
 
     def get_build_info(self, job_name, build_number):
-        self._try_jenkins(self.jenkins.get_build_info,(job_name, build_number))
+        return self._try_jenkins(self.jenkins.get_build_info,[job_name, build_number])
 
     def get_queue_item(self, queueId):
-        self._try_jenkins(self.jenkins.get_queue_item,(queueId))
+        return self._try_jenkins(self.jenkins.get_queue_item,[queueId])
 
     def get_idle_ci_hosts(self):
         jenkins_request_url = _JENKINS_SERVER + "label/ci&&onnx/api/json?pretty=true"
         try:
             log.info("Sending request to Jenkins: %s", jenkins_request_url)
             r = requests.Request(method='GET',url=jenkins_request_url)
-            response = self._try_jenkins(self.jenkins.jenkins_request, (r)).json()
+            response = self._try_jenkins(self.jenkins.jenkins_request, [r]).json()
             return (response['totalExecutors'] - response['busyExecutors'])
         except Exception as e:
             log.exception("Failed to send request to Jenkins!\nException message: %s",str(e))

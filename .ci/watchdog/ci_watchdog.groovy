@@ -48,7 +48,7 @@ node(LABEL) {
                 dir ("$BUILD_WORKSPACE") {
                     sh """#!/bin/bash
                         source venv/bin/activate
-                        python .ci/watchdog/ci_watchdog.py --ci-job=${CI_JOB_NAME}
+                        python .ci/watchdog/Main.py --ci-job=${CI_JOB_NAME}
                     """
                 }
             }
