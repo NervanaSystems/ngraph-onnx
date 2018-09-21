@@ -115,9 +115,9 @@ class Watchdog:
                         self._check_ci_build(pr, build_no)
                         break
                     # CI waiting to start
-                    elif "Awaiting Jenkins" in stat.description and (now_time - stat.updated_at > _CI_START_TRESHOLD):
+                    elif "Awaiting Jenkins" in stat.description and (self.now_time - stat.updated_at > _CI_START_TRESHOLD):
                         # CI job failed to start for given amount of time
-                        message = "Onnx CI job for PR #{} still awaiting Jenkins after {} minutes!".format(pr.number, str(now_time - stat.updated_at))
+                        message = "Onnx CI job for PR #{} still awaiting Jenkins after {} minutes!".format(pr.number, str(self.now_time - stat.updated_at))
                         self._queue_fail(message, pr)
                         break
                 except:
@@ -203,7 +203,8 @@ class Watchdog:
         delta = self.now_time - build_datetime
         if delta > _BUILD_DURATION_TRESHOLD:
             # CI job take too long, possibly froze - communiate failure
-            message = "Onnx CI job build #{}, for PR #{} started, but did not finish in designated time of {} minutes!".format(build_number, pr.number, str(_BUILD_DURATION_TRESHOLD.seconds / 60))
+            message = ("Onnx CI job build #{}, for PR #{} started, 
+                        "but did not finish in designated time of {} minutes!".format(build_number, pr.number, str(_BUILD_DURATION_TRESHOLD.seconds / 60)))
             self._queue_fail(message, pr)        
 
     # Write config data structure to file
