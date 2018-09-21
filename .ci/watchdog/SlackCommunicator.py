@@ -25,9 +25,7 @@
 # suppliers or licensors in any way.
 
 import arrow
-
 from slackclient import SlackClient
-from multiprocessing.pool import ThreadPool
 
 class SlackCommunicator:
     def __init__(self, slack_token):
@@ -37,27 +35,10 @@ class SlackCommunicator:
         self.slack_client = None
         self.slack_token = slack_token
 
-    def _async_flush(queued_msg):
-        self.send_message(message=queued_msg["msg"], severity=queued_msg["severity"])
-
-    def _severity_to_string(severity):
-        if severity == 0:
-            return "[INFO] "
-        elif severity == 1:
-            return "<WARN> "
-        elif severity == 2:
-            return "<ERROR> "
-        elif severity == 3:
-            return "!!CRITICAL!! "
-        else:
-            return ""
-
     def queue_message(self, message, severity=0):
-        self.queued_messages.append({"msg" : message, "severity" : severity})
+        self.queued_messages.append(message)
 
     def send_message(self, message, final=False, severity=0):
-        
-        
         if self.slack_client is None:
            try:
                self.slack_client = SlackClient(self.slack_token)
@@ -65,49 +46,15 @@ class SlackCommunicator:
                print("!!CRITICAL!! SlackCommunicator::CRITICAL: Could not create client")
                raise
         try:
-            if final:
-                response = self.slack_client.api_call(
-                   "chat.postMessage",
-                   as_user=False,
-                   username="CI_WATCHDOG",
-                   channel=self.channel,
-                   text=message)
-                self.thread_id = response['ts']
-
-                pool = ThreadPool(4) 
-                for queued_msg in self.queued_messages:
-                    pool.apply_async(self._async_flush, [queued_msg])
-                pool.close()
-                pool.join()
-
-                self.slack_client.api_call(
-                   "chat.update",
-                   channel=self.channel,
-                   as_user=True,
-                   ts=self.thread_id,
-                   text=message)
-            else:
-                final_message = self._severity_to_string(severity) + message
-                if severity > 1:
-                    final_message = "*" + final_message + "*"
-
-                if severity == 0:
-                    self.thread_infos += 1
-                elif severity == 1:
-                    self.thread_warnings += 1
-                elif severity == 2:
-                    self.thread_errors += 1
-                elif severity == 3:
-                    self.thread_criticals += 1
-
-                self.slack_client.api_call(
-                   "chat.postMessage",
-                   link_names=1,
-                   as_user=False,
-                   username="CI_WATCHDOG",
-                   channel=self.channel,
-                   text=final_message,
-                   thread_ts=self.thread_id)
+            final_message = message + "\n\n" + "\n".join(self.queued_messages)
+            self.slack_client.api_call(
+                "chat.postMessage",
+                link_names=1,
+                as_user=False,
+                username="CI_WATCHDOG",
+                channel=self.channel,
+                text=final_message,
+                thread_ts=self.thread_id)
         except:
             print("!!CRITICAL!! SlackCommunicator: Could not send message")
             raise
