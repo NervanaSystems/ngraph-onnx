@@ -203,7 +203,7 @@ class Watchdog:
         delta = self.now_time - build_datetime
         if delta > _BUILD_DURATION_TRESHOLD:
             # CI job take too long, possibly froze - communiate failure
-            message = ("Onnx CI job build #{}, for PR #{} started, 
+            message = ("Onnx CI job build #{}, for PR #{} started," 
                         "but did not finish in designated time of {} minutes!".format(build_number, pr.number, str(_BUILD_DURATION_TRESHOLD.seconds / 60)))
             self._queue_fail(message, pr)        
 
