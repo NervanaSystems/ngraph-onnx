@@ -68,7 +68,7 @@ def PrepareEnvironment(configurationMaps) {
     Closure prepareEnvironmentMethod = { configMap ->
         UTILS.PropagateStatus("Run_docker_containers", configMap["dockerContainerName"])
         if ( CI_PARAMS.contains("REBUILD NGRAPH") ) {
-            NGRAPH_DIRECTORY="/home"
+            NGRAPH_DIRECTORY="/root"
             ENVPREP_ARGS="--rebuild-ngraph"
         }
         sh """
