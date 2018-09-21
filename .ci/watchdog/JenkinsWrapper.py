@@ -50,9 +50,12 @@ class JenkinsWrapper:
         while(attempt < _RETRY_LIMIT):
             try:
                 return method(*args)
-            except:
+            except Exception as e:
+                # Special case for get_queue_item
+                if "queue" in str(e) and "does not exist" in str(e):
+                    return {}
                 attempt = attempt + 1
-                log.warning("Failed to execute " + method.__name__ + " attempt: " + str(attempt))
+                log.warning("Failed to execute " + method.__name__ + " -- attempt: " + str(attempt) + " -- ERROR: " + str(e))
             sleep(_RETRY_COOLDOWN)
         raise RuntimeError("Unable to execute " + method.__name__ + " after " + str(_RETRY_LIMIT) + " retries.")
 
@@ -66,7 +69,7 @@ class JenkinsWrapper:
         return self._try_jenkins(self.jenkins.get_build_info,[job_name, build_number])
 
     def get_queue_item(self, queueId):
-        return self._try_jenkins(self.jenkins.get_queue_item,[queueId])
+        return self._try_jenkins(self.jenkins.get_queue_item, [queueId])
 
     def get_idle_ci_hosts(self):
         jenkins_request_url = _JENKINS_SERVER + "label/ci&&onnx/api/json?pretty=true"

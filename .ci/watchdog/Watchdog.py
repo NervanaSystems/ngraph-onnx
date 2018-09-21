@@ -103,10 +103,10 @@ class Watchdog:
                         log.info("\tCI for PR %s: FINISHED", str(pr.number))
                         # Check if FINISH was valid FAIL / SUCCESS
                         build_no = self._retrieve_build_number(stat.target_url)
-                        build_output = self.get_build_console_output(self._ci_job_name, build_no)
+                        build_output = self.jenk.get_build_console_output(self._ci_job_name, build_no)
                         if _CI_BUILD_FAIL_MESSAGE not in build_output and _CI_BUILD_SUCCESS_MESSAGE not in build_output:
                             message = ("Onnx CI job for PR #{} finished but "
-                                        "no tests success or fail confirmation is present in console output!")
+                                        "no tests success or fail confirmation is present in console output!".format(str(pr.number)))
                             self._queue_fail(message, pr)
                         break
                     # CI build in progress                
@@ -141,7 +141,7 @@ class Watchdog:
         job_info = self.jenk.get_job_info(self._ci_job_name)
         oldest_build = job_info['builds'][-1]['number']
         # Retrieve the build number
-        matchObj = re.search("(?:/" + job + "/)([0-9]+)",url)
+        matchObj = re.search("(?:/" + self._ci_job_name + "/)([0-9]+)",url)
         try:
             number = int(matchObj.group(1))
             if number < oldest_build:
@@ -154,11 +154,11 @@ class Watchdog:
 
     def _queue_message(self, message, message_severity):
         log.info(message)
-        if message_severity == 999:
+        if message_severity is 999:
             message_header = "!!! --- !!! INTERNAL WATCHDOG ERROR !!! --- !!!"
-        if message_severity == 3:
+        if message_severity is 3:
             message_header = "!!! nGraph-ONNX CI Error !!!"
-        elif message_severity == 2:
+        elif message_severity is 2:
             message_header = "nGraph-ONNX CI WARNING"
         else:
             message_header = "nGraph-ONNX CI INFO"
@@ -180,7 +180,7 @@ class Watchdog:
             watchdog_build_number = watchdog_build['number']
             watchdog_build_link = watchdog_build['url']
             send = "nGraph-ONNX CI Watchdog - build " + str(watchdog_build_number) + " - " + watchdog_build_link
-            self.slack_app.send_message(send, final=True, severity=0)
+            self.slack_app.send_message(send, severity=0)
         else:
             log.info("Nothing to report.")
 
@@ -188,27 +188,23 @@ class Watchdog:
         build_info = self.jenk.get_build_info(self._ci_job_name, build_number)
         build_datetime = datetime.datetime.fromtimestamp(build_info['timestamp']/1000.0)
         # If build still waiting in queue
-        try:
-            queueItem = self.jenk.get_queue_item(build_info['queueId'])
-            # 'why' present if job is in queue and doesnt have executor yet
-            if "why" in queueItem:
-                delta = self.now_time - build_datetime
-                if delta > _CI_START_TRESHOLD:
-                    message = "Onnx CI job build #{}, for PR #{} waiting in queue after {} minutes".format(build_number, pr.number, str(delta.seconds / 60))
-                    self._queue_fail(message, pr, message_severity=2)
-                    if get_idle_ci_hosts() > 0:
-                        message = "Onnx CI job build #{}, for PR #{} waiting in queue, despite idle executors!".format(build_number, pr.number)
-                        self._queue_fail(message, pr)
-                    return
-        except:
-            # Failure to get queue item means build has started on a node
-            pass
+        queueItem = self.jenk.get_queue_item(build_info['queueId'])
+        # 'why' present if job is in queue and doesnt have executor yet
+        if "why" in queueItem:
+            delta = self.now_time - build_datetime
+            if delta > _CI_START_TRESHOLD:
+                message = "Onnx CI job build #{}, for PR #{} waiting in queue after {} minutes".format(build_number, pr.number, str(delta.seconds / 60))
+                self._queue_fail(message, pr, message_severity=2)
+                if get_idle_ci_hosts() > 0:
+                    message = "Onnx CI job build #{}, for PR #{} waiting in queue, despite idle executors!".format(build_number, pr.number)
+                    self._queue_fail(message, pr)
+                return
         log.info("\tBuild %s: IN PROGRESS, started: %s", str(build_number), str(build_datetime))
         delta = self.now_time - build_datetime
         if delta > _BUILD_DURATION_TRESHOLD:
             # CI job take too long, possibly froze - communiate failure
-            message = "Onnx CI job build #{}, for PR #{} started, but did not finish in designated time of {} minutes!".format(build_number, pr.number, str(_BUILD_DURATION_TRESHOLD))
-            self.queue_fail(message, pr)        
+            message = "Onnx CI job build #{}, for PR #{} started, but did not finish in designated time of {} minutes!".format(build_number, pr.number, str(_BUILD_DURATION_TRESHOLD.seconds / 60))
+            self._queue_fail(message, pr)        
 
     # Write config data structure to file
     def _update_config(self, current_prs):
