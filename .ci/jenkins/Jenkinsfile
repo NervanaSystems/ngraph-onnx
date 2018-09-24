@@ -20,10 +20,12 @@ try{ if(LABEL.trim() == "") {throw new Exception();} }catch(Exception e){LABEL="
 // CI settings and constants
 PROJECT_NAME = "ngraph-onnx"            
 CI_ROOT = ".ci/jenkins"
+CI_PARAMS = "${ghprbCommentBody}"
 DOCKER_CONTAINER_NAME = "jenkins_${PROJECT_NAME}_ci"
 REPOSITORY_GIT_ADDRESS = "https://www.github.com/NervanaSystems/${PROJECT_NAME}.git"
 JENKINS_GITHUB_CREDENTIAL_ID = "6887a177-8c4d-4fe9-9c3b-fcd71b22bfba"
-
+NGRAPH_DIRECTORY="/home"
+ENVPREP_ARGS=""
 
 def CloneRepository(String jenkins_github_credential_id, String repository_git_address) {
     stage('Clone Repo') {
@@ -65,10 +67,13 @@ def RunDockerContainers(configurationMaps) {
 def PrepareEnvironment(configurationMaps) {
     Closure prepareEnvironmentMethod = { configMap ->
         UTILS.PropagateStatus("Run_docker_containers", configMap["dockerContainerName"])
+        if ( CI_PARAMS.contains("REBUILD NGRAPH") ) {
+            NGRAPH_DIRECTORY="/root"
+            ENVPREP_ARGS="--rebuild-ngraph"
+        }
         sh """
-            docker cp ${CI_ROOT}/prepare_environment.sh ${configMap["dockerContainerName"]}:/home
             docker cp ${CI_ROOT}/utils/docker.sh ${configMap["dockerContainerName"]}:/home
-            docker exec ${configMap["dockerContainerName"]} ./home/prepare_environment.sh
+            docker exec ${configMap["dockerContainerName"]} bash -c "/root/${CI_ROOT}/prepare_environment.sh ${ENVPREP_ARGS}"
         """
     }
     UTILS.CreateStage("Prepare_environment", prepareEnvironmentMethod, configurationMaps)
@@ -78,7 +83,7 @@ def RunToxTests(configurationMaps) {
     Closure runToxTestsMethod = { configMap ->
         UTILS.PropagateStatus("Prepare_environment", configMap["dockerContainerName"])
         sh """
-            NGRAPH_WHL=\$(docker exec ${configMap["dockerContainerName"]} bash -c "find  /home/ngraph/python/dist/ -name 'ngraph*.whl' -printf '%Ts\t%p\n' | sort -nr | cut -f2 | head -n1")
+            NGRAPH_WHL=\$(docker exec ${configMap["dockerContainerName"]} bash -c "find  ${NGRAPH_DIRECTORY}/ngraph/python/dist/ -name 'ngraph*.whl' -printf '%Ts\t%p\n' | sort -nr | cut -f2 | head -n1")
             docker exec -e TOX_INSTALL_NGRAPH_FROM=\${NGRAPH_WHL} ${configMap["dockerContainerName"]} tox -c /root
             mkdir -p ~/ONNX_CI/onnx_models/
             if [ -e ${WORKDIR}/.onnx ]; then
@@ -98,7 +103,7 @@ def Cleanup(configurationMaps) {
             ./docker.sh stop --container_name=${configMap["dockerContainerName"]} || true
             ./docker.sh remove --container_name=${configMap["dockerContainerName"]} || true
             ./docker.sh clean_up || true
-            rm ${HOME}/ONNX_CI/docker.sh ${HOME}/ONNX_CI/prepare_environment.sh
+            rm -f ${HOME}/ONNX_CI/docker.sh
             rm -rf ${WORKSPACE}/${BUILD_NUMBER}
         """
     }
