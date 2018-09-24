@@ -91,7 +91,7 @@ class Watchdog:
             last_commit = (pr.get_commits().reversed)[0]
             statuses = last_commit.get_statuses()
             # Filter statuses to contain only those related to Jenkins CI and check if CI in Jenkins started
-            jenk_statuses = [stat for stat in statuses if "Jenkins CI" in stat.context]
+            jenk_statuses = [stat for stat in statuses if "nGraph-ONNX Jenkins CI (IGK)" in stat.context]
             delta = self.now_time - pr.updated_at
             if not jenk_statuses and (delta > _AWAITING_JENKINS_TRESHOLD):
                 message = "Jenkins CI report for PR# {} not present on GitHub after {} minutes!".format(pr.number, delta.seconds / 60)
