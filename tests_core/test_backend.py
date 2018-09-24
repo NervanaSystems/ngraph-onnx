@@ -97,14 +97,14 @@ backend_test.exclude('test_upsample_nearest')
 
 
 # Big model tests:
-backend_test.exclude('test_bvlc_alexnet')
+#backend_test.exclude('test_bvlc_alexnet')
 backend_test.exclude('test_densenet121')
-backend_test.exclude('test_inception_v1')
-backend_test.exclude('test_inception_v2')
+#backend_test.exclude('test_inception_v1')
+#backend_test.exclude('test_inception_v2')
 #backend_test.exclude('test_resnet50')
 #backend_test.exclude('test_shufflenet')
 backend_test.exclude('test_squeezenet')
-backend_test.exclude('test_vgg19')
+#backend_test.exclude('test_vgg19')
 #backend_test.exclude('test_zfnet512')
 
 
