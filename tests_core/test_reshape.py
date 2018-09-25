@@ -232,7 +232,6 @@ def test_squeeze():
     assert np.array_equal(ng_results, [expected_output])
 
 
-@pytest.mark.xfail(reason='Refactoring to nGraph core importer.')
 def test_unsqueeze():
     data = np.random.randn(3, 4, 5).astype(np.float32)
     expected_output = np.expand_dims(data, axis=0)
