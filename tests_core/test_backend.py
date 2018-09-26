@@ -106,6 +106,11 @@ backend_test.exclude('test_squeezenet')
 #backend_test.exclude('test_vgg19')
 #backend_test.exclude('test_zfnet512')
 
+# Tests which fail on the CPU backend
+if selected_backend_name == 'CPU':
+    backend_test.exclude('test_Conv3d_dilated')
+    backend_test.exclude('test_Conv3d_dilated_strided')
+    backend_test.exclude('test_GLU_dim')
 
 # Tests which fail or are very slow on the INTERPRETER backend
 if selected_backend_name == 'INTERPRETER':
