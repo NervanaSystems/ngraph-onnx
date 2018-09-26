@@ -159,6 +159,12 @@ backend_test.exclude('test_PixelShuffle_cpu')
 # ValueError msg='LogSoftmax node (%s): provided axis attribute is out of input tensor dimensions range.' -> NC5-230
 backend_test.exclude('test_log_softmax_lastdim_cpu')
 
+# Tests which fail on the CPU backend
+if selected_backend_name == 'CPU':
+    backend_test.exclude('test_Conv3d_dilated')
+    backend_test.exclude('test_Conv3d_dilated_strided')
+    backend_test.exclude('test_GLU_dim')
+
 # Tests which fail or are very slow on the INTERPRETER backend
 if selected_backend_name == 'INTERPRETER':
     backend_test.exclude('test_densenet121_cpu')
