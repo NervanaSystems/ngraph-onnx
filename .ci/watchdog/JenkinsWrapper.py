@@ -30,7 +30,7 @@ import jenkins
 import logging
 
 # Logging
-log = logging.getLogger(__file__)
+log = logging.getLogger(__name__)
 ch = logging.StreamHandler()
 log.setLevel(logging.INFO)
 ch.setFormatter(logging.Formatter('%(name)s - %(levelname)s - %(message)s'))
