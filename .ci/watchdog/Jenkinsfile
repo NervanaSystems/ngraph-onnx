@@ -37,10 +37,10 @@ node(LABEL) {
                     sh """#!/bin/bash
                         virtualenv -p python2 venv
                         source venv/bin/activate
-                        pip install python-jenkins
-                        pip install pygithub
-                        pip install arrow
-                        pip install slackclient
+                        pip install python-jenkins \
+                                    retrying \
+                                    pygithub \
+                                    slackclient 
                     """
                 }
             }

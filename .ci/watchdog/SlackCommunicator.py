@@ -24,7 +24,6 @@
 # this notice or any other notice embedded in Materials by Intel or Intel's
 # suppliers or licensors in any way.
 
-import arrow
 from slackclient import SlackClient
 
 class SlackCommunicator:
