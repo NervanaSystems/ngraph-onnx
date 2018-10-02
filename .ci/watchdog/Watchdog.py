@@ -49,12 +49,11 @@ _BUILD_DURATION_TRESHOLD = datetime.timedelta(minutes=60)
 _CI_START_TRESHOLD = datetime.timedelta(minutes=10)
 _AWAITING_JENKINS_TRESHOLD = datetime.timedelta(minutes=5)
 _PR_REPORTS_CONFIG_KEY = "pr_reports"
-_WATCHDOG_JOB_NAME = "onnx/ci_watchdog"
 _CI_BUILD_FAIL_MESSAGE = "ERROR:   py3: commands failed"
 _CI_BUILD_SUCCESS_MESSAGE = "py3: commands succeeded"
 
 class Watchdog:
-    def __init__(self, jenkins_token, jenkins_server, jenkins_user, git_token, slack_token, ci_job_name):
+    def __init__(self, jenkins_token, jenkins_server, jenkins_user, git_token, slack_token, ci_job_name, watchdog_job_name):
         # Jenkins Wrapper object for CI job
         self.jenk = JenkinsWrapper(jenkins_token, jenkins_server=jenkins_server, jenkins_user=jenkins_user)
         # Load GitHub token and log in, retrieve pull requests
@@ -62,6 +61,7 @@ class Watchdog:
         # Create Slack api object
         self.slack_app = SlackCommunicator(slack_token)
         self._ci_job_name = ci_job_name
+        self._watchdog_job_name = watchdog_job_name
         # Read config file
         self.config = self._read_config_file()
         # Time at Watchdog initiation
@@ -176,7 +176,7 @@ class Watchdog:
 
     def _send_message(self):
         if len(self.slack_app.queued_messages) > 0:
-            watchdog_build = self.jenk.get_job_info(_WATCHDOG_JOB_NAME)['lastBuild']
+            watchdog_build = self.jenk.get_job_info(self._watchdog_job_name)['lastBuild']
             watchdog_build_number = watchdog_build['number']
             watchdog_build_link = watchdog_build['url']
             send = "nGraph-ONNX CI Watchdog - build " + str(watchdog_build_number) + " - " + watchdog_build_link
