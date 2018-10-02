@@ -49,7 +49,7 @@ _BUILD_DURATION_TRESHOLD = datetime.timedelta(minutes=60)
 _CI_START_TRESHOLD = datetime.timedelta(minutes=10)
 _AWAITING_JENKINS_TRESHOLD = datetime.timedelta(minutes=5)
 _PR_REPORTS_CONFIG_KEY = "pr_reports"
-_WATCHDOG_JOB_NAME = "onnx_ci_watchdog"
+_WATCHDOG_JOB_NAME = "onnx/ci_watchdog"
 _CI_BUILD_FAIL_MESSAGE = "ERROR:   py3: commands failed"
 _CI_BUILD_SUCCESS_MESSAGE = "py3: commands succeeded"
 
@@ -141,7 +141,7 @@ class Watchdog:
         job_info = self.jenk.get_job_info(self._ci_job_name)
         oldest_build = job_info['builds'][-1]['number']
         # Retrieve the build number
-        matchObj = re.search("(?:/" + self._ci_job_name + "/)([0-9]+)",url)
+        matchObj = re.search("(?:/" + self._ci_job_name.split("/")[-1] + "/)([0-9]+)",url)
         try:
             number = int(matchObj.group(1))
             if number < oldest_build:

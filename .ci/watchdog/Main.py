@@ -33,7 +33,7 @@ GITHUB_TOKEN_FILE = "/home/lab_nerval/tokens/github_token"
 JENKINS_TOKEN_FILE = "/home/lab_nerval/tokens/crackerjack"
 JENKINS_SERVER = "https://crackerjack.intel.com/"
 JENKINS_USER = "lab_nerval"
-DEFAULT_CI_JOB_NAME = "ngraph-onnx-ci"
+DEFAULT_CI_JOB_NAME = "onnx/ngraph-onnx-ci"
 
 def main(args):
     # --- PREPARE VARIABLES ---
