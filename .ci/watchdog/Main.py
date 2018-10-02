@@ -28,12 +28,13 @@ import argparse
 import sys
 from Watchdog import Watchdog
 
-SLACK_TOKEN_FILE = "/home/lab_nerval/tokens/slack_token"
-GITHUB_TOKEN_FILE = "/home/lab_nerval/tokens/github_token"
-JENKINS_TOKEN_FILE = "/home/lab_nerval/tokens/crackerjack"
-JENKINS_SERVER = "https://crackerjack.intel.com/"
-JENKINS_USER = "lab_nerval"
+DEFAULT_SLACK_TOKEN_FILE = "/home/lab_nerval/tokens/slack_token"
+DEFAULT_GITHUB_TOKEN_FILE = "/home/lab_nerval/tokens/github_token"
+DEFAULT_JENKINS_TOKEN_FILE = "/home/lab_nerval/tokens/crackerjack"
+DEFAULT_JENKINS_SERVER = "https://crackerjack.intel.com/"
+DEFAULT_JENKINS_USER = "lab_nerval"
 DEFAULT_CI_JOB_NAME = "onnx/ngraph-onnx-ci"
+DEFAULT_WATCHDOG_JOB_NAME = "onnx/ci_watchdog"
 
 def main(args):
     # --- PREPARE VARIABLES ---
@@ -44,8 +45,9 @@ def main(args):
     slack_token = open(args.slack_token).read().replace('\n','').strip()
     github_token = open(args.github_token).read().replace('\n','').strip()
     ci_job = args.ci_job.strip()
+    watchdog_job = args.watchdog_job.strip()
 
-    wd = Watchdog(jenkins_token, jenkins_server, jenkins_user, github_token, slack_token, ci_job)
+    wd = Watchdog(jenkins_token, jenkins_server, jenkins_user, github_token, slack_token, ci_job, watchdog_job)
     wd.run()
 
     return 0
@@ -54,22 +56,25 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     parser.add_argument("--slack-token", help="Path to token for Slack user to communicate messages.",
-                        default=SLACK_TOKEN_FILE, action="store", required=False)
+                        default=DEFAULT_SLACK_TOKEN_FILE, action="store", required=False)
     
     parser.add_argument("--github-token", help="Path to token for GitHub user to access repo.",
-                        default=GITHUB_TOKEN_FILE, action="store", required=False)
+                        default=DEFAULT_GITHUB_TOKEN_FILE, action="store", required=False)
     
     parser.add_argument("--jenkins-token", help="Path to token for Jenkins user to access build info.",
-                        default=JENKINS_TOKEN_FILE, action="store", required=False)
+                        default=DEFAULT_JENKINS_TOKEN_FILE, action="store", required=False)
     
     parser.add_argument("--jenkins-server", help="Jenkins server address.",
-                        default=JENKINS_SERVER, action="store", required=False)
+                        default=DEFAULT_JENKINS_SERVER, action="store", required=False)
                         
     parser.add_argument("--jenkins-user", help="Jenkins user used to log in.",
-                        default=JENKINS_USER, action="store", required=False)
+                        default=DEFAULT_JENKINS_USER, action="store", required=False)
 
     parser.add_argument("--ci-job", help="Jenkins CI job name.",
                         default=DEFAULT_CI_JOB_NAME, action="store", required=False)
+
+    parser.add_argument("--watchdog-job", help="Jenkins CI Watchdog job name.",
+                        default=DEFAULT_WATCHDOG_JOB_NAME, action="store", required=False)
 
     args = parser.parse_args()
     sys.exit(main(args))
