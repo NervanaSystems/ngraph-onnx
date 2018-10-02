@@ -176,10 +176,14 @@ class Watchdog:
 
     def _send_message(self):
         if len(self.slack_app.queued_messages) > 0:
-            watchdog_build = self.jenk.get_job_info(self._watchdog_job_name)['lastBuild']
-            watchdog_build_number = watchdog_build['number']
-            watchdog_build_link = watchdog_build['url']
-            send = "nGraph-ONNX CI Watchdog - build " + str(watchdog_build_number) + " - " + watchdog_build_link
+            try:
+                watchdog_build = self.jenk.get_job_info(self._watchdog_job_name)['lastBuild']
+                watchdog_build_number = watchdog_build['number']
+                watchdog_build_link = watchdog_build['url']
+            except:
+                watchdog_build_number = "UNKNOWN"
+                watchdog_build_link = self.jenk.jenkins_server
+            send = self._watchdog_job_name + "- build " + str(watchdog_build_number) + " - " + watchdog_build_link
             self.slack_app.send_message(send, severity=0)
         else:
             log.info("Nothing to report.")
