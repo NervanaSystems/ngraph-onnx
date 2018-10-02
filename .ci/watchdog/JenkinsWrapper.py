@@ -40,9 +40,9 @@ _RETRY_LIMIT = 3
 _RETRY_COOLDOWN = 15
 
 class JenkinsWrapper:
-    def __init__(self, jenkins_token, jenkins_user=_JENKINS_USER, jenkins_server=_JENKINS_SERVER):
+    def __init__(self, jenkins_token, jenkins_user, jenkins_server):
         self.jenkins_server = jenkins_server
-        self.jenkins = jenkins.Jenkins(jenkins_server, username=_JENKINS_USER, password=jenkins_token)
+        self.jenkins = jenkins.Jenkins(jenkins_server, username=jenkins_user, password=jenkins_token)
 
     def _try_jenkins(self, method, args=[]):
         attempt = 0
