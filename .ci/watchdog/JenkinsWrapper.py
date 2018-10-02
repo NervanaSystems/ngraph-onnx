@@ -36,14 +36,13 @@ log.setLevel(logging.INFO)
 ch.setFormatter(logging.Formatter('%(name)s - %(levelname)s - %(message)s'))
 log.addHandler(ch)
 
-_JENKINS_SERVER = "http://10.91.54.11:8080/"
-_JENKINS_USER = "lab_nerval"
 _RETRY_LIMIT = 3
 _RETRY_COOLDOWN = 15
 
 class JenkinsWrapper:
-    def __init__(self, jenkins_token):
-        self.jenkins = jenkins.Jenkins(_JENKINS_SERVER, username=_JENKINS_USER, password=jenkins_token)
+    def __init__(self, jenkins_token, jenkins_user=_JENKINS_USER, jenkins_server=_JENKINS_SERVER):
+        self.jenkins_server = jenkins_server
+        self.jenkins = jenkins.Jenkins(jenkins_server, username=_JENKINS_USER, password=jenkins_token)
 
     def _try_jenkins(self, method, args=[]):
         attempt = 0
@@ -72,7 +71,7 @@ class JenkinsWrapper:
         return self._try_jenkins(self.jenkins.get_queue_item, [queueId])
 
     def get_idle_ci_hosts(self):
-        jenkins_request_url = _JENKINS_SERVER + "label/ci&&onnx/api/json?pretty=true"
+        jenkins_request_url = self.jenkins_server + "label/ci&&onnx/api/json?pretty=true"
         try:
             log.info("Sending request to Jenkins: %s", jenkins_request_url)
             r = requests.Request(method='GET',url=jenkins_request_url)

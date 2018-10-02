@@ -49,14 +49,14 @@ _BUILD_DURATION_TRESHOLD = datetime.timedelta(minutes=60)
 _CI_START_TRESHOLD = datetime.timedelta(minutes=10)
 _AWAITING_JENKINS_TRESHOLD = datetime.timedelta(minutes=5)
 _PR_REPORTS_CONFIG_KEY = "pr_reports"
-_WATCHDOG_JOB_NAME = "Onnx_CI_Watchdog"
+_WATCHDOG_JOB_NAME = "onnx_ci_watchdog"
 _CI_BUILD_FAIL_MESSAGE = "ERROR:   py3: commands failed"
 _CI_BUILD_SUCCESS_MESSAGE = "py3: commands succeeded"
 
 class Watchdog:
-    def __init__(self, jenkins_token, git_token, slack_token, ci_job_name):
+    def __init__(self, jenkins_token, jenkins_server, jenkins_user, git_token, slack_token, ci_job_name):
         # Jenkins Wrapper object for CI job
-        self.jenk = JenkinsWrapper(jenkins_token)
+        self.jenk = JenkinsWrapper(jenkins_token, jenkins_server=jenkins_server, jenkins_user=jenkins_user)
         # Load GitHub token and log in, retrieve pull requests
         self.git = GitWrapper(git_token, repository='NervanaSystems', project='ngraph-onnx')
         # Create Slack api object
