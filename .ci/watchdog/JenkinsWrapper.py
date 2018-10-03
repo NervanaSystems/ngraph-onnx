@@ -28,6 +28,7 @@ from time import sleep
 import requests
 import jenkins
 import logging
+from retrying import retry
 
 # Logging
 log = logging.getLogger(__name__)
@@ -53,7 +54,7 @@ class JenkinsWrapper:
         :type jenkins_user:         String
         :type jenkins_server:       String
     """
-    
+
     def __init__(self, jenkins_token, jenkins_user, jenkins_server):
         self.jenkins_server = jenkins_server
         self.jenkins = jenkins.Jenkins(jenkins_server, username=jenkins_user, password=jenkins_token)
