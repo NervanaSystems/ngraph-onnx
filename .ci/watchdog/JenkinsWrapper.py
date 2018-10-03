@@ -40,6 +40,20 @@ _RETRY_LIMIT = 3
 _RETRY_COOLDOWN_MS = 5000
 
 class JenkinsWrapper:
+    """Class wrapping Python-Jenkins API.
+
+    The purpose of this class is to wrap methods from Python-Jenkins API used in Watchdog, for less error-prone and
+    more convenient use. Docs for used API, including wrapped methods can be found at:
+    https://python-jenkins.readthedocs.io/en/latest/
+
+        :param jenkins_token:       Token used for Jenkins
+        :param jenkins_user:        Username used to connect to Jenkins
+        :param jenkins_server:      Jenkins server address
+        :type jenkins_token:        String
+        :type jenkins_user:         String
+        :type jenkins_server:       String
+    """
+    
     def __init__(self, jenkins_token, jenkins_user, jenkins_server):
         self.jenkins_server = jenkins_server
         self.jenkins = jenkins.Jenkins(jenkins_server, username=jenkins_user, password=jenkins_token)
@@ -58,6 +72,14 @@ class JenkinsWrapper:
 
     @retry(stop_max_attempt_number=_RETRY_LIMIT, wait_fixed=_RETRY_COOLDOWN_MS)
     def get_queue_item(self, queueId):
+        """Method attempts to retrieve Jenkins job queue item. Exception communicating queue doesn't exist is expected,
+        in that case method returns empty dict.
+
+            :param queueId:             Jenkins job queue ID number
+            :type jenkins_server:       int
+            :return:                    Dictionary representing Jenkins job queue item
+            :rtype:                     dict
+        """
         try:
             return self.jenkins.get_queue_item(queueId)
         except Exception as e:
@@ -69,6 +91,11 @@ class JenkinsWrapper:
 
     @retry(stop_max_attempt_number=_RETRY_LIMIT, wait_fixed=_RETRY_COOLDOWN_MS)
     def get_idle_ci_hosts(self):
+        """Method sends GET request to Jenkins server, querrying for idle servers labeled for nGraph-ONNX CI job.
+
+            :return:                    Number of idle hosts delegated to nGraph-ONNX CI
+            :rtype:                     int
+        """
         jenkins_request_url = self.jenkins_server + "label/ci&&onnx/api/json?pretty=true"
         try:
             log.info("Sending request to Jenkins: %s", jenkins_request_url)

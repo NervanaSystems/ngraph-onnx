@@ -40,6 +40,20 @@ _RETRY_LIMIT = 3
 _RETRY_COOLDOWN_MS = 2000
 
 class GitWrapper:
+    """Class wrapping PyGithub API.
+
+    The purpose of this class is to wrap methods from PyGithub API used in Watchdog, for less error-prone and
+    more convenient use. Docs for used API, including wrapped methods can be found at:
+    https://pygithub.readthedocs.io/en/latest/introduction.html
+
+        :param git_token:       Token used for GitHub
+        :param repository:      GitHub repository name
+        :param project:         GitHub project name
+        :type git_token:        String
+        :type repository:       String
+        :type project:          String
+    """
+
     def __init__(self, git_token, repository, project):
         self.git = Github(git_token)
         self.repository = repository
@@ -47,6 +61,11 @@ class GitWrapper:
 
     @retry(stop_max_attempt_number=_RETRY_LIMIT, wait_fixed=_RETRY_COOLDOWN_MS)
     def get_git_time(self):
+        """Retrieves time from GitHub, used to reliably determine time during Watchdog run.
+
+            :return:                    Datetime object describing current time
+            :rtype:                     datetime
+        """
         datetime_string = self.git.get_api_status().raw_headers['date']
         try:
             datetime_object =  datetime.datetime.strptime(datetime_string, '%a, %d %b %Y %H:%M:%S %Z')

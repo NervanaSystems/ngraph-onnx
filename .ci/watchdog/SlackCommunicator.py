@@ -27,6 +27,16 @@
 from slackclient import SlackClient
 
 class SlackCommunicator:
+    """Class wrapping SlackClient API
+
+    The purpose of this class is to wrap methods from SlackClient API used in Watchdog, for less error-prone and
+    more convenient use. Docs for used API, including wrapped methods can be found at:
+    https://slackapi.github.io/python-slackclient/
+
+        :param slack_token:       Token used for Slack
+        :type slack_server:       String
+    """
+
     def __init__(self, slack_token):
         self.channel = "ngraph-onnx-ci-alerts"
         self.thread_id = None
@@ -34,10 +44,20 @@ class SlackCommunicator:
         self.slack_client = None
         self.slack_token = slack_token
 
-    def queue_message(self, message, severity=0):
+    def queue_message(self, message):
+        """Queues message to be sent later.
+            
+            :param message:     Message content
+            :type message:      String
+        """
         self.queued_messages.append(message)
 
-    def send_message(self, message, final=False, severity=0):
+    def send_message(self, message):
+        """Sends queued messages as single communication.
+            
+            :param message:     Final message's content
+            :type message:      String
+        """
         if self.slack_client is None:
            try:
                self.slack_client = SlackClient(self.slack_token)

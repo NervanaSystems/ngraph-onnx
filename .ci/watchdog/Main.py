@@ -36,9 +36,16 @@ DEFAULT_JENKINS_USER = "lab_nerval"
 DEFAULT_CI_JOB_NAME = "onnx/ngraph-onnx-ci"
 DEFAULT_WATCHDOG_JOB_NAME = "onnx/ci_watchdog"
 
+
 def main(args):
-    # --- PREPARE VARIABLES ---
-    # Reading passed args
+    """
+    Read args passed to script, load tokens and run watchdog.
+
+    Keyword arguments:
+    :param args:    arguments parsed by argparse ArgumentParser
+    :return:        returns status code 0 on successful completion
+    """
+
     jenkins_server = args.jenkins_server.strip()
     jenkins_user = args.jenkins_user.strip()
     jenkins_token = open(args.jenkins_token).read().replace('\n','').strip()
