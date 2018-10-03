@@ -37,7 +37,7 @@ ch.setFormatter(logging.Formatter('%(name)s - %(levelname)s - %(message)s'))
 log.addHandler(ch)
 
 _RETRY_LIMIT = 3
-_RETRY_COOLDOWN = 15
+_RETRY_COOLDOWN_MS = 2000
 
 class GitWrapper:
     def __init__(self, git_token, repository, project):
@@ -45,28 +45,16 @@ class GitWrapper:
         self.repository = repository
         self.project = project
 
-    def _try_git(self, method, extraArgs=[]):
-        attempt = 0
-        while(attempt < _RETRY_LIMIT):
-            try:
-                result = method(*extraArgs)
-                return result
-            except:
-                attempt = attempt + 1
-                log.warning("Failed to execute " + method.__name__ + " attempt: " + str(attempt))
-            sleep(_RETRY_COOLDOWN)
-        raise RuntimeError("Unable to execute " + method.__name__ + " after " + str(_RETRY_LIMIT) + " retries.")
-
+    @retry(stop_max_attempt_number=_RETRY_LIMIT, wait_fixed=_RETRY_COOLDOWN_MS)
     def get_git_time(self):
-        datetime_string = self._try_git(self.git.get_api_status).raw_headers['date']
+        datetime_string = self.git.get_api_status().raw_headers['date']
         try:
             datetime_object =  datetime.datetime.strptime(datetime_string, '%a, %d %b %Y %H:%M:%S %Z')
         except:
             log.exception("Failed to parse date retrieved from GitHub: %s", str(datetime_string))
-            raise
+            raise 
         return datetime_object
 
-    @property
-    def pull_requests(self):
-        method = self.git.get_organization(self.repository).get_repo(self.project).get_pulls
-        return self._try_git(method)
+    @retry(stop_max_attempt_number=_RETRY_LIMIT, wait_fixed=_RETRY_COOLDOWN_MS)
+    def get_pull_requests(self):
+        return self.git.get_organization(self.repository).get_repo(self.project).get_pulls()

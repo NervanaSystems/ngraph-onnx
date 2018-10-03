@@ -37,46 +37,44 @@ ch.setFormatter(logging.Formatter('%(name)s - %(levelname)s - %(message)s'))
 log.addHandler(ch)
 
 _RETRY_LIMIT = 3
-_RETRY_COOLDOWN = 15
+_RETRY_COOLDOWN_MS = 5000
 
 class JenkinsWrapper:
     def __init__(self, jenkins_token, jenkins_user, jenkins_server):
         self.jenkins_server = jenkins_server
         self.jenkins = jenkins.Jenkins(jenkins_server, username=jenkins_user, password=jenkins_token)
 
-    def _try_jenkins(self, method, args=[]):
-        attempt = 0
-        while(attempt < _RETRY_LIMIT):
-            try:
-                return method(*args)
-            except Exception as e:
-                # Special case for get_queue_item
-                if "queue" in str(e) and "does not exist" in str(e):
-                    return {}
-                attempt = attempt + 1
-                log.warning("Failed to execute " + method.__name__ + " -- attempt: " + str(attempt) + " -- ERROR: " + str(e))
-            sleep(_RETRY_COOLDOWN)
-        raise RuntimeError("Unable to execute " + method.__name__ + " after " + str(_RETRY_LIMIT) + " retries.")
-
+    @retry(stop_max_attempt_number=_RETRY_LIMIT, wait_fixed=_RETRY_COOLDOWN_MS)
     def get_build_console_output(self, job_name, build_number):
-        return self._try_jenkins(self.jenkins.get_build_console_output,[job_name, build_number])
+        return self.jenkins.get_build_console_output(job_name, build_number)
 
+    @retry(stop_max_attempt_number=_RETRY_LIMIT, wait_fixed=_RETRY_COOLDOWN_MS)
     def get_job_info(self, job_name):
-        return self._try_jenkins(self.jenkins.get_job_info,[job_name])
-
+        return self.jenkins.get_job_info(job_name)
+    
+    @retry(stop_max_attempt_number=_RETRY_LIMIT, wait_fixed=_RETRY_COOLDOWN_MS)
     def get_build_info(self, job_name, build_number):
-        return self._try_jenkins(self.jenkins.get_build_info,[job_name, build_number])
+        return self.jenkins.get_build_info(job_name, build_number)
 
+    @retry(stop_max_attempt_number=_RETRY_LIMIT, wait_fixed=_RETRY_COOLDOWN_MS)
     def get_queue_item(self, queueId):
-        return self._try_jenkins(self.jenkins.get_queue_item, [queueId])
+        try:
+            return self.jenkins.get_queue_item(queueId)
+        except Exception as e:
+            # Exception 'queue does not exist' is expected behaviour when job is running
+            if "queue" in str(e) and "does not exist" in str(e):
+                return {}
+            else:
+                raise
 
+    @retry(stop_max_attempt_number=_RETRY_LIMIT, wait_fixed=_RETRY_COOLDOWN_MS)
     def get_idle_ci_hosts(self):
         jenkins_request_url = self.jenkins_server + "label/ci&&onnx/api/json?pretty=true"
         try:
             log.info("Sending request to Jenkins: %s", jenkins_request_url)
             r = requests.Request(method='GET',url=jenkins_request_url)
-            response = self._try_jenkins(self.jenkins.jenkins_request, [r]).json()
-            return (response['totalExecutors'] - response['busyExecutors'])
+            response = self.jenkins.jenkins_request(r).json()
+            return (int(response['totalExecutors']) - int(response['busyExecutors']))
         except Exception as e:
             log.exception("Failed to send request to Jenkins!\nException message: %s",str(e))
             raise
