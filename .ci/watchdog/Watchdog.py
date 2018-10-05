@@ -254,7 +254,7 @@ class Watchdog:
         else:
             message_header = "nGraph-ONNX CI INFO"
         send = message_header + "\n" + message
-        self._slack_app.queue_message(send,severity=message_severity)
+        self._slack_app.queue_message(send)
 
     def _verify_build_output(self, pr, build_number):
         """Verifies if finished build output contains expected string for either fail or success.
