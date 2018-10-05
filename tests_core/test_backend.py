@@ -95,16 +95,16 @@ backend_test.exclude('test_top_k')
 backend_test.exclude('test_upsample_nearest')
 
 
-# Big model tests:
-#backend_test.exclude('test_bvlc_alexnet')
+# Big model tests (see test_zoo_models.py):
+backend_test.exclude('test_bvlc_alexnet')
 backend_test.exclude('test_densenet121')
-#backend_test.exclude('test_inception_v1')
-#backend_test.exclude('test_inception_v2')
-#backend_test.exclude('test_resnet50')
-#backend_test.exclude('test_shufflenet')
+backend_test.exclude('test_inception_v1')
+backend_test.exclude('test_inception_v2')
+backend_test.exclude('test_resnet50')
+backend_test.exclude('test_shufflenet')
 backend_test.exclude('test_squeezenet')
-#backend_test.exclude('test_vgg19')
-#backend_test.exclude('test_zfnet512')
+backend_test.exclude('test_vgg19')
+backend_test.exclude('test_zfnet512')
 
 # Tests which fail on the CPU backend
 if selected_backend_name == 'CPU':
