@@ -27,10 +27,10 @@ function run() {
     docker build --build-arg http_proxy=$http_proxy --build-arg https_proxy=$https_proxy -f=./ubuntu-16_04.dockerfile -t ngraph-onnx:ubuntu-16_04 .
 
     cd "${CI_PATH}"
-    mkdir -p ${HOME}/ONNX_CI
+    mkdir -p ${CI_PATH}/ONNX_CI
     if [[ -z $(docker ps -a | grep -i "${DOCKER_CONTAINER}") ]]; 
     then 
-        docker run -h "$(hostname)" --privileged --name "${DOCKER_CONTAINER}" -v ${HOME}/ONNX_CI:/home -v "${REPO_ROOT}":/root -d ngraph-onnx:ubuntu-16_04 tail -f /dev/null
+        docker run -h "$(hostname)" --privileged --name "${DOCKER_CONTAINER}" -v ${CI_PATH}/ONNX_CI:/home -v "${REPO_ROOT}":/root -d ngraph-onnx:ubuntu-16_04 tail -f /dev/null
         docker cp ./prepare_environment.sh "${DOCKER_CONTAINER}":/home
         docker exec "${DOCKER_CONTAINER}" ./home/prepare_environment.sh
     fi
@@ -41,7 +41,7 @@ function run() {
     echo "========== FOLLOWING ITEMS WERE CREATED DURING SCRIPT EXECUTION =========="
     echo "Docker image: ngraph-onnx:ubuntu-16_04"
     echo "Docker container: ${DOCKER_CONTAINER}"
-    echo "Directory: ${HOME}/ONNX_CI"
+    echo "Directory: ${CI_PATH}/ONNX_CI"
     echo "Multiple files generated during tox execution"
     echo ""
     echo "TO REMOVE THEM RUN THIS SCRIPT WITH PARAMETER: --cleanup"
@@ -50,7 +50,7 @@ function run() {
 # Function cleanup() removes items created during script execution
 function cleanup() {
     docker exec "${DOCKER_CONTAINER}" bash -c 'rm -rf /home/$(find /home/ -user root)'
-    rm -rf ${HOME}/ONNX_CI
+    rm -rf ${CI_PATH}/ONNX_CI
     docker exec "${DOCKER_CONTAINER}" bash -c 'rm -rf /root/$(find /root/ -user root)'
     docker rm -f "${DOCKER_CONTAINER}"
     docker rmi --force ngraph-onnx:ubuntu-16_04
