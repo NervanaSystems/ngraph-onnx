@@ -165,6 +165,9 @@ if backend_name != 'INTERPRETER':
     # RuntimeError: unknown operation: ImageScaler
     backend_test.exclude('test_tiny_yolov2_opset7')
 
+    # MKL-DNN bug:
+    backend_test.exclude('test_inception_v1')
+
     # ONNX ValidationError
     backend_test.exclude('test_mnist_opset1')
     backend_test.exclude('test_tiny_yolov2_opset1')
