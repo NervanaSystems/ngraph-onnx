@@ -66,7 +66,6 @@ backend_test.exclude('test_constant_pad')
 backend_test.exclude('test_convtranspose')
 backend_test.exclude('test_cos')
 backend_test.exclude('test_depthtospace')
-backend_test.exclude('test_dropout')
 backend_test.exclude('test_edge_pad')
 backend_test.exclude('test_expand')
 backend_test.exclude('test_gather')
@@ -76,7 +75,6 @@ backend_test.exclude('test_globalmaxpool')
 backend_test.exclude('test_gru')
 backend_test.exclude('test_hardmax')
 backend_test.exclude('test_instancenorm')
-backend_test.exclude('test_lrn')
 backend_test.exclude('test_lstm')
 backend_test.exclude('test_matmul_3d')
 backend_test.exclude('test_matmul_4d')
@@ -98,16 +96,21 @@ backend_test.exclude('test_upsample_nearest')
 
 
 # Big model tests:
-backend_test.exclude('test_bvlc_alexnet')
+#backend_test.exclude('test_bvlc_alexnet')
 backend_test.exclude('test_densenet121')
-backend_test.exclude('test_inception_v1')
-backend_test.exclude('test_inception_v2')
-backend_test.exclude('test_resnet50')
-backend_test.exclude('test_shufflenet')
+#backend_test.exclude('test_inception_v1')
+#backend_test.exclude('test_inception_v2')
+#backend_test.exclude('test_resnet50')
+#backend_test.exclude('test_shufflenet')
 backend_test.exclude('test_squeezenet')
-backend_test.exclude('test_vgg19')
-backend_test.exclude('test_zfnet512')
+#backend_test.exclude('test_vgg19')
+#backend_test.exclude('test_zfnet512')
 
+# Tests which fail on the CPU backend
+if selected_backend_name == 'CPU':
+    backend_test.exclude('test_Conv3d_dilated')
+    backend_test.exclude('test_Conv3d_dilated_strided')
+    backend_test.exclude('test_GLU_dim')
 
 # Tests which fail or are very slow on the INTERPRETER backend
 if selected_backend_name == 'INTERPRETER':
