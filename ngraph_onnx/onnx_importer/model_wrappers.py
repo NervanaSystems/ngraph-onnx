@@ -32,7 +32,7 @@ from ngraph_onnx.onnx_importer.ops_bridge import make_ng_nodes, get_node_factory
 class WrapperBaseClass(object):
     """Base class for wrappers, which add ngraph import functionality to ONNX protobuf objects."""
 
-    def __init__(self, onnx_proto_instance, graph):
+    def __init__(self, onnx_proto_instance, graph):  # type: ignore
         # type: (protobuf.message.Message, GraphWrapper) -> None
         self._proto = onnx_proto_instance
         self._graph = graph
