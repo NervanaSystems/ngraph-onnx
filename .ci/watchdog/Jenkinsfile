@@ -35,7 +35,7 @@ node(LABEL) {
             stage("Prepare environment") {
                 dir ("$BUILD_WORKSPACE") {
                     sh """#!/bin/bash
-                        virtualenv -p python2 venv
+                        virtualenv -p python3 venv
                         source venv/bin/activate
                         pip install python-jenkins \
                                     retrying \
