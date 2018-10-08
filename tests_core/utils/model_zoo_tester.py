@@ -21,7 +21,7 @@ import shutil
 import tarfile
 import tempfile
 
-from six.moves.urllib.request import urlretrieve
+from six.moves.urllib.request import urlretrieve, urlopen
 
 import onnx.backend.test
 from onnx.backend.test.case.test_case import TestCase as OnnxTestCase
@@ -51,25 +51,47 @@ class ModelZooTestRunner(onnx.backend.test.BackendTest):
             )
             self._add_model_test(test_case, 'Zoo')
 
+    @staticmethod
+    def _get_etag_for_url(url):  # type: (str) -> str
+        request = urlopen(url)
+        return request.info().get('ETag')
+
+    @staticmethod
+    def _read_etag_file(model_dir):  # type: (str) -> str
+        etag_file_path = os.path.join(model_dir, 'source_tar_etag')
+        if os.path.exists(etag_file_path):
+            return open(etag_file_path).read()
+
+    @staticmethod
+    def _write_etag_file(model_dir, etag_value):  # type: (str, str) -> None
+        etag_file_path = os.path.join(model_dir, 'source_tar_etag')
+        open(etag_file_path, 'w').write(etag_value)
+
+    @staticmethod
+    def _backup_old_version(model_dir):  # type: (str) -> None
+        if os.path.exists(model_dir):
+            backup_index = 0
+            while True:
+                dest = '{}.old.{}'.format(model_dir, backup_index)
+                if os.path.exists(dest):
+                    backup_index += 1
+                    continue
+                shutil.move(model_dir, dest)
+                break
+
     def _prepare_model_data(self, model_test):  # type: (TestCase) -> Text
         onnx_home = os.path.expanduser(os.getenv('ONNX_HOME', os.path.join('~', '.onnx')))
         models_dir = os.getenv('ONNX_MODELS', os.path.join(onnx_home, 'models'))
         model_dir = os.path.join(models_dir, model_test.model_name)  # type: Text
+        current_version_etag = self._get_etag_for_url(model_test.url)
 
-        # If model already exists, exit
+        # If model already exists, check if it's the latest version by verifying cached Etag value
         if os.path.exists(os.path.join(model_dir, 'model.onnx')):
-            return model_dir
+            if not current_version_etag or current_version_etag == self._read_etag_file(model_dir):
+                return model_dir
 
-        # If model does not exist, but directory does exist, move directory
-        if os.path.exists(model_dir):
-            bi = 0
-            while True:
-                dest = '{}.old.{}'.format(model_dir, bi)
-                if os.path.exists(dest):
-                    bi += 1
-                    continue
-                shutil.move(model_dir, dest)
-                break
+            # If model does exist, but is not current, backup directory
+            self._backup_old_version(model_dir)
 
         # Download and extract model and data
         download_file = tempfile.NamedTemporaryFile(delete=False)
@@ -86,24 +108,27 @@ class ModelZooTestRunner(onnx.backend.test.BackendTest):
                 with tarfile.open(download_file.name) as tar_file:
                     tar_file.extractall(temp_extract_dir)
 
-                # Move expected files from temp_extract_dir to temp_clean_dir
+                # Move model `.onnx` file from temp_extract_dir to temp_clean_dir
                 model_files = glob.glob(temp_extract_dir + '/**/*.onnx', recursive=True)
                 assert len(model_files) > 0, 'Model file not found for {}'.format(model_test.name)
                 model_file = model_files[0]
                 shutil.move(model_file, temp_clean_dir + '/model.onnx')
-                for test_data_set in glob.glob(temp_extract_dir + '/**/test_data_set_*',
-                                               recursive=True):
-                    shutil.move(test_data_set, temp_clean_dir)
-                for test_data_set in glob.glob(temp_extract_dir + '/**/test_data_*.npz',
-                                               recursive=True):
+
+                # Move extracted test data sets to temp_clean_dir
+                test_data_sets = glob.glob(temp_extract_dir + '/**/test_data_set_*', recursive=True)
+                test_data_sets.extend(
+                    glob.glob(temp_extract_dir + '/**/test_data_*.npz', recursive=True))
+                for test_data_set in test_data_sets:
                     shutil.move(test_data_set, temp_clean_dir)
 
-                # Move temp_clean_dir to final destination
+                # Save Etag value to Etag file
+                self._write_etag_file(temp_clean_dir, current_version_etag)
+
+                # Move temp_clean_dir to ultimate destination
                 shutil.move(temp_clean_dir, model_dir)
 
         except Exception as e:
-            print('Failed to prepare data for model {}: {}'.format(
-                model_test.model_name, e))
+            print('Failed to prepare data for model {}: {}'.format(model_test.model_name, e))
             os.remove(temp_clean_dir)
             raise
         finally:

@@ -114,15 +114,6 @@ if selected_backend_name == 'CPU':
 
 # Tests which fail or are very slow on the INTERPRETER backend
 if selected_backend_name == 'INTERPRETER':
-    backend_test.exclude('test_densenet121_cpu')
-    backend_test.exclude('test_inception_v2_cpu')
-    backend_test.exclude('test_resnet50_cpu')
-    backend_test.exclude('test_squeezenet_cpu')
-    backend_test.exclude('test_vgg19_cpu')
-    backend_test.exclude('test_shufflenet_cpu')
-    backend_test.exclude('test_bvlc_alexnet_cpu')
-    backend_test.exclude('test_inception_v1_cpu')
-    backend_test.exclude('test_zfnet512_cpu')
     backend_test.exclude('test_operator_conv_cpu')
     backend_test.exclude('test_slice_start_out_of_bounds_cpu')
 
