@@ -73,6 +73,8 @@ class ModelZooTestRunner(onnx.backend.test.BackendTest):
 
         # Download and extract model and data
         download_file = tempfile.NamedTemporaryFile(delete=False)
+        temp_clean_dir = tempfile.mkdtemp()
+
         try:
             download_file.close()
             print('Start downloading model {} from {}'.format(
@@ -85,8 +87,6 @@ class ModelZooTestRunner(onnx.backend.test.BackendTest):
                     tar_file.extractall(temp_extract_dir)
 
                 # Move expected files from temp_extract_dir to temp_clean_dir
-                temp_clean_dir = tempfile.mkdtemp()
-
                 model_files = glob.glob(temp_extract_dir + '/**/*.onnx', recursive=True)
                 assert len(model_files) > 0, 'Model file not found for {}'.format(model_test.name)
                 model_file = model_files[0]
@@ -104,6 +104,7 @@ class ModelZooTestRunner(onnx.backend.test.BackendTest):
         except Exception as e:
             print('Failed to prepare data for model {}: {}'.format(
                 model_test.model_name, e))
+            os.remove(temp_clean_dir)
             raise
         finally:
             os.remove(download_file.name)
