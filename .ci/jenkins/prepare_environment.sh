@@ -34,7 +34,7 @@ do
         --rebuild-ngraph)
             REBUILD_NGRAPH="TRUE"
         ;;
-        --ngraph-commit*)
+        --ngraph-commit=*)
             REBUILD_NGRAPH="TRUE"
             SHA=`echo $i | sed "s/${PATTERN}//"`
         ;;

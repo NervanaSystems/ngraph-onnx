@@ -83,9 +83,9 @@ do
             cleanup
             exit 0
         ;;
-        --ngraph-commit*)
+        --ngraph-commit=*)
             SHA=`echo $i | sed "s/${PATTERN}//"`
-            ENVPREP_ARGS="${ENVPREP_ARGS} --ngraph-commit ${SHA}"
+            ENVPREP_ARGS="${ENVPREP_ARGS} --ngraph-commit=${SHA}"
         ;;
     esac
 done
