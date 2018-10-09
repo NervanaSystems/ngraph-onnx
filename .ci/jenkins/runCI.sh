@@ -54,12 +54,8 @@ function cleanup() {
     
     docker exec "${DOCKER_CONTAINER}" bash -c "rm -rf /home"
     rm -rf ${CI_PATH}/ONNX_CI
-    docker exec "${DOCKER_CONTAINER}" bash -c "rm -rf /root/ngraph /root/ngraph_dist"
-    ROOT_FILES=$(docker exec "${DOCKER_CONTAINER}" bash -c 'find /root/ -user root')
-    for f in ${ROOT_FILES}; 
-    do
-        docker exec "${DOCKER_CONTAINER}" bash -c "rm -rf $f"
-    done
+    docker exec "${DOCKER_CONTAINER}" bash -c "rm -rf /root/ngraph /root/ngraph_dist /root/.tox /root/.onnx /root/__pycache__ /root/ngraph_onnx.egg-info /root/cpu_codegen"
+    docker exec "${DOCKER_CONTAINER}" bash -c 'rm -rf $(find /root/ -user root)'
     docker rm -f "${DOCKER_CONTAINER}"
     docker rmi --force ngraph-onnx:ubuntu-16_04
 }
