@@ -20,10 +20,11 @@ CI_PATH="$(pwd)"
 CI_ROOT=".ci/jenkins"
 REPO_ROOT="${CI_PATH%$CI_ROOT}"
 DOCKER_CONTAINER="ngraph-onnx_ci"
-ENVPREP_ARGS=""
+ENVPREP_ARGS="--rebuild-ngraph"
 
 # Function run() builds image with requirements needed to build ngraph and run onnx tests, runs container and executes tox tests
 function run() {
+    set -x
     cd ./dockerfiles
     docker build --build-arg http_proxy=$http_proxy --build-arg https_proxy=$https_proxy -f=./ubuntu-16_04.dockerfile -t ngraph-onnx:ubuntu-16_04 .
 
@@ -50,9 +51,18 @@ function run() {
 
 # Function cleanup() removes items created during script execution
 function cleanup() {
-    docker exec "${DOCKER_CONTAINER}" bash -c 'rm -rf /home/$(find /home/ -user root)'
+    set -x
+    HOME_FILES=$(docker exec "${DOCKER_CONTAINER}" bash -c 'rm -rf /home/$(find /home/ -user root)')
+    for f in ${HOME_FILES}; 
+    do
+        rm -rf $f
+    done
     rm -rf ${CI_PATH}/ONNX_CI
-    docker exec "${DOCKER_CONTAINER}" bash -c 'rm -rf /root/$(find /root/ -user root)'
+    ROOT_FILES=$(docker exec "${DOCKER_CONTAINER}" bash -c 'rm -rf /root/$(find /root/ -user root)')
+    for f in ${ROOT_FILES}; 
+    do
+        rm -rf $f
+    done
     docker rm -f "${DOCKER_CONTAINER}"
     docker rmi --force ngraph-onnx:ubuntu-16_04
 }
@@ -76,11 +86,9 @@ do
         ;;
         --ngraph-commit*)
             SHA=`echo $i | sed "s/${PATTERN}//"`
-            ENVPREP_ARGS="--ngraph-commit ${SHA}"
+            ENVPREP_ARGS="${ENVPREP_ARGS} --ngraph-commit ${SHA}"
         ;;
     esac
 done
-
-set -x
 
 run
