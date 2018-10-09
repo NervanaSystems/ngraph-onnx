@@ -19,7 +19,7 @@
 CI_PATH="$(pwd)"
 CI_ROOT=".ci/jenkins"
 REPO_ROOT="${CI_PATH%$CI_ROOT}"
-DOCKER_CONTAINER="ngraph-onnx_ci"
+DOCKER_CONTAINER="ngraph-onnx_ci_repro"
 ENVPREP_ARGS="--rebuild-ngraph"
 
 # Function run() builds image with requirements needed to build ngraph and run onnx tests, runs container and executes tox tests
