@@ -32,12 +32,11 @@ function run() {
     mkdir -p ${CI_PATH}/ONNX_CI
     if [[ -z $(docker ps -a | grep -i "${DOCKER_CONTAINER}") ]]; 
     then 
-        docker run -h "$(hostname)" --privileged --name "${DOCKER_CONTAINER}" -v ${CI_PATH}/ONNX_CI:/home -v "${REPO_ROOT}":/root -d ngraph-onnx:ubuntu-16_04 tail -f /dev/null
-        docker cp ./prepare_environment.sh "${DOCKER_CONTAINER}":/home
-        docker exec "${DOCKER_CONTAINER}" bash -c "./home/prepare_environment.sh ${ENVPREP_ARGS}"
+        docker run -h "$(hostname)" --privileged --name "${DOCKER_CONTAINER}" -v "${REPO_ROOT}":/root -d ngraph-onnx:ubuntu-16_04 tail -f /dev/null
+        docker exec "${DOCKER_CONTAINER}" bash -c "/root/${CI_ROOT}/prepare_environment.sh ${ENVPREP_ARGS}"
     fi
 
-    NGRAPH_WHL=$(docker exec ${DOCKER_CONTAINER} find /home/ngraph/python/dist/ -name "ngraph*.whl")
+    NGRAPH_WHL=$(docker exec ${DOCKER_CONTAINER} find /root/ngraph/python/dist/ -name "ngraph*.whl")
     docker exec -e TOX_INSTALL_NGRAPH_FROM="${NGRAPH_WHL}" "${DOCKER_CONTAINER}" tox -c /root
 
     echo "========== FOLLOWING ITEMS WERE CREATED DURING SCRIPT EXECUTION =========="
