@@ -65,7 +65,7 @@ function build_ngraph() {
 # IF REBUILD NGRAPH IS FALSE - REUSE IT
 if [[ "${REBUILD_NGRAPH}" == "TRUE" ]]; then
     git clone https://github.com/NervanaSystems/ngraph.git -b master /root/ngraph
-    if [ -z "${SHA}" ]; then
+    if [ ! -z "${SHA}" ]; then
         cd /root/ngraph
         git reset --hard "${SHA}"
     fi
