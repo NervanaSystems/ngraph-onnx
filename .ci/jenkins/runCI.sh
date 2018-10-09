@@ -51,13 +51,13 @@ function run() {
 # Function cleanup() removes items created during script execution
 function cleanup() {
     set -x
-    HOME_FILES=$(docker exec "${DOCKER_CONTAINER}" bash -c 'rm -rf /home/$(find /home/ -user root)')
+    HOME_FILES=$(docker exec "${DOCKER_CONTAINER}" bash -c 'find /home/ -user root')
     for f in ${HOME_FILES}; 
     do
         rm -rf $f
     done
     rm -rf ${CI_PATH}/ONNX_CI
-    ROOT_FILES=$(docker exec "${DOCKER_CONTAINER}" bash -c 'rm -rf /root/$(find /root/ -user root)')
+    ROOT_FILES=$(docker exec "${DOCKER_CONTAINER}" bash -c 'find /root/ -user root')
     for f in ${ROOT_FILES}; 
     do
         rm -rf $f
