@@ -20,6 +20,7 @@ CI_PATH="$(pwd)"
 CI_ROOT=".ci/jenkins"
 REPO_ROOT="${CI_PATH%$CI_ROOT}"
 DOCKER_CONTAINER="ngraph-onnx_ci"
+ENVPREP_ARGS=""
 
 # Function run() builds image with requirements needed to build ngraph and run onnx tests, runs container and executes tox tests
 function run() {
@@ -32,7 +33,7 @@ function run() {
     then 
         docker run -h "$(hostname)" --privileged --name "${DOCKER_CONTAINER}" -v ${CI_PATH}/ONNX_CI:/home -v "${REPO_ROOT}":/root -d ngraph-onnx:ubuntu-16_04 tail -f /dev/null
         docker cp ./prepare_environment.sh "${DOCKER_CONTAINER}":/home
-        docker exec "${DOCKER_CONTAINER}" ./home/prepare_environment.sh
+        docker exec "${DOCKER_CONTAINER}" bash -c "./home/prepare_environment.sh ${ENVPREP_ARGS}"
     fi
 
     NGRAPH_WHL=$(docker exec ${DOCKER_CONTAINER} find /home/ngraph/python/dist/ -name "ngraph*.whl")
@@ -65,12 +66,17 @@ do
     
             --help  displays this message
             --cleanup  removes docker image, container and files created during script execution
+            --ngraph-commit nGraph commit SHA to run tox tests on
             "
             exit 0
         ;;
         --cleanup*)
             cleanup
             exit 0
+        ;;
+        --ngraph-commit*)
+            SHA=`echo $i | sed "s/${PATTERN}//"`
+            ENVPREP_ARGS="--ngraph-commit ${SHA}"
         ;;
     esac
 done
