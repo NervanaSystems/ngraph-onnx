@@ -60,11 +60,15 @@ function build_ngraph() {
     export PYBIND_HEADERS_PATH="${ngraph_directory}/ngraph/python/pybind11"
     export NGRAPH_CPP_BUILD_PATH="${ngraph_directory}/ngraph_dist"
     python3 setup.py bdist_wheel
+    # Clean artifacts after building wheel
+    rm -rf "${ngraph_directory}/ngraph/python/_pyngraph.cpython* ${ngraph_directory}/ngraph/python/build"
+    rm -rf "${ngraph_directory}/ngraph_dist"
 }
 
-# IF REBUILD NGRAPH IS FALSE - REUSE IT
+# If REBUILD_NGRAPH is FALSE - reuse stored ngraph
 if [[ "${REBUILD_NGRAPH}" == "TRUE" ]]; then
     git clone https://github.com/NervanaSystems/ngraph.git -b master /root/ngraph
+    # If commit hash was provided - use this commit
     if [ ! -z "${SHA}" ]; then
         cd /root/ngraph
         git reset --hard "${SHA}"
