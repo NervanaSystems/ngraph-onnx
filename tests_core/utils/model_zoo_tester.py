@@ -99,10 +99,10 @@ class ModelZooTestRunner(onnx.backend.test.BackendTest):
 
         try:
             download_file.close()
-            print('Start downloading model {} from {}'.format(
+            print('\nStart downloading model {} from {}'.format(
                 model_test.model_name, model_test.url))
             urlretrieve(model_test.url, download_file.name)
-            print('Done')
+            print('\nDone')
 
             with tempfile.TemporaryDirectory() as temp_extract_dir:
                 with tarfile.open(download_file.name) as tar_file:
