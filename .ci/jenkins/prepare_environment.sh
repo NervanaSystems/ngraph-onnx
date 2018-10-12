@@ -58,6 +58,11 @@ function build_ngraph() {
     python3 setup.py bdist_wheel
 }
 
+# Copy Onnx models
+if [ -d /home/onnx_models/.onnx ]; then
+    rsync -avhz /home/onnx_models/.onnx /root/
+fi
+
 # IF REBUILD NGRAPH IS FALSE - REUSE IT
 if [[ "${REBUILD_NGRAPH}" == "TRUE" ]]; then
     git clone https://github.com/NervanaSystems/ngraph.git -b master /root/ngraph
@@ -75,9 +80,4 @@ else
         git clone https://github.com/NervanaSystems/ngraph.git
     fi
     build_ngraph "/home"
-fi
-
-# Copy Onnx models
-if [ -d /home/onnx_models/.onnx ]; then
-    rsync -avhz /home/onnx_models/.onnx /root/
 fi
