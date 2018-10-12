@@ -50,13 +50,13 @@ function build_ngraph() {
     mkdir -p ./build
     cd ./build
     cmake ../ -DNGRAPH_USE_PREBUILT_LLVM=TRUE -DNGRAPH_ONNX_IMPORT_ENABLE=TRUE -DCMAKE_INSTALL_PREFIX="${ngraph_directory}/ngraph_dist"
-    rm -f "${ngraph_directory}"/ngraph/python/dist/ngraph*.whl
     make -j $(lscpu --parse=CORE | grep -v '#' | sort | uniq | wc -l)
     make install
     cd "${ngraph_directory}/ngraph/python"
     if [ ! -d ./pybind11 ]; then
         git clone --recursive -b allow-nonconstructible-holders https://github.com/jagerman/pybind11.git
     fi
+    rm -f "${ngraph_directory}"/ngraph/python/dist/ngraph*.whl
     export PYBIND_HEADERS_PATH="${ngraph_directory}/ngraph/python/pybind11"
     export NGRAPH_CPP_BUILD_PATH="${ngraph_directory}/ngraph_dist"
     python3 setup.py bdist_wheel
@@ -67,7 +67,7 @@ function build_ngraph() {
 
 # Copy Onnx models
 if [ -d /home/onnx_models/.onnx ]; then
-    rsync -avhz /home/onnx_models/.onnx /root/
+    ln -s /home/onnx_models/.onnx /root/.onnx
 fi
 
 # If REBUILD_NGRAPH is FALSE - reuse stored ngraph
@@ -84,10 +84,7 @@ else
     cd /home
     if [ -e ./ngraph ]; then
         cd ./ngraph
-        # If ngraph repo is up to date, and wheel exist - no need to rebuild it so exit
-        if [[ $(git pull) == *"Already up-to-date"* && -n $(find /home/ngraph/python/dist/ -name 'ngraph*.whl') ]]; then
-            exit 0
-        fi
+        git pull
     else
         git clone https://github.com/NervanaSystems/ngraph.git
     fi
