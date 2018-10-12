@@ -65,6 +65,11 @@ function build_ngraph() {
     rm -rf "${ngraph_directory}/ngraph_dist"
 }
 
+# Copy Onnx models
+if [ -d /home/onnx_models/.onnx ]; then
+    rsync -avhz /home/onnx_models/.onnx /root/
+fi
+
 # If REBUILD_NGRAPH is FALSE - reuse stored ngraph
 if [[ "${REBUILD_NGRAPH}" == "TRUE" ]]; then
     git clone https://github.com/NervanaSystems/ngraph.git -b master /root/ngraph
@@ -87,9 +92,4 @@ else
         git clone https://github.com/NervanaSystems/ngraph.git
     fi
     build_ngraph "/home"
-fi
-
-# Copy Onnx models
-if [ -d /home/onnx_models/.onnx ]; then
-    rsync -avhz /home/onnx_models/.onnx /root/
 fi
