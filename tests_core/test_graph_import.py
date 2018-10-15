@@ -55,4 +55,4 @@ def test_missing_op():
         import_onnx_model(model)
 
     exc_args = exc_info.value.args
-    assert exc_args[0] % exc_args[1:] == 'unknown operation: FakeOpName'
+    assert 'unknown operations: FakeOpName' in str(exc_args[0] % exc_args[1:])
