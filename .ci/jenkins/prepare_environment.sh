@@ -59,6 +59,7 @@ function build_ngraph() {
     rm -f "${ngraph_directory}"/ngraph/python/dist/ngraph*.whl
     export PYBIND_HEADERS_PATH="${ngraph_directory}/ngraph/python/pybind11"
     export NGRAPH_CPP_BUILD_PATH="${ngraph_directory}/ngraph_dist"
+    export NGRAPH_ONNX_IMPORT_ENABLE="TRUE"
     python3 setup.py bdist_wheel
     # Clean artifacts after building wheel
     rm -rf "${ngraph_directory}/ngraph/python/_pyngraph.cpython* ${ngraph_directory}/ngraph/python/build"
