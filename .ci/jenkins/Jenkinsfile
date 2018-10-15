@@ -118,6 +118,7 @@ def Notify() {
     String notifyPeople = "$ghprbPullAuthorEmail, $ghprbActualCommitAuthorEmail"
     Closure notifyMethod = { configMap ->
         if(currentBuild.result == "FAILURE") {
+            blue_ocean = "https://crackerjack.intel.com/blue/organizations/jenkins/onnx%2Fngraph-onnx-ci/detail/ngraph-onnx-ci/${BUILD_NUMBER}/pipeline"
             emailext (
                 subject: "NGraph-Onnx CI: PR $ghprbPullId",
                 body: """
@@ -125,8 +126,7 @@ def Notify() {
                         <tr><td>Status:</td> <td>${currentBuild.result}</td></tr>
                         <tr><td>Repository</td> <td>$ghprbGhRepository</td></tr>
                         <tr><td>Branch:</td> <td>$ghprbSourceBranch</td></tr>
-                        <tr><td>Jenkins Job No:</td> <td>$BUILD_NUMBER</td></tr>
-                        <tr><td>Jenkins Job Link:</td> <td>$BUILD_URL</td></tr>
+                        <tr><td>Jenkins Build:</td> <td> <a href=$blue_ocean> ${BUILD_NUMBER} </a> </td></tr>
                         <tr><td>Pull Request:</td> <td>$ghprbPullId</td></tr>
                         <tr><td>Commit SHA:</td> <td>$ghprbActualCommit</td></tr>
                         <tr><td>PR Link:</td> <td>$ghprbPullLink</td></tr>
