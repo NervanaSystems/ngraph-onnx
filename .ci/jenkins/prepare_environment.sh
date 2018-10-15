@@ -68,7 +68,7 @@ function build_ngraph() {
 }
 
 # Link Onnx models
-mkdir -p /home/onnx_models/.onnx ]
+mkdir -p /home/onnx_models/.onnx
 ln -s /home/onnx_models/.onnx /root/.onnx
 
 # If REBUILD_NGRAPH is FALSE - reuse stored ngraph
