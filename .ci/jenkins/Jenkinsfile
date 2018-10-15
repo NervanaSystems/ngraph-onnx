@@ -135,9 +135,6 @@ def Notify() {
                 to: "${notifyPeople}"
             )
         }
-        else{
-            currentBuild.result = "SUCCESS"
-        }
     }
     UTILS.CreateStage("Notify", notifyMethod, configurationMaps)
 }
