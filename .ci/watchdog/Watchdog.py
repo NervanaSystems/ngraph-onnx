@@ -218,16 +218,10 @@ class Watchdog:
 
         # Get oldest build number
         job_info = self._jenkins.get_job_info(self._ci_job_name)
-        oldest_build = job_info['builds'][-1]['number']
         # Retrieve the build number from url string
         matchObj = re.search("(?:/" + self._ci_job_name.split("/")[-1] + "/)([0-9]+)",url)
         try:
             number = int(matchObj.group(1))
-            # Fail if no log for build being checked exist
-            if number < oldest_build:
-                message = "Build number: {} doesnt exist, the oldest build is: {}".format(str(number), str(oldest_build))
-                log.exception(message)
-                raise RuntimeError(message)
             return number
         except:
             log.exception("Failed to retrieve build number from url link: %s", url)
