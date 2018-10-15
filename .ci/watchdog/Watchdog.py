@@ -203,7 +203,7 @@ class Watchdog:
                 # Log Watchdog internal error in case any status can't be properly verified
                 message = "\tFailed to verify status \"" + stat.description + "\" for PR " + pr_number
                 log.exception(message)
-                self._queue_message(message, message_severity=999)
+                self._queue_fail(message, pr, message_severity=999)
                 break
 
     def _retrieve_build_number(self, url):
@@ -225,8 +225,9 @@ class Watchdog:
             number = int(matchObj.group(1))
             # Fail if no log for build being checked exist
             if number < oldest_build:
-                log.exception("Build number: %s doesnt exist, the oldest build is: %s", str(number), str(oldest_build))
-                raise
+                message = "Build number: {} doesnt exist, the oldest build is: {}".format(str(number), str(oldest_build))
+                log.exception(message)
+                raise RuntimeError(message)
             return number
         except:
             log.exception("Failed to retrieve build number from url link: %s", url)
@@ -307,7 +308,7 @@ class Watchdog:
                 watchdog_build_number = "UNKNOWN"
                 watchdog_build_link = self._jenkins.jenkins_server
             send = self._watchdog_job_name + "- build " + str(watchdog_build_number) + " - " + watchdog_build_link
-            self._slack_app.send_message(send, severity=0)
+            self._slack_app.send_message(send)
         else:
             log.info("Nothing to report.")
 
