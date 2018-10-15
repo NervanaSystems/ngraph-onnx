@@ -197,9 +197,11 @@ class Watchdog:
                     self._check_ci_build(pr, build_number)
                     break
                 # CI waiting to start for too long
-                elif "Awaiting Jenkins" in stat.description and ( stat_delta > _CI_START_TRESHOLD):
-                    message = "Onnx CI job for PR #{} still awaiting Jenkins after {} minutes!".format(pr_number, str(stat_delta.seconds / 60))
-                    self._queue_fail(message, pr)
+                elif "Awaiting Jenkins" in stat.description:
+                    log.info("CI for PR %s: AWAITING JENKINS", pr_number)
+                    if stat_delta > _CI_START_TRESHOLD:
+                        message = "Onnx CI job for PR #{} still awaiting Jenkins after {} minutes!".format(pr_number, str(stat_delta.seconds / 60))
+                        self._queue_fail(message, pr)
                     break
             except:
                 # Log Watchdog internal error in case any status can't be properly verified
@@ -318,11 +320,13 @@ class Watchdog:
             :type build_number:         int
         """
         pr_number = str(pr.number)
+        log.info("CI for PR %s: TESTING IN PROGRESS", pr_number)
         build_info = self._jenkins.get_build_info(self._ci_job_name, build_number)
         build_datetime = datetime.datetime.fromtimestamp(build_info['timestamp']/1000.0)
         # If build still waiting in queue
         queueItem = self._jenkins.get_queue_item(build_info['queueId'])
         build_delta = self._now_time - build_datetime
+        log.info("Build %s: IN PROGRESS, started: %s minutes ago", str(build_number), str(build_delta))
         # 'why' present if job is in queue and doesnt have executor yet
         if "why" in queueItem:
             if build_delta > _CI_START_TRESHOLD:
@@ -332,7 +336,6 @@ class Watchdog:
                     message = "Onnx CI job build #{}, for PR #{} waiting in queue, despite idle executors!".format(build_number, pr_number)
                     self._queue_fail(message, pr)
                 return
-        log.info("Build %s: IN PROGRESS, started: %s", str(build_number), str(build_datetime))
         if build_delta > _BUILD_DURATION_TRESHOLD:
             # CI job take too long, possibly froze - communiate failure
             message = ("Onnx CI job build #{}, for PR #{} started," 
