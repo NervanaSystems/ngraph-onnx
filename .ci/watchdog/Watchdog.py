@@ -166,7 +166,6 @@ class Watchdog:
             else:
                 # Interpret found CI statuses
                 self._interpret_statuses(jenk_statuses, pr)
-            log.info("===============================================")
         self._update_config(current_prs)
 
     def _interpret_statuses(self, jenk_statuses, pr):
