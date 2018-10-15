@@ -147,6 +147,7 @@ class Watchdog:
         current_prs = []
         # Check all pull requests
         for pr in pull_requests:
+            log.info("===============================================")
             pr_number = str(pr.number)
             log.info("Checking PR#%s", pr_number)
             # Append PRs checked in current run for Watchdog config cleanup
@@ -165,6 +166,7 @@ class Watchdog:
             else:
                 # Interpret found CI statuses
                 self._interpret_statuses(jenk_statuses, pr)
+            log.info("===============================================")
         self._update_config(current_prs)
 
     def _interpret_statuses(self, jenk_statuses, pr):
@@ -201,7 +203,7 @@ class Watchdog:
                     break
             except:
                 # Log Watchdog internal error in case any status can't be properly verified
-                message = "\tFailed to verify status \"" + stat.description + "\" for PR " + pr_number
+                message = "Failed to verify status \"" + stat.description + "\" for PR " + pr_number
                 log.exception(message)
                 self._queue_fail(message, pr, message_severity=999)
                 break
@@ -260,7 +262,7 @@ class Watchdog:
             :type build_number:         int
         """
         pr_number = str(pr.number)
-        log.info("\tCI for PR %s: FINISHED", pr_number)
+        log.info("CI for PR %s: FINISHED", pr_number)
         # Check if FINISH was valid FAIL / SUCCESS
         build_output = self._jenkins.get_build_console_output(self._ci_job_name, build_number)
         if _CI_BUILD_FAIL_MESSAGE not in build_output and _CI_BUILD_SUCCESS_MESSAGE not in build_output:
@@ -330,7 +332,7 @@ class Watchdog:
                     message = "Onnx CI job build #{}, for PR #{} waiting in queue, despite idle executors!".format(build_number, pr_number)
                     self._queue_fail(message, pr)
                 return
-        log.info("\tBuild %s: IN PROGRESS, started: %s", str(build_number), str(build_datetime))
+        log.info("Build %s: IN PROGRESS, started: %s", str(build_number), str(build_datetime))
         if build_delta > _BUILD_DURATION_TRESHOLD:
             # CI job take too long, possibly froze - communiate failure
             message = ("Onnx CI job build #{}, for PR #{} started," 
