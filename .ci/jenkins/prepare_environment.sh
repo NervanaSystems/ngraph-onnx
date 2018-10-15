@@ -56,13 +56,14 @@ function build_ngraph() {
     if [ ! -d ./pybind11 ]; then
         git clone --recursive -b allow-nonconstructible-holders https://github.com/jagerman/pybind11.git
     fi
+    # Clean artifacts from previous build
     rm -f "${ngraph_directory}"/ngraph/python/dist/ngraph*.whl
+    rm -rf "${ngraph_directory}/ngraph/python/_pyngraph.cpython* ${ngraph_directory}/ngraph/python/build"
     export PYBIND_HEADERS_PATH="${ngraph_directory}/ngraph/python/pybind11"
     export NGRAPH_CPP_BUILD_PATH="${ngraph_directory}/ngraph_dist"
     export NGRAPH_ONNX_IMPORT_ENABLE="TRUE"
     python3 setup.py bdist_wheel
     # Clean artifacts after building wheel
-    rm -rf "${ngraph_directory}/ngraph/python/_pyngraph.cpython* ${ngraph_directory}/ngraph/python/build"
     rm -rf "${ngraph_directory}/ngraph_dist"
 }
 
