@@ -65,10 +65,9 @@ function build_ngraph() {
     rm -rf "${ngraph_directory}/ngraph_dist"
 }
 
-# Copy Onnx models
-if [ -d /home/onnx_models/.onnx ]; then
-    ln -s /home/onnx_models/.onnx /root/.onnx
-fi
+# Link Onnx models
+mkdir -p /home/onnx_models/.onnx ]
+ln -s /home/onnx_models/.onnx /root/.onnx
 
 # If REBUILD_NGRAPH is FALSE - reuse stored ngraph
 if [[ "${REBUILD_NGRAPH}" == "TRUE" ]]; then
