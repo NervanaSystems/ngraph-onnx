@@ -80,11 +80,11 @@ class Watchdog:
             Watchdog and nGraph-ONNX CI job must be placed on the same Jenkins server.
     """
     
-    def __init__(self, jenkins_token, jenkins_server, jenkins_user, git_token, slack_token, ci_job_name, watchdog_job_name):
+    def __init__(self, jenkins_token, jenkins_server, jenkins_user, git_token, git_org, git_project, slack_token, ci_job_name, watchdog_job_name):
         # Jenkins Wrapper object for CI job
         self._jenkins = JenkinsWrapper(jenkins_token, jenkins_user=jenkins_user, jenkins_server=jenkins_server)
         # Load GitHub token and log in, retrieve pull requests
-        self._git = GitWrapper(git_token, repository='NervanaSystems', project='ngraph-onnx')
+        self._git = GitWrapper(git_token, repository=git_org, project=git_project)
         # Create Slack api object
         self._slack_app = SlackCommunicator(slack_token)
         self._ci_job_name = ci_job_name
