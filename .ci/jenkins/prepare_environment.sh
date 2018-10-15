@@ -80,7 +80,7 @@ if [[ "${REBUILD_NGRAPH}" == "TRUE" ]]; then
     fi
     build_ngraph "/root"
 else
-    # Install nGraph in /home/ngraph
+    # Update and build nGraph in /home/ngraph
     cd /home
     if [ -e ./ngraph ]; then
         cd ./ngraph
