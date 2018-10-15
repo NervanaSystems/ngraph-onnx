@@ -34,6 +34,10 @@ do
         --rebuild-ngraph)
             REBUILD_NGRAPH="TRUE"
         ;;
+        --ngraph-commit=*)
+            REBUILD_NGRAPH="TRUE"
+            SHA=`echo $i | sed "s/${PATTERN}//"`
+        ;;
     esac
 done
 
@@ -46,36 +50,42 @@ function build_ngraph() {
     mkdir -p ./build
     cd ./build
     cmake ../ -DNGRAPH_USE_PREBUILT_LLVM=TRUE -DNGRAPH_ONNX_IMPORT_ENABLE=TRUE -DCMAKE_INSTALL_PREFIX="${ngraph_directory}/ngraph_dist"
-    rm -f "${ngraph_directory}"/ngraph/python/dist/ngraph*.whl
     make -j $(lscpu --parse=CORE | grep -v '#' | sort | uniq | wc -l)
     make install
     cd "${ngraph_directory}/ngraph/python"
     if [ ! -d ./pybind11 ]; then
         git clone --recursive -b allow-nonconstructible-holders https://github.com/jagerman/pybind11.git
     fi
+    # Clean artifacts from previous build
+    rm -f "${ngraph_directory}"/ngraph/python/dist/ngraph*.whl
+    rm -rf "${ngraph_directory}/ngraph/python/*.so ${ngraph_directory}/ngraph/python/build"
     export PYBIND_HEADERS_PATH="${ngraph_directory}/ngraph/python/pybind11"
     export NGRAPH_CPP_BUILD_PATH="${ngraph_directory}/ngraph_dist"
+    export NGRAPH_ONNX_IMPORT_ENABLE="TRUE"
     python3 setup.py bdist_wheel
+    # Clean artifacts after building wheel
+    rm -rf "${ngraph_directory}/ngraph_dist"
 }
 
-# Copy Onnx models
-if [ -d /home/onnx_models/.onnx ]; then
-    ln -s /home/onnx_models/.onnx /root/.onnx
-fi
+# Link Onnx models
+mkdir -p /home/onnx_models/.onnx
+ln -s /home/onnx_models/.onnx /root/.onnx
 
-# IF REBUILD NGRAPH IS FALSE - REUSE IT
+# If REBUILD_NGRAPH is FALSE - reuse stored ngraph
 if [[ "${REBUILD_NGRAPH}" == "TRUE" ]]; then
     git clone https://github.com/NervanaSystems/ngraph.git -b master /root/ngraph
+    # If commit hash was provided - use this commit
+    if [ ! -z "${SHA}" ]; then
+        cd /root/ngraph
+        git reset --hard "${SHA}"
+    fi
     build_ngraph "/root"
 else
-    # Install nGraph in /home/ngraph
+    # Update and build nGraph in /home/ngraph
     cd /home
     if [ -e ./ngraph ]; then
         cd ./ngraph
-        # If ngraph repo is up to date, and wheel exist - no need to rebuild it so exit
-        if [[ $(git pull) == *"Already up-to-date"* && -n $(find /home/ngraph/python/dist/ -name 'ngraph*.whl') ]]; then
-            exit 0
-        fi
+        git pull
     else
         git clone https://github.com/NervanaSystems/ngraph.git
     fi

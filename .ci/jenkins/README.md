@@ -11,3 +11,9 @@ To remove all items created during script execution (files, directories, docker 
 ```
 ./runCI.sh --cleanup
 ```
+
+You can specify nGraph commit to run tests on, e.g.:
+
+```
+./runCI.sh --ngraph-commit=r8nd0mn6r4phc00mm1t5h4
+```
