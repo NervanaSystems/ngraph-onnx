@@ -127,9 +127,8 @@ def Notify() {
                         <tr><td>Repository</td> <td>$ghprbGhRepository</td></tr>
                         <tr><td>Branch:</td> <td>$ghprbSourceBranch</td></tr>
                         <tr><td>Jenkins Build:</td> <td> <a href=$blue_ocean> ${BUILD_NUMBER} </a> </td></tr>
-                        <tr><td>Pull Request:</td> <td>$ghprbPullId</td></tr>
+                        <tr><td>Pull Request:</td> <td><a href=$ghprbPullLink>$ghprbPullId</a> </td></tr>
                         <tr><td>Commit SHA:</td> <td>$ghprbActualCommit</td></tr>
-                        <tr><td>PR Link:</td> <td>$ghprbPullLink</td></tr>
                     </table>
                 """,
                 to: "${notifyPeople}"
