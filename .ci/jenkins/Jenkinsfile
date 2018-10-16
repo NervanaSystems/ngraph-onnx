@@ -143,7 +143,7 @@ def main(String label, String projectName, String projectRoot, String dockerCont
                 dir ("${WORKDIR}") {
                     CloneRepository(jenkins_github_credential_id, repository_git_address)
                     // Load CI API
-                    UTILS = load "${CI_ROOT}/utils/utils.groovy"
+                    UTILS = load("${CI_ROOT}/utils/utils.groovy")
                     result = 'SUCCESS'
                     // Create configuration maps
                     configurationMaps = UTILS.GetDockerEnvList(projectName, dockerContainerName, projectRoot)
