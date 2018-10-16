@@ -141,6 +141,7 @@ def main(String label, String projectName, String projectRoot, String dockerCont
             def configurationMaps;
             try {
                 dir ("${WORKDIR}") {
+                    sh "echo WORKAROUND"
                     CloneRepository(jenkins_github_credential_id, repository_git_address)
                     // Load CI API
                     UTILS = load "${CI_ROOT}/utils/utils.groovy"
