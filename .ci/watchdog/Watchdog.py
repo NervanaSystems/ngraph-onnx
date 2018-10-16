@@ -160,9 +160,11 @@ class Watchdog:
             statuses = last_commit.get_statuses()
             jenk_statuses = [stat for stat in statuses if "nGraph-ONNX Jenkins CI (IGK)" in stat.context]
             # Fail if there are no statuses related to Jenkins after assumed time
-            if not jenk_statuses and (pr_delta > _AWAITING_JENKINS_TRESHOLD):
-                message = "Jenkins CI report for PR# {} not present on GitHub after {} minutes!".format(pr_number, pr_delta.seconds / 60)
-                self._queue_fail(message, pr)
+            if not jenk_statuses:
+                log.info("CI for PR %s: NO JENKINS STATUS YET", pr_number)
+                if pr_delta > _AWAITING_JENKINS_TRESHOLD:
+                    message = "Jenkins CI report for PR# {} not present on GitHub after {} minutes!".format(pr_number, pr_delta.seconds / 60)
+                    self._queue_fail(message, pr)
             else:
                 # Interpret found CI statuses
                 self._interpret_statuses(jenk_statuses, pr)
