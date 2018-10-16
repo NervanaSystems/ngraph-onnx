@@ -26,54 +26,57 @@
 
 from slackclient import SlackClient
 
+
 class SlackCommunicator:
-    """Class wrapping SlackClient API
+    """Class wrapping SlackClient API.
 
     The purpose of this class is to wrap methods from SlackClient API used in Watchdog, for less error-prone and
     more convenient use. Docs for used API, including wrapped methods can be found at:
     https://slackapi.github.io/python-slackclient/
 
         :param slack_token:       Token used for Slack
-        :type slack_server:       String
+        :type slack_token:        str
     """
 
     def __init__(self, slack_token):
-        self.channel = "ngraph-onnx-ci-alerts"
+        self.channel = 'ngraph-onnx-ci-alerts'
         self.thread_id = None
         self.queued_messages = []
         self.slack_client = None
         self.slack_token = slack_token
 
     def queue_message(self, message):
-        """Queues message to be sent later.
-            
+        """
+        Queue message to be sent later.
+
             :param message:     Message content
             :type message:      String
         """
         self.queued_messages.append(message)
 
     def send_message(self, message):
-        """Sends queued messages as single communication.
-            
+        """
+        Send queued messages as single communication.
+
             :param message:     Final message's content
             :type message:      String
         """
         if self.slack_client is None:
-           try:
-               self.slack_client = SlackClient(self.slack_token)
-           except:
-               print("!!CRITICAL!! SlackCommunicator::CRITICAL: Could not create client")
-               raise
+            try:
+                self.slack_client = SlackClient(self.slack_token)
+            except Exception:
+                print('!!CRITICAL!! SlackCommunicator::CRITICAL: Could not create client')
+                raise
         try:
-            final_message = message + "\n\n" + "\n".join(self.queued_messages)
+            final_message = message + '\n\n' + '\n'.join(self.queued_messages)
             self.slack_client.api_call(
-                "chat.postMessage",
+                'chat.postMessage',
                 link_names=1,
                 as_user=False,
-                username="CI_WATCHDOG",
+                username='CI_WATCHDOG',
                 channel=self.channel,
                 text=final_message,
                 thread_ts=self.thread_id)
-        except:
-            print("!!CRITICAL!! SlackCommunicator: Could not send message")
+        except Exception:
+            print('!!CRITICAL!! SlackCommunicator: Could not send message')
             raise
