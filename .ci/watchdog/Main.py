@@ -30,6 +30,8 @@ from Watchdog import Watchdog
 
 DEFAULT_SLACK_TOKEN_FILE = "/home/lab_nerval/tokens/slack_token"
 DEFAULT_GITHUB_TOKEN_FILE = "/home/lab_nerval/tokens/github_token"
+DEFAULT_GITHUB_ORGANIZATION = "NervanaSystems"
+DEFAULT_GITHUB_PROJECT = "ngraph-onnx"
 DEFAULT_JENKINS_TOKEN_FILE = "/home/lab_nerval/tokens/crackerjack"
 DEFAULT_JENKINS_SERVER = "https://crackerjack.intel.com/"
 DEFAULT_JENKINS_USER = "lab_nerval"
@@ -51,10 +53,20 @@ def main(args):
     jenkins_token = open(args.jenkins_token).read().replace('\n','').strip()
     slack_token = open(args.slack_token).read().replace('\n','').strip()
     github_token = open(args.github_token).read().replace('\n','').strip()
+    github_org = args.github_org
+    github_project = args.github_project
     ci_job = args.ci_job.strip()
     watchdog_job = args.watchdog_job.strip()
 
-    wd = Watchdog(jenkins_token, jenkins_server, jenkins_user, github_token, slack_token, ci_job, watchdog_job)
+    wd = Watchdog(jenkins_token=jenkins_token, 
+                jenkins_server=jenkins_server, 
+                jenkins_user=jenkins_user, 
+                git_token=github_token, 
+                git_org=github_org, 
+                git_project=github_project, 
+                slack_token=slack_token, 
+                ci_job_name=ci_job, 
+                watchdog_job_name=watchdog_job)
     wd.run()
 
     return 0
@@ -67,6 +79,12 @@ if __name__ == "__main__":
     
     parser.add_argument("--github-token", help="Path to token for GitHub user to access repo.",
                         default=DEFAULT_GITHUB_TOKEN_FILE, action="store", required=False)
+    
+    parser.add_argument("--github-org", help="Name of organization on GitHub.",
+                        default=DEFAULT_GITHUB_ORGANIZATION, action="store", required=False)
+    
+    parser.add_argument("--github-project", help="Name of project on GitHub.",
+                        default=DEFAULT_GITHUB_PROJECT, action="store", required=False)
     
     parser.add_argument("--jenkins-token", help="Path to token for Jenkins user to access build info.",
                         default=DEFAULT_JENKINS_TOKEN_FILE, action="store", required=False)

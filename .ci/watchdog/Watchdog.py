@@ -80,11 +80,11 @@ class Watchdog:
             Watchdog and nGraph-ONNX CI job must be placed on the same Jenkins server.
     """
     
-    def __init__(self, jenkins_token, jenkins_server, jenkins_user, git_token, slack_token, ci_job_name, watchdog_job_name):
+    def __init__(self, jenkins_token, jenkins_server, jenkins_user, git_token, git_org, git_project, slack_token, ci_job_name, watchdog_job_name):
         # Jenkins Wrapper object for CI job
         self._jenkins = JenkinsWrapper(jenkins_token, jenkins_user=jenkins_user, jenkins_server=jenkins_server)
         # Load GitHub token and log in, retrieve pull requests
-        self._git = GitWrapper(git_token, repository='NervanaSystems', project='ngraph-onnx')
+        self._git = GitWrapper(git_token, repository=git_org, project=git_project)
         # Create Slack api object
         self._slack_app = SlackCommunicator(slack_token)
         self._ci_job_name = ci_job_name
@@ -147,6 +147,7 @@ class Watchdog:
         current_prs = []
         # Check all pull requests
         for pr in pull_requests:
+            log.info("===============================================")
             pr_number = str(pr.number)
             log.info("Checking PR#%s", pr_number)
             # Append PRs checked in current run for Watchdog config cleanup
@@ -159,9 +160,11 @@ class Watchdog:
             statuses = last_commit.get_statuses()
             jenk_statuses = [stat for stat in statuses if "nGraph-ONNX Jenkins CI (IGK)" in stat.context]
             # Fail if there are no statuses related to Jenkins after assumed time
-            if not jenk_statuses and (pr_delta > _AWAITING_JENKINS_TRESHOLD):
-                message = "Jenkins CI report for PR# {} not present on GitHub after {} minutes!".format(pr_number, pr_delta.seconds / 60)
-                self._queue_fail(message, pr)
+            if not jenk_statuses:
+                log.info("CI for PR %s: NO JENKINS STATUS YET", pr_number)
+                if pr_delta > _AWAITING_JENKINS_TRESHOLD:
+                    message = "Jenkins CI report for PR# {} not present on GitHub after {} minutes!".format(pr_number, pr_delta.seconds / 60)
+                    self._queue_fail(message, pr)
             else:
                 # Interpret found CI statuses
                 self._interpret_statuses(jenk_statuses, pr)
@@ -195,15 +198,17 @@ class Watchdog:
                     self._check_ci_build(pr, build_number)
                     break
                 # CI waiting to start for too long
-                elif "Awaiting Jenkins" in stat.description and ( stat_delta > _CI_START_TRESHOLD):
-                    message = "Onnx CI job for PR #{} still awaiting Jenkins after {} minutes!".format(pr_number, str(stat_delta.seconds / 60))
-                    self._queue_fail(message, pr)
+                elif "Awaiting Jenkins" in stat.description:
+                    log.info("CI for PR %s: AWAITING JENKINS", pr_number)
+                    if stat_delta > _CI_START_TRESHOLD:
+                        message = "Onnx CI job for PR #{} still awaiting Jenkins after {} minutes!".format(pr_number, str(stat_delta.seconds / 60))
+                        self._queue_fail(message, pr)
                     break
             except:
                 # Log Watchdog internal error in case any status can't be properly verified
-                message = "\tFailed to verify status \"" + stat.description + "\" for PR " + pr_number
+                message = "Failed to verify status \"" + stat.description + "\" for PR " + pr_number
                 log.exception(message)
-                self._queue_message(message, message_severity=999)
+                self._queue_fail(message, pr, message_severity=999)
                 break
 
     def _retrieve_build_number(self, url):
@@ -218,15 +223,10 @@ class Watchdog:
 
         # Get oldest build number
         job_info = self._jenkins.get_job_info(self._ci_job_name)
-        oldest_build = job_info['builds'][-1]['number']
         # Retrieve the build number from url string
         matchObj = re.search("(?:/" + self._ci_job_name.split("/")[-1] + "/)([0-9]+)",url)
         try:
             number = int(matchObj.group(1))
-            # Fail if no log for build being checked exist
-            if number < oldest_build:
-                log.exception("Build number: %s doesnt exist, the oldest build is: %s", str(number), str(oldest_build))
-                raise
             return number
         except:
             log.exception("Failed to retrieve build number from url link: %s", url)
@@ -254,7 +254,7 @@ class Watchdog:
         else:
             message_header = "nGraph-ONNX CI INFO"
         send = message_header + "\n" + message
-        self._slack_app.queue_message(send,severity=message_severity)
+        self._slack_app.queue_message(send)
 
     def _verify_build_output(self, pr, build_number):
         """Verifies if finished build output contains expected string for either fail or success.
@@ -265,7 +265,7 @@ class Watchdog:
             :type build_number:         int
         """
         pr_number = str(pr.number)
-        log.info("\tCI for PR %s: FINISHED", pr_number)
+        log.info("CI for PR %s: FINISHED", pr_number)
         # Check if FINISH was valid FAIL / SUCCESS
         build_output = self._jenkins.get_build_console_output(self._ci_job_name, build_number)
         if _CI_BUILD_FAIL_MESSAGE not in build_output and _CI_BUILD_SUCCESS_MESSAGE not in build_output:
@@ -307,7 +307,7 @@ class Watchdog:
                 watchdog_build_number = "UNKNOWN"
                 watchdog_build_link = self._jenkins.jenkins_server
             send = self._watchdog_job_name + "- build " + str(watchdog_build_number) + " - " + watchdog_build_link
-            self._slack_app.send_message(send, severity=0)
+            self._slack_app.send_message(send)
         else:
             log.info("Nothing to report.")
 
@@ -321,11 +321,13 @@ class Watchdog:
             :type build_number:         int
         """
         pr_number = str(pr.number)
+        log.info("CI for PR %s: TESTING IN PROGRESS", pr_number)
         build_info = self._jenkins.get_build_info(self._ci_job_name, build_number)
         build_datetime = datetime.datetime.fromtimestamp(build_info['timestamp']/1000.0)
         # If build still waiting in queue
         queueItem = self._jenkins.get_queue_item(build_info['queueId'])
         build_delta = self._now_time - build_datetime
+        log.info("Build %s: IN PROGRESS, started: %s minutes ago", str(build_number), str(build_delta))
         # 'why' present if job is in queue and doesnt have executor yet
         if "why" in queueItem:
             if build_delta > _CI_START_TRESHOLD:
@@ -335,7 +337,6 @@ class Watchdog:
                     message = "Onnx CI job build #{}, for PR #{} waiting in queue, despite idle executors!".format(build_number, pr_number)
                     self._queue_fail(message, pr)
                 return
-        log.info("\tBuild %s: IN PROGRESS, started: %s", str(build_number), str(build_datetime))
         if build_delta > _BUILD_DURATION_TRESHOLD:
             # CI job take too long, possibly froze - communiate failure
             message = ("Onnx CI job build #{}, for PR #{} started," 

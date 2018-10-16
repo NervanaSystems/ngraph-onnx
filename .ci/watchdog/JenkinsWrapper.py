@@ -100,7 +100,7 @@ class JenkinsWrapper:
         jenkins_request_url = self.jenkins_server + "label/ci&&onnx/api/json?pretty=true"
         try:
             log.info("Sending request to Jenkins: %s", jenkins_request_url)
-            r = requests.Request(method='GET',url=jenkins_request_url)
+            r = requests.Request(method='GET',url=jenkins_request_url, verify=False)
             response = self.jenkins.jenkins_request(r).json()
             return (int(response['totalExecutors']) - int(response['busyExecutors']))
         except Exception as e:
