@@ -32,8 +32,9 @@ def CloneRepository(String jenkins_github_credential_id, String repository_git_a
     stage('Clone Repo') {
         checkout([$class: 'GitSCM',
                 branches: [[name: "$ghprbActualCommit"]],
-                doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', timeout: 30]], submoduleCfg: [],
+                doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', depth: 0, noTags: false, reference: '', shallow: false, timeout: 30]], submoduleCfg: [],
                 userRemoteConfigs: [[credentialsId: "${jenkins_github_credential_id}",
+                refspec: '+refs/pull/*:refs/remotes/origin/pr/*',
                 url: "${repository_git_address}"]]])
     }
 }
