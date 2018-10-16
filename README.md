@@ -41,22 +41,27 @@ Prepare System:
     # apt update
     # apt install python3 python3-pip python3-dev
     # apt install build-essential cmake curl clang-3.9 git zlib1g zlib1g-dev libtinfo-dev
+    # apt install unzip autoconf automake libtool
 
 Build nGraph and install it into `$HOME/ngraph_dist`:
 
     $ git clone https://github.com/NervanaSystems/ngraph.git
     $ mkdir ngraph/build
     $ cd ngraph/build
-    $ cmake ../ -DNGRAPH_USE_PREBUILT_LLVM=TRUE -DCMAKE_INSTALL_PREFIX=$HOME/ngraph_dist
-    $ make -j 8
+    $ git fetch --tags
+    $ git checkout tags/v0.9.0-rc.2 -b v0.9.0-rc.2
+    $ cmake ../ -DNGRAPH_USE_PREBUILT_LLVM=TRUE -DNGRAPH_ONNX_IMPORT_ENABLE=TRUE -DCMAKE_INSTALL_PREFIX=$HOME/ngraph_dist
+    $ make
     $ make install
+    $ cd -
 
 Build Python package (Binary wheel) for nGraph:
 
     $ cd ngraph/python
-    $ git clone --recursive -b allow-nonconstructible-holders https://github.com/jagerman/pybind11.git
+    $ git clone --recursive https://github.com/jagerman/pybind11.git
     $ export PYBIND_HEADERS_PATH=$PWD/pybind11
     $ export NGRAPH_CPP_BUILD_PATH=$HOME/ngraph_dist
+    $ export NGRAPH_ONNX_IMPORT_ENABLE=TRUE
     $ python3 setup.py bdist_wheel
 
 For additional information how to build nGraph Python bindings see:
@@ -67,7 +72,7 @@ Once the Python binary wheel file (`ngraph-*.whl`) is prepared you can install i
 
 For example:
 
-    (your_venv) $ pip install -U dist/ngraph-0.2.0-cp35-cp35m-linux_x86_64.whl
+    (your_venv) $ pip install -U dist/ngraph-0.7.0-cp36-cp36m-linux_x86_64.whl
 
 You can check that nGraph is properly installed in your Python shell:
 
@@ -84,7 +89,7 @@ If you don't see any errors, nGraph should be installed correctly.
 
 You can install ngraph-onnx using pip:
 
-     (your_venv) $ pip install git+https://github.com/NervanaSystems/ngraph-onnx/
+     (your_venv) $ pip install git+https://github.com/NervanaSystems/ngraph-onnx/@e7b7c3d1d39a9c8c9dff69687188920f13908a82
 
 
 ## Usage example
@@ -138,9 +143,9 @@ After importing the ONNX model, you can use it to generate and call a computatio
 
 # Run computation on the picture:
 >>> resnet(picture)
-array([[ 1.312082 , -1.6729496,  4.2079577,  1.4012241, -3.5463796,
-         2.3433776,  1.7799224, -1.6155214,  0.0777044, -4.2944093]],
-      dtype=float32)
+array([[2.16105225e-04, 5.58412459e-04, 9.70510737e-05, 5.76671700e-05,
+        1.81550844e-04, 3.28226888e-04, 3.09511415e-05, 1.93187807e-04,
+        ...
 ```
 
 ### Unsupported ONNX operations
