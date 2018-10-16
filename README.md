@@ -41,27 +41,22 @@ Prepare System:
     # apt update
     # apt install python3 python3-pip python3-dev
     # apt install build-essential cmake curl clang-3.9 git zlib1g zlib1g-dev libtinfo-dev
-    # apt install unzip autoconf automake libtool
 
-Build nGraph and install it into `$HOME/ngraph_dist`:
+Clone nGraph's `v0.9.0-rc.3` tag, build and install it into `$HOME/ngraph_dist`:
 
-    $ git clone https://github.com/NervanaSystems/ngraph.git
+    $ git clone -b 'v0.9.0-rc.3' --single-branch --depth 1 https://github.com/NervanaSystems/ngraph.git
     $ mkdir ngraph/build
     $ cd ngraph/build
-    $ git fetch --tags
-    $ git checkout tags/v0.9.0-rc.2 -b v0.9.0-rc.2
-    $ cmake ../ -DNGRAPH_USE_PREBUILT_LLVM=TRUE -DNGRAPH_ONNX_IMPORT_ENABLE=TRUE -DCMAKE_INSTALL_PREFIX=$HOME/ngraph_dist
+    $ cmake ../ -DNGRAPH_USE_PREBUILT_LLVM=TRUE -DCMAKE_INSTALL_PREFIX=$HOME/ngraph_dist
     $ make
     $ make install
-    $ cd -
 
 Build Python package (Binary wheel) for nGraph:
 
     $ cd ngraph/python
-    $ git clone --recursive https://github.com/jagerman/pybind11.git
+    $ git clone --recursive -b allow-nonconstructible-holders https://github.com/jagerman/pybind11.git
     $ export PYBIND_HEADERS_PATH=$PWD/pybind11
     $ export NGRAPH_CPP_BUILD_PATH=$HOME/ngraph_dist
-    $ export NGRAPH_ONNX_IMPORT_ENABLE=TRUE
     $ python3 setup.py bdist_wheel
 
 For additional information how to build nGraph Python bindings see:
@@ -72,7 +67,7 @@ Once the Python binary wheel file (`ngraph-*.whl`) is prepared you can install i
 
 For example:
 
-    (your_venv) $ pip install -U dist/ngraph-0.7.0-cp36-cp36m-linux_x86_64.whl
+    (your_venv) $ pip install -U dist/ngraph-0.2.0-cp35-cp35m-linux_x86_64.whl
 
 You can check that nGraph is properly installed in your Python shell:
 
@@ -89,7 +84,7 @@ If you don't see any errors, nGraph should be installed correctly.
 
 You can install ngraph-onnx using pip:
 
-     (your_venv) $ pip install git+https://github.com/NervanaSystems/ngraph-onnx/@e7b7c3d1d39a9c8c9dff69687188920f13908a82
+     (your_venv) $ pip install git+https://github.com/NervanaSystems/ngraph-onnx/@v0.9.0-rc.3
 
 
 ## Usage example
