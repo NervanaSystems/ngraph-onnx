@@ -35,7 +35,7 @@ node(LABEL) {
             stage("Prepare environment") {
                 dir ("$BUILD_WORKSPACE") {
                     sh """#!/bin/bash
-                        virtualenv -p python2 venv
+                        virtualenv -p python3 venv
                         source venv/bin/activate
                         pip install python-jenkins \
                                     retrying \
@@ -52,6 +52,8 @@ node(LABEL) {
                         python .ci/watchdog/Main.py \
                             --slack-token=${SLACK_TOKEN_FILE} \
                             --github-token=${GITHUB_TOKEN_FILE} \
+                            --github-org=${GITHUB_ORG} \
+                            --github-project=${GITHUB_PROJECT} \
                             --jenkins-token=${JENKINS_TOKEN_FILE} \
                             --jenkins-server=${JENKINS_SERVER} \
                             --jenkins-user=${JENKINS_USER} \
