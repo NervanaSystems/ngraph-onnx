@@ -42,13 +42,13 @@ Prepare System:
     # apt install python3 python3-pip python3-dev
     # apt install build-essential cmake curl clang-3.9 git zlib1g zlib1g-dev libtinfo-dev
 
-Build nGraph and install it into `$HOME/ngraph_dist`:
+Clone nGraph's `v0.9.0-rc.3` tag, build and install it into `$HOME/ngraph_dist`:
 
-    $ git clone https://github.com/NervanaSystems/ngraph.git
+    $ git clone -b 'v0.9.0-rc.3' --single-branch --depth 1 https://github.com/NervanaSystems/ngraph.git
     $ mkdir ngraph/build
     $ cd ngraph/build
     $ cmake ../ -DNGRAPH_USE_PREBUILT_LLVM=TRUE -DCMAKE_INSTALL_PREFIX=$HOME/ngraph_dist
-    $ make -j 8
+    $ make
     $ make install
 
 Build Python package (Binary wheel) for nGraph:
@@ -84,7 +84,7 @@ If you don't see any errors, nGraph should be installed correctly.
 
 You can install ngraph-onnx using pip:
 
-     (your_venv) $ pip install git+https://github.com/NervanaSystems/ngraph-onnx/
+     (your_venv) $ pip install git+https://github.com/NervanaSystems/ngraph-onnx/@v0.9.0-rc.3
 
 
 ## Usage example
@@ -138,9 +138,9 @@ After importing the ONNX model, you can use it to generate and call a computatio
 
 # Run computation on the picture:
 >>> resnet(picture)
-array([[ 1.312082 , -1.6729496,  4.2079577,  1.4012241, -3.5463796,
-         2.3433776,  1.7799224, -1.6155214,  0.0777044, -4.2944093]],
-      dtype=float32)
+array([[2.16105225e-04, 5.58412459e-04, 9.70510737e-05, 5.76671700e-05,
+        1.81550844e-04, 3.28226888e-04, 3.09511415e-05, 1.93187807e-04,
+        ...
 ```
 
 ### Unsupported ONNX operations
