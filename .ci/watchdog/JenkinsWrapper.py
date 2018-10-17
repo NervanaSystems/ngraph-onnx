@@ -24,7 +24,6 @@
 # this notice or any other notice embedded in Materials by Intel or Intel's
 # suppliers or licensors in any way.
 
-from time import sleep
 import requests
 import jenkins
 import logging
@@ -39,6 +38,7 @@ log.addHandler(ch)
 
 _RETRY_LIMIT = 3
 _RETRY_COOLDOWN_MS = 5000
+
 
 class JenkinsWrapper:
     """Class wrapping Python-Jenkins API.
@@ -57,7 +57,8 @@ class JenkinsWrapper:
 
     def __init__(self, jenkins_token, jenkins_user, jenkins_server):
         self.jenkins_server = jenkins_server
-        self.jenkins = jenkins.Jenkins(jenkins_server, username=jenkins_user, password=jenkins_token)
+        self.jenkins = jenkins.Jenkins(jenkins_server, username=jenkins_user,
+                                       password=jenkins_token)
 
     @retry(stop_max_attempt_number=_RETRY_LIMIT, wait_fixed=_RETRY_COOLDOWN_MS)
     def get_build_console_output(self, job_name, build_number):
@@ -66,43 +67,48 @@ class JenkinsWrapper:
     @retry(stop_max_attempt_number=_RETRY_LIMIT, wait_fixed=_RETRY_COOLDOWN_MS)
     def get_job_info(self, job_name):
         return self.jenkins.get_job_info(job_name)
-    
+
     @retry(stop_max_attempt_number=_RETRY_LIMIT, wait_fixed=_RETRY_COOLDOWN_MS)
     def get_build_info(self, job_name, build_number):
         return self.jenkins.get_build_info(job_name, build_number)
 
     @retry(stop_max_attempt_number=_RETRY_LIMIT, wait_fixed=_RETRY_COOLDOWN_MS)
-    def get_queue_item(self, queueId):
-        """Method attempts to retrieve Jenkins job queue item. Exception communicating queue doesn't exist is expected,
+    def get_queue_item(self, queue_id):
+        """Attempt to retrieve Jenkins job queue item.
+
+        Exception communicating queue doesn't exist is expected,
         in that case method returns empty dict.
 
-            :param queueId:             Jenkins job queue ID number
-            :type jenkins_server:       int
+            :param queue_id:            Jenkins job queue ID number
+            :type queue_id:             int
             :return:                    Dictionary representing Jenkins job queue item
             :rtype:                     dict
         """
         try:
-            return self.jenkins.get_queue_item(queueId)
+            return self.jenkins.get_queue_item(queue_id)
         except Exception as e:
             # Exception 'queue does not exist' is expected behaviour when job is running
-            if "queue" in str(e) and "does not exist" in str(e):
+            if 'queue' in str(e) and 'does not exist' in str(e):
                 return {}
             else:
                 raise
 
     @retry(stop_max_attempt_number=_RETRY_LIMIT, wait_fixed=_RETRY_COOLDOWN_MS)
     def get_idle_ci_hosts(self):
-        """Method sends GET request to Jenkins server, querrying for idle servers labeled for nGraph-ONNX CI job.
+        """Query Jenkins for idle servers.
 
-            :return:                    Number of idle hosts delegated to nGraph-ONNX CI
-            :rtype:                     int
+        Send GET request to Jenkins server, querying for idle servers labeled
+        for nGraph-ONNX CI job.
+
+            :return:     Number of idle hosts delegated to nGraph-ONNX CI
+            :rtype:      int
         """
-        jenkins_request_url = self.jenkins_server + "label/ci&&onnx/api/json?pretty=true"
+        jenkins_request_url = self.jenkins_server + 'label/ci&&onnx/api/json?pretty=true'
         try:
-            log.info("Sending request to Jenkins: %s", jenkins_request_url)
-            r = requests.Request(method='GET',url=jenkins_request_url, verify=False)
+            log.info('Sending request to Jenkins: %s', jenkins_request_url)
+            r = requests.Request(method='GET', url=jenkins_request_url, verify=False)
             response = self.jenkins.jenkins_request(r).json()
-            return (int(response['totalExecutors']) - int(response['busyExecutors']))
+            return int(response['totalExecutors']) - int(response['busyExecutors'])
         except Exception as e:
-            log.exception("Failed to send request to Jenkins!\nException message: %s",str(e))
+            log.exception('Failed to send request to Jenkins!\nException message: %s', str(e))
             raise

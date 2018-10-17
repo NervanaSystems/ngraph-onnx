@@ -70,9 +70,6 @@ backend_test.exclude('test_cos')
 backend_test.exclude('test_sin')
 backend_test.exclude('test_tan')
 
-# BatchNorm -> NC-318
-backend_test.exclude('test_BatchNorm')
-
 # ConvTranspose -> NC-319
 backend_test.exclude('test_ConvTranspose2d')
 backend_test.exclude('test_convtranspose')
