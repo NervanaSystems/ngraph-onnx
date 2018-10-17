@@ -163,16 +163,6 @@ if backend_name != 'INTERPRETER':
     backend_test.exclude('test_shufflenet_opset3')
     backend_test.exclude('test_shufflenet_opset6')
 
-    # RuntimeError: unknown operation: GlobalAveragePool
-    backend_test.exclude('test_densenet121_opset7')
-    backend_test.exclude('test_densenet121_opset8')
-    backend_test.exclude('test_densenet121_opset9')
-    backend_test.exclude('test_squeezenet_opset3')
-    backend_test.exclude('test_squeezenet_opset6')
-    backend_test.exclude('test_squeezenet_opset7')
-    backend_test.exclude('test_squeezenet_opset8')
-    backend_test.exclude('test_squeezenet_opset9')
-
     # RuntimeError: unsupported attribute type: STRING
     backend_test.exclude('test_emotion_ferplus_opset2')
     backend_test.exclude('test_emotion_ferplus_opset7')
@@ -180,9 +170,6 @@ if backend_name != 'INTERPRETER':
 
     # RuntimeError: unknown operation: ImageScaler
     backend_test.exclude('test_tiny_yolov2_opset7')
-
-    # MKL-DNN bug:
-    backend_test.exclude('test_inception_v1')
 
     # ONNX ValidationError
     backend_test.exclude('test_mnist_opset1')
