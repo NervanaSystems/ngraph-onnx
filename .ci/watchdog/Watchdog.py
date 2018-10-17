@@ -363,7 +363,7 @@ class Watchdog:
                        'minutes!'.format(build_number, pr_number,
                                          str(_BUILD_DURATION_THRESHOLD.seconds / 60)))
             self._queue_fail(message, pr)
-    
+
     def _check_awaiting(self, pr, build_number, status_updated_at):
         """
         Check if CI build doesn't take too long to start.
@@ -376,11 +376,11 @@ class Watchdog:
             :type status_updated_at:    datetime.datetime
         """
         # Calculate time passed since last status update
-        delta = self._now_time - stat.updated_at
-        log.info('CI for PR %s: AWAITING JENKINS', str(pr.number))
+        delta = self._now_time - status_updated_at
+        log.info('CI for PR %s: AWAITING JENKINS', pr.number)
         if delta > _CI_START_THRESHOLD:
             message = 'nGraph-ONNX CI job for PR #{} still awaiting Jenkins after {}' \
-                        ' minutes!'.format(pr_number, str(delta.seconds / 60))
+                ' minutes!'.format(pr.number, str(delta.seconds / 60))
             self._queue_fail(message, pr)
 
     def _update_config(self, current_prs):
