@@ -199,23 +199,17 @@ class Watchdog:
             try:
                 # Retrieve build number for Jenkins build related to this PR
                 build_number = self._retrieve_build_number(stat.target_url)
-                # Calculate time passed since last status update
-                stat_delta = self._now_time - stat.updated_at
                 # CI build finished - verify if expected output is present
                 if 'Build finished' in stat.description:
-                    self._verify_build_output(pr, build_number)
+                    self._check_finished(pr, build_number)
                     break
                 # CI build in progress - verify timeouts for build queue and duration
                 elif 'Testing in progress' in stat.description:
-                    self._check_ci_build(pr, build_number)
+                    self._check_in_progress(pr, build_number)
                     break
                 # CI waiting to start for too long
                 elif 'Awaiting Jenkins' in stat.description:
-                    log.info('CI for PR %s: AWAITING JENKINS', pr_number)
-                    if stat_delta > _CI_START_THRESHOLD:
-                        message = 'nGraph-ONNX CI job for PR #{} still awaiting Jenkins after {}' \
-                                  ' minutes!'.format(pr_number, str(stat_delta.seconds / 60))
-                        self._queue_fail(message, pr)
+                    self._check_awaiting(pr, build_number, stat.updated_at)
                     break
             except Exception:
                 # Log Watchdog internal error in case any status can't be properly verified
@@ -271,7 +265,7 @@ class Watchdog:
         send = message_header + '\n' + message
         self._slack_app.queue_message(send)
 
-    def _verify_build_output(self, pr, build_number):
+    def _check_finished(self, pr, build_number):
         """
         Verify if finished build output contains expected string for either fail or success.
 
@@ -331,7 +325,7 @@ class Watchdog:
         else:
             log.info('Nothing to report.')
 
-    def _check_ci_build(self, pr, build_number):
+    def _check_in_progress(self, pr, build_number):
         """Check if CI build succesfully started.
 
         Checks if build started within designated time threshold, and job is
@@ -369,8 +363,25 @@ class Watchdog:
                        'minutes!'.format(build_number, pr_number,
                                          str(_BUILD_DURATION_THRESHOLD.seconds / 60)))
             self._queue_fail(message, pr)
+    
+    def _check_awaiting(self, pr, build_number, status_updated_at):
+        """
+        Check if CI build doesn't take too long to start.
 
-            # Write config data structure to file
+            :param pr:                  Single PR being currently checked
+            :param build_number:        Jenkins CI job build number
+            :param status_updated_at:   GitHub status update time
+            :type pr:                   github.PullRequest.PullRequest
+            :type build_number:         int
+            :type status_updated_at:    datetime.datetime
+        """
+        # Calculate time passed since last status update
+        delta = self._now_time - stat.updated_at
+        log.info('CI for PR %s: AWAITING JENKINS', str(pr.number))
+        if delta > _CI_START_THRESHOLD:
+            message = 'nGraph-ONNX CI job for PR #{} still awaiting Jenkins after {}' \
+                        ' minutes!'.format(pr_number, str(delta.seconds / 60))
+            self._queue_fail(message, pr)
 
     def _update_config(self, current_prs):
         """
