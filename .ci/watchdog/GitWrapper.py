@@ -24,11 +24,10 @@
 # this notice or any other notice embedded in Materials by Intel or Intel's
 # suppliers or licensors in any way.
 
-from time import sleep
-from github import Github
-import datetime
 import logging
+from datetime import datetime
 from retrying import retry
+from github import Github
 
 # Logging
 log = logging.getLogger(__name__)
@@ -39,6 +38,7 @@ log.addHandler(ch)
 
 _RETRY_LIMIT = 3
 _RETRY_COOLDOWN_MS = 2000
+
 
 class GitWrapper:
     """Class wrapping PyGithub API.
@@ -62,17 +62,19 @@ class GitWrapper:
 
     @retry(stop_max_attempt_number=_RETRY_LIMIT, wait_fixed=_RETRY_COOLDOWN_MS)
     def get_git_time(self):
-        """Retrieves time from GitHub, used to reliably determine time during Watchdog run.
+        """Retrieve time from GitHub.
+
+        Used to reliably determine time during Watchdog run.
 
             :return:                    Datetime object describing current time
             :rtype:                     datetime
         """
         datetime_string = self.git.get_api_status().raw_headers['date']
         try:
-            datetime_object =  datetime.datetime.strptime(datetime_string, '%a, %d %b %Y %H:%M:%S %Z')
-        except:
-            log.exception("Failed to parse date retrieved from GitHub: %s", str(datetime_string))
-            raise 
+            datetime_object = datetime.strptime(datetime_string, '%a, %d %b %Y %H:%M:%S %Z')
+        except ValueError:
+            log.exception('Failed to parse date retrieved from GitHub: %s', str(datetime_string))
+            raise
         return datetime_object
 
     @retry(stop_max_attempt_number=_RETRY_LIMIT, wait_fixed=_RETRY_COOLDOWN_MS)
