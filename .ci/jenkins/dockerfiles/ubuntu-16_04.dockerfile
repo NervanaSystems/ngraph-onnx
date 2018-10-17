@@ -37,5 +37,8 @@ RUN apt-get -y install protobuf-compiler libprotobuf-dev && \
     apt-get clean autoclean && \
     apt-get autoremove -y
 
+# SciPy dependencies to solve issue https://jira01.devtools.intel.com/browse/NC5-333
+RUN apt-get -y install liblapack3 liblapack-dev libopenblas-base libopenblas-dev
+
 # Install tox
 RUN pip3 install tox
