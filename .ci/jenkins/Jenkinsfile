@@ -85,10 +85,6 @@ def RunToxTests(configurationMaps) {
         sh """
             NGRAPH_WHL=\$(docker exec ${configMap["dockerContainerName"]} bash -c "find  ${NGRAPH_DIRECTORY}/ngraph/python/dist/ -name 'ngraph*.whl' -printf '%Ts\t%p\n' | sort -nr | cut -f2 | head -n1")
             docker exec -e TOX_INSTALL_NGRAPH_FROM=\${NGRAPH_WHL} ${configMap["dockerContainerName"]} tox -c /root
-            mkdir -p ~/ONNX_CI/onnx_models/
-            if [ -e ${WORKDIR}/.onnx ]; then
-                docker cp ${configMap["dockerContainerName"]}:/root/.onnx/ ~/ONNX_CI/onnx_models/
-            fi
         """
     }
     UTILS.CreateStage("Run_tox_tests", runToxTestsMethod, configurationMaps)
@@ -117,23 +113,23 @@ def Notify() {
     ])
     String notifyPeople = "$ghprbPullAuthorEmail, $ghprbActualCommitAuthorEmail"
     Closure notifyMethod = { configMap ->
-        if(currentBuild.result != "FAILURE") {
-            currentBuild.result = "SUCCESS"
+        if(currentBuild.result == "FAILURE") {
+            blue_ocean = "https://crackerjack.intel.com/blue/organizations/jenkins/onnx%2Fngraph-onnx-ci/detail/ngraph-onnx-ci/${BUILD_NUMBER}/pipeline"
+            emailext (
+                subject: "NGraph-Onnx CI: PR $ghprbPullId",
+                body: """
+                    <table style="width:100%">
+                        <tr><td>Status:</td> <td>${currentBuild.result}</td></tr>
+                        <tr><td>Repository</td> <td>$ghprbGhRepository</td></tr>
+                        <tr><td>Branch:</td> <td>$ghprbSourceBranch</td></tr>
+                        <tr><td>Jenkins Build:</td> <td> <a href=$blue_ocean> ${BUILD_NUMBER} </a> </td></tr>
+                        <tr><td>Pull Request:</td> <td><a href=$ghprbPullLink>$ghprbPullId</a> </td></tr>
+                        <tr><td>Commit SHA:</td> <td>$ghprbActualCommit</td></tr>
+                    </table>
+                """,
+                to: "${notifyPeople}"
+            )
         }
-        emailext (
-            subject: "NGraph-Onnx CI: PR $ghprbPullId",
-            body: """
-                <table style="width:100%">
-                    <tr><td>Status:</td> <td>${currentBuild.result}</td></tr>
-                    <tr><td>Repository</td> <td>$ghprbGhRepository</td></tr>
-                    <tr><td>Branch:</td> <td>$ghprbSourceBranch</td></tr>
-                    <tr><td>Pull Request:</td> <td>$ghprbPullId</td></tr>
-                    <tr><td>Commit SHA:</td> <td>$ghprbActualCommit</td></tr>
-                    <tr><td>Link:</td> <td>$ghprbPullLink</td></tr>
-                </table>
-            """,
-            to: "${notifyPeople}"
-        )
     }
     UTILS.CreateStage("Notify", notifyMethod, configurationMaps)
 }
@@ -145,6 +141,7 @@ def main(String label, String projectName, String projectRoot, String dockerCont
             def configurationMaps;
             try {
                 dir ("${WORKDIR}") {
+                    sh "echo WORKAROUND"
                     CloneRepository(jenkins_github_credential_id, repository_git_address)
                     // Load CI API
                     UTILS = load "${CI_ROOT}/utils/utils.groovy"
