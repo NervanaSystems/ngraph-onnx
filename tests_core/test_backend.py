@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 
 import onnx.backend.test
 import pytest
+from unittest import expectedFailure
 
 from ngraph_onnx.core_importer.backend import NgraphBackend
 
@@ -121,28 +122,6 @@ backend_test.exclude('test_top_k')
 # MeanVarianceNormalization -> NC-328
 backend_test.exclude('test_mvn')
 
-# PyTorch Operator tests -> NC-329
-backend_test.exclude('test_operator_add')
-backend_test.exclude('test_operator_basic')
-backend_test.exclude('test_operator_chunk')
-backend_test.exclude('test_operator_clip')
-backend_test.exclude('test_operator_concat2')
-backend_test.exclude('test_operator_exp')
-backend_test.exclude('test_operator_index')
-backend_test.exclude('test_operator_max')
-backend_test.exclude('test_operator_min')
-backend_test.exclude('test_operator_non_float_params')
-backend_test.exclude('test_operator_pad')
-backend_test.exclude('test_operator_params')
-backend_test.exclude('test_operator_permute2')
-backend_test.exclude('test_operator_pow')
-backend_test.exclude('test_operator_reduced')
-backend_test.exclude('test_operator_repeat')
-backend_test.exclude('test_operator_sqrt')
-backend_test.exclude('test_operator_symbolic_override')
-backend_test.exclude('test_operator_transpose')
-backend_test.exclude('test_operator_view')
-
 # Other tests
 backend_test.exclude('test_GLU')
 backend_test.exclude('test_Softmin')
@@ -185,4 +164,13 @@ if selected_backend_name == 'INTERPRETER':
     backend_test.exclude('test_operator_conv_cpu')
     backend_test.exclude('test_slice_start_out_of_bounds_cpu')
 
+OnnxBackendPyTorchOperatorModelTest = None
 globals().update(backend_test.enable_report().test_cases)
+
+# PyTorch Operator tests -> NC-329
+expectedFailure(OnnxBackendPyTorchOperatorModelTest.test_operator_maxpool_cpu)
+expectedFailure(OnnxBackendPyTorchOperatorModelTest.test_operator_mm_cpu)
+expectedFailure(OnnxBackendPyTorchOperatorModelTest.test_operator_pad_cpu)
+expectedFailure(OnnxBackendPyTorchOperatorModelTest.test_operator_repeat_cpu)
+expectedFailure(OnnxBackendPyTorchOperatorModelTest.test_operator_repeat_dim_overflow_cpu)
+expectedFailure(OnnxBackendPyTorchOperatorModelTest.test_operator_symbolic_override_cpu)
