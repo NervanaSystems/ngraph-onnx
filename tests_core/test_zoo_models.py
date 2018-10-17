@@ -161,7 +161,6 @@ if backend_name != 'INTERPRETER':
     expectedFailure(test_cases.test_inception_v2_opset3_cpu)
     expectedFailure(test_cases.test_inception_v2_opset6_cpu)
     expectedFailure(test_cases.test_resnet50_opset3_cpu)
-    expectedFailure(test_cases.test_resnet50_v2_opset7_cpu)
     expectedFailure(test_cases.test_shufflenet_opset3_cpu)
 
     # RuntimeError: unsupported attribute type: STRING
