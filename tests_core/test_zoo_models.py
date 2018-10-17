@@ -15,6 +15,8 @@
 # ******************************************************************************
 
 import pytest
+from unittest import expectedFailure
+
 from ngraph_onnx.core_importer.backend import NgraphBackend
 from tests_core.utils.model_zoo_tester import ModelZooTestRunner
 
@@ -137,36 +139,33 @@ if backend_name != 'INTERPRETER':
 
     # import all test cases at global scope to make them visible to python.unittest
     backend_test = ModelZooTestRunner(NgraphBackend, zoo_models, __name__)
+    test_cases = backend_test.test_cases['OnnxBackendZooModelTest']
 
     # Exclude failing tests...
     # RuntimeError: While validating node: Subtract
-    backend_test.exclude('test_arcface_lresnet100e_opset7')
+    expectedFailure(test_cases.test_arcface_lresnet100e_opset7_cpu)
 
     # RuntimeError: While validating node: Dot (Opset 3)
-    backend_test.exclude('test_bvlc_alexnet_opset3')
-    backend_test.exclude('test_bvlc_caffenet_opset3')
-    backend_test.exclude('test_bvlc_googlenet_opset3')
-    backend_test.exclude('test_bvlc_rcnn_ilsvrc13_opset3')
-    backend_test.exclude('test_inception_v1_opset3')
-    backend_test.exclude('test_zfnet512_opset3_cpu')
-    backend_test.exclude('test_vgg19_opset3')
+    expectedFailure(test_cases.test_bvlc_alexnet_opset3_cpu)
+    expectedFailure(test_cases.test_bvlc_caffenet_opset3_cpu)
+    expectedFailure(test_cases.test_bvlc_googlenet_opset3_cpu)
+    expectedFailure(test_cases.test_bvlc_rcnn_ilsvrc13_opset3_cpu)
+    expectedFailure(test_cases.test_inception_v1_opset3_cpu)
+    expectedFailure(test_cases.test_zfnet512_opset3_cpu)
+    expectedFailure(test_cases.test_vgg19_opset3_cpu)
 
     # RuntimeError: unsupported attribute type: INT
-    backend_test.exclude('test_duc_resnet101_hdc_opset7')
-    backend_test.exclude('test_densenet121_opset3')
-    backend_test.exclude('test_densenet121_opset6')
-    backend_test.exclude('test_inception_v2_opset3')
-    backend_test.exclude('test_inception_v2_opset6')
-    backend_test.exclude('test_resnet50_opset3')
-    backend_test.exclude('test_resnet50_opset6')
-    backend_test.exclude('test_resnet50_v2_opset7')
-    backend_test.exclude('test_shufflenet_opset3')
-    backend_test.exclude('test_shufflenet_opset6')
+    expectedFailure(test_cases.test_duc_resnet101_hdc_opset7_cpu)
+    expectedFailure(test_cases.test_densenet121_opset3_cpu)
+    expectedFailure(test_cases.test_densenet121_opset6_cpu)
+    expectedFailure(test_cases.test_inception_v2_opset3_cpu)
+    expectedFailure(test_cases.test_inception_v2_opset6_cpu)
+    expectedFailure(test_cases.test_resnet50_opset3_cpu)
+    expectedFailure(test_cases.test_resnet50_v2_opset7_cpu)
+    expectedFailure(test_cases.test_shufflenet_opset3_cpu)
 
     # RuntimeError: unsupported attribute type: STRING
-    backend_test.exclude('test_emotion_ferplus_opset2')
-    backend_test.exclude('test_emotion_ferplus_opset7')
-    backend_test.exclude('test_mnist_opset7')
+    expectedFailure(test_cases.test_emotion_ferplus_opset2_cpu)
 
     # RuntimeError: unknown operation: ImageScaler
     backend_test.exclude('test_tiny_yolov2_opset7')
@@ -175,4 +174,5 @@ if backend_name != 'INTERPRETER':
     backend_test.exclude('test_mnist_opset1')
     backend_test.exclude('test_tiny_yolov2_opset1')
 
+    del test_cases
     globals().update(backend_test.enable_report().test_cases)
