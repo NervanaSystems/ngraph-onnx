@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 
 import onnx.backend.test
 import pytest
+from unittest import expectedFailure
 
 from ngraph_onnx.core_importer.backend import NgraphBackend
 
@@ -45,51 +46,14 @@ backend_test.exclude('test_MaxPool1d')
 backend_test.exclude('test_averagepool')
 backend_test.exclude('test_operator_maxpool')
 
-# Matmul ops -> NC5-314
-backend_test.exclude('test_matmul_3d')
-backend_test.exclude('test_matmul_4d')
-backend_test.exclude('test_gemm_broadcast')
-backend_test.exclude('test_Linear')
-backend_test.exclude('test_operator_mm')
-
-# Convolution ops -> NC-315
-backend_test.exclude('test_Conv1d')
-backend_test.exclude('test_Conv2d')
-backend_test.exclude('test_Conv3d')
-backend_test.exclude('test_operator_conv')
-
 # ArgMin/ArgMax -> NC-316
 backend_test.exclude('test_argmax')
 backend_test.exclude('test_argmin')
-
-# Trigonometric ops -> NC-317
-backend_test.exclude('test_acos')
-backend_test.exclude('test_asin')
-backend_test.exclude('test_atan')
-backend_test.exclude('test_cos')
-backend_test.exclude('test_sin')
-backend_test.exclude('test_tan')
 
 # ConvTranspose -> NC-319
 backend_test.exclude('test_ConvTranspose2d')
 backend_test.exclude('test_convtranspose')
 backend_test.exclude('test_operator_convtranspose')
-
-# Non-linear ops -> NC-320
-backend_test.exclude('test_SELU')
-backend_test.exclude('test_prelu_example')
-backend_test.exclude('test_selu')
-backend_test.exclude('test_operator_selu')
-
-# Reshape ops -> NC-321
-backend_test.exclude('test_reshape')
-backend_test.exclude('test_expand')
-backend_test.exclude('test_gather')
-backend_test.exclude('test_Embedding')
-backend_test.exclude('test_tile')
-backend_test.exclude('test_size')
-backend_test.exclude('test_squeeze_cpu')
-backend_test.exclude('test_operator_flatten')
 
 # Padding modes -> NC-322
 backend_test.exclude('test_ConstantPad2d')
@@ -120,39 +84,6 @@ backend_test.exclude('test_top_k')
 
 # MeanVarianceNormalization -> NC-328
 backend_test.exclude('test_mvn')
-
-# PyTorch Operator tests -> NC-329
-backend_test.exclude('test_operator_add')
-backend_test.exclude('test_operator_basic')
-backend_test.exclude('test_operator_chunk')
-backend_test.exclude('test_operator_clip')
-backend_test.exclude('test_operator_concat2')
-backend_test.exclude('test_operator_exp')
-backend_test.exclude('test_operator_index')
-backend_test.exclude('test_operator_max')
-backend_test.exclude('test_operator_min')
-backend_test.exclude('test_operator_non_float_params')
-backend_test.exclude('test_operator_pad')
-backend_test.exclude('test_operator_params')
-backend_test.exclude('test_operator_permute2')
-backend_test.exclude('test_operator_pow')
-backend_test.exclude('test_operator_reduced')
-backend_test.exclude('test_operator_repeat')
-backend_test.exclude('test_operator_sqrt')
-backend_test.exclude('test_operator_symbolic_override')
-backend_test.exclude('test_operator_transpose')
-backend_test.exclude('test_operator_view')
-
-# Other tests
-backend_test.exclude('test_GLU')
-backend_test.exclude('test_Softmin')
-backend_test.exclude('test_hardmax')
-backend_test.exclude('test_PixelShuffle')
-backend_test.exclude('test_PoissonNLLLLoss_no_reduce')
-backend_test.exclude('test_cast_DOUBLE_to_FLOAT16')
-backend_test.exclude('test_cast_FLOAT_to_FLOAT16')
-backend_test.exclude('test_instancenorm')
-backend_test.exclude('test_upsample_nearest')
 
 # Tests which fail on the CPU backend -> NC-330
 if selected_backend_name == 'CPU':
@@ -185,4 +116,73 @@ if selected_backend_name == 'INTERPRETER':
     backend_test.exclude('test_operator_conv_cpu')
     backend_test.exclude('test_slice_start_out_of_bounds_cpu')
 
+OnnxBackendNodeModelTest = None
+OnnxBackendSimpleModelTest = None
+OnnxBackendPyTorchOperatorModelTest = None
+OnnxBackendPyTorchConvertedModelTest = None
 globals().update(backend_test.enable_report().test_cases)
+
+
+# Non-linear ops -> NC-320
+expectedFailure(OnnxBackendNodeModelTest.test_prelu_example_cpu)
+
+# Matmul ops -> NC5-314
+expectedFailure(OnnxBackendNodeModelTest.test_gemm_broadcast_cpu)
+expectedFailure(OnnxBackendNodeModelTest.test_matmul_3d_cpu)
+expectedFailure(OnnxBackendNodeModelTest.test_matmul_4d_cpu)
+
+# Trigonometric ops -> NC-317
+expectedFailure(OnnxBackendNodeModelTest.test_acos_cpu)
+expectedFailure(OnnxBackendNodeModelTest.test_acos_example_cpu)
+expectedFailure(OnnxBackendNodeModelTest.test_asin_cpu)
+expectedFailure(OnnxBackendNodeModelTest.test_asin_example_cpu)
+expectedFailure(OnnxBackendNodeModelTest.test_atan_cpu)
+expectedFailure(OnnxBackendNodeModelTest.test_atan_example_cpu)
+expectedFailure(OnnxBackendNodeModelTest.test_cos_cpu)
+expectedFailure(OnnxBackendNodeModelTest.test_cos_example_cpu)
+expectedFailure(OnnxBackendNodeModelTest.test_sin_cpu)
+expectedFailure(OnnxBackendNodeModelTest.test_sin_example_cpu)
+expectedFailure(OnnxBackendNodeModelTest.test_tan_cpu)
+expectedFailure(OnnxBackendNodeModelTest.test_tan_example_cpu)
+
+# PyTorch Operator tests -> NC-329
+expectedFailure(OnnxBackendPyTorchOperatorModelTest.test_operator_maxpool_cpu)
+expectedFailure(OnnxBackendPyTorchOperatorModelTest.test_operator_mm_cpu)
+expectedFailure(OnnxBackendPyTorchOperatorModelTest.test_operator_pad_cpu)
+expectedFailure(OnnxBackendPyTorchOperatorModelTest.test_operator_repeat_cpu)
+expectedFailure(OnnxBackendPyTorchOperatorModelTest.test_operator_repeat_dim_overflow_cpu)
+expectedFailure(OnnxBackendPyTorchOperatorModelTest.test_operator_symbolic_override_cpu)
+
+# Reshape ops -> NC-321
+expectedFailure(OnnxBackendNodeModelTest.test_expand_dim_changed_cpu)
+expectedFailure(OnnxBackendNodeModelTest.test_expand_dim_unchanged_cpu)
+expectedFailure(OnnxBackendNodeModelTest.test_gather_0_cpu)
+expectedFailure(OnnxBackendNodeModelTest.test_gather_1_cpu)
+expectedFailure(OnnxBackendNodeModelTest.test_reshape_extended_dims_cpu)
+expectedFailure(OnnxBackendNodeModelTest.test_reshape_negative_dim_cpu)
+expectedFailure(OnnxBackendNodeModelTest.test_reshape_one_dim_cpu)
+expectedFailure(OnnxBackendNodeModelTest.test_reshape_reduced_dims_cpu)
+expectedFailure(OnnxBackendNodeModelTest.test_reshape_reordered_dims_cpu)
+expectedFailure(OnnxBackendNodeModelTest.test_size_cpu)
+expectedFailure(OnnxBackendNodeModelTest.test_size_example_cpu)
+expectedFailure(OnnxBackendNodeModelTest.test_tile_cpu)
+expectedFailure(OnnxBackendNodeModelTest.test_tile_precomputed_cpu)
+expectedFailure(OnnxBackendSimpleModelTest.test_expand_shape_model1_cpu)
+expectedFailure(OnnxBackendSimpleModelTest.test_expand_shape_model2_cpu)
+expectedFailure(OnnxBackendSimpleModelTest.test_expand_shape_model3_cpu)
+expectedFailure(OnnxBackendSimpleModelTest.test_expand_shape_model4_cpu)
+expectedFailure(OnnxBackendPyTorchConvertedModelTest.test_Embedding_cpu)
+expectedFailure(OnnxBackendPyTorchConvertedModelTest.test_Embedding_sparse_cpu)
+
+# Other tests
+expectedFailure(OnnxBackendNodeModelTest.test_cast_DOUBLE_to_FLOAT16_cpu)
+expectedFailure(OnnxBackendNodeModelTest.test_cast_FLOAT_to_FLOAT16_cpu)
+expectedFailure(OnnxBackendNodeModelTest.test_hardmax_axis_0_cpu)
+expectedFailure(OnnxBackendNodeModelTest.test_hardmax_axis_1_cpu)
+expectedFailure(OnnxBackendNodeModelTest.test_hardmax_axis_2_cpu)
+expectedFailure(OnnxBackendNodeModelTest.test_hardmax_default_axis_cpu)
+expectedFailure(OnnxBackendNodeModelTest.test_hardmax_example_cpu)
+expectedFailure(OnnxBackendNodeModelTest.test_hardmax_one_hot_cpu)
+expectedFailure(OnnxBackendNodeModelTest.test_instancenorm_epsilon_cpu)
+expectedFailure(OnnxBackendNodeModelTest.test_instancenorm_example_cpu)
+expectedFailure(OnnxBackendNodeModelTest.test_upsample_nearest_cpu)
