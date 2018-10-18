@@ -166,6 +166,9 @@ if backend_name != 'INTERPRETER':
     # RuntimeError: unsupported attribute type: STRING
     expectedFailure(test_cases.test_emotion_ferplus_opset2_cpu)
 
+    # RuntimeError: sporadic result mismatch 0.1%
+    backend_test.exclude('test_resnet50_v2_opset7')
+
     # RuntimeError: unknown operation: ImageScaler
     backend_test.exclude('test_tiny_yolov2_opset7')
 
