@@ -91,28 +91,19 @@ if selected_backend_name == 'CPU':
     backend_test.exclude('test_Conv3d_dilated_strided')
     backend_test.exclude('test_GLU_dim')
 
-# Big model tests:
-#backend_test.exclude('test_bvlc_alexnet')
+# Big model tests (see test_zoo_models.py):
+backend_test.exclude('test_bvlc_alexnet')
 backend_test.exclude('test_densenet121')
-#backend_test.exclude('test_inception_v1')
-#backend_test.exclude('test_inception_v2')
-#backend_test.exclude('test_resnet50')
-#backend_test.exclude('test_shufflenet')
+backend_test.exclude('test_inception_v1')
+backend_test.exclude('test_inception_v2')
+backend_test.exclude('test_resnet50')
+backend_test.exclude('test_shufflenet')
 backend_test.exclude('test_squeezenet')
-#backend_test.exclude('test_vgg19')
-#backend_test.exclude('test_zfnet512')
+backend_test.exclude('test_vgg19')
+backend_test.exclude('test_zfnet512')
 
 # Tests which fail or are very slow on the INTERPRETER backend
 if selected_backend_name == 'INTERPRETER':
-    backend_test.exclude('test_densenet121_cpu')
-    backend_test.exclude('test_inception_v2_cpu')
-    backend_test.exclude('test_resnet50_cpu')
-    backend_test.exclude('test_squeezenet_cpu')
-    backend_test.exclude('test_vgg19_cpu')
-    backend_test.exclude('test_shufflenet_cpu')
-    backend_test.exclude('test_bvlc_alexnet_cpu')
-    backend_test.exclude('test_inception_v1_cpu')
-    backend_test.exclude('test_zfnet512_cpu')
     backend_test.exclude('test_operator_conv_cpu')
     backend_test.exclude('test_slice_start_out_of_bounds_cpu')
 
