@@ -142,29 +142,29 @@ if backend_name != 'INTERPRETER':
     test_cases = backend_test.test_cases['OnnxBackendZooModelTest']
 
     # Exclude failing tests...
-    # RuntimeError: While validating node: Subtract
+    # RuntimeError: Broadcast argument shape, target shape, and axes are incompatible.
+    expectedFailure(test_cases.test_densenet121_opset3_cpu)
+    expectedFailure(test_cases.test_densenet121_opset6_cpu)
+    expectedFailure(test_cases.test_inception_v2_opset3_cpu)
+    expectedFailure(test_cases.test_inception_v2_opset6_cpu)
+    expectedFailure(test_cases.test_emotion_ferplus_opset2_cpu)
+
+    # RuntimeError: BatchNormalization: only 'spatial' mode is supported.
+    expectedFailure(test_cases.test_duc_resnet101_hdc_opset7_cpu)
+
+    # RuntimeError: Subtract: Argument element types are inconsistent.
     expectedFailure(test_cases.test_arcface_lresnet100e_opset7_cpu)
 
-    # RuntimeError: While validating node: Dot (Opset 3)
+    # RuntimeError: 'Dot': Paired axes do not have same length. (OpSet 3)
+    expectedFailure(test_cases.test_resnet50_opset3_cpu)
+    expectedFailure(test_cases.test_shufflenet_opset3_cpu)
     expectedFailure(test_cases.test_bvlc_alexnet_opset3_cpu)
     expectedFailure(test_cases.test_bvlc_caffenet_opset3_cpu)
     expectedFailure(test_cases.test_bvlc_googlenet_opset3_cpu)
     expectedFailure(test_cases.test_bvlc_rcnn_ilsvrc13_opset3_cpu)
     expectedFailure(test_cases.test_inception_v1_opset3_cpu)
-    expectedFailure(test_cases.test_zfnet512_opset3_cpu)
     expectedFailure(test_cases.test_vgg19_opset3_cpu)
-
-    # RuntimeError: unsupported attribute type: INT
-    expectedFailure(test_cases.test_duc_resnet101_hdc_opset7_cpu)
-    expectedFailure(test_cases.test_densenet121_opset3_cpu)
-    expectedFailure(test_cases.test_densenet121_opset6_cpu)
-    expectedFailure(test_cases.test_inception_v2_opset3_cpu)
-    expectedFailure(test_cases.test_inception_v2_opset6_cpu)
-    expectedFailure(test_cases.test_resnet50_opset3_cpu)
-    expectedFailure(test_cases.test_shufflenet_opset3_cpu)
-
-    # RuntimeError: unsupported attribute type: STRING
-    expectedFailure(test_cases.test_emotion_ferplus_opset2_cpu)
+    expectedFailure(test_cases.test_zfnet512_opset3_cpu)
 
     # RuntimeError: sporadic result mismatch 0.1%
     backend_test.exclude('test_resnet50_v2_opset7')
