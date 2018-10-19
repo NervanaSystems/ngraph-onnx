@@ -113,10 +113,6 @@ OnnxBackendPyTorchOperatorModelTest = None
 OnnxBackendPyTorchConvertedModelTest = None
 globals().update(backend_test.enable_report().test_cases)
 
-
-# Non-linear ops -> NC-320
-expectedFailure(OnnxBackendNodeModelTest.test_prelu_example_cpu)
-
 # Matmul ops -> NC5-314
 expectedFailure(OnnxBackendNodeModelTest.test_gemm_broadcast_cpu)
 expectedFailure(OnnxBackendNodeModelTest.test_matmul_3d_cpu)
