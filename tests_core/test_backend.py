@@ -36,6 +36,7 @@ NgraphBackend.backend_name = selected_backend_name
 # import all test cases at global scope to make them visible to python.unittest
 backend_test = onnx.backend.test.BackendTest(NgraphBackend, __name__)
 
+# MaxPool Indices -> NGRAPH-3131
 backend_test.exclude('test_maxpool_with_argmax')
 
 # ArgMin/ArgMax -> NC-316
