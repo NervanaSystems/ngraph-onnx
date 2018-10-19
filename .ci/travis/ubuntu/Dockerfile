@@ -40,9 +40,6 @@ RUN cmake ../ -DNGRAPH_CPU_ENABLE=FALSE -DNGRAPH_USE_PREBUILT_LLVM=TRUE -DNGRAPH
 RUN make -j"$(nproc)"
 RUN make install
 
-# SciPy dependencies to solve issue https://jira01.devtools.intel.com/browse/NC5-333
-RUN apt-get -y install liblapack3 liblapack-dev libopenblas-base libopenblas-dev
-
 # Build nGraph Wheel
 WORKDIR /root/ngraph/python
 RUN git clone --recursive -b allow-nonconstructible-holders https://github.com/jagerman/pybind11.git

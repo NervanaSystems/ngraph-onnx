@@ -20,7 +20,6 @@ import onnx
 import numpy as np
 import pytest
 
-from scipy.special import logsumexp
 from tests.utils import run_node
 
 
@@ -303,6 +302,11 @@ def test_reduce_log_sum_default_axes():
 
 
 def test_reduce_log_sum_exp():
+    def logsumexp(data, axis=None, keepdims=True):
+        return np.log(np.sum(np.exp(data),
+                             axis=axis,
+                             keepdims=keepdims))
+
     data = np.array([[[5, 1], [20, 2]], [[30, 1], [40, 2]], [[55, 1], [60, 2]]], dtype=np.float32)
 
     assert np.array_equal(import_and_compute('ReduceLogSumExp', data),
