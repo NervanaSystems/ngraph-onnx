@@ -28,7 +28,8 @@ from ngraph_onnx import TYPE_CHECKING
 from ngraph.impl import Node as NgraphNode
 import ngraph as ng
 
-from ngraph_onnx.onnx_importer.utils.binary import broadcast_for_binary_operation
+from ngraph_onnx.onnx_importer.utils.binary import broadcast_for_binary_operation, \
+    numpy_style_broadcast_for_binary_operation
 from ngraph_onnx.onnx_importer.utils.conv import make_convolution_op, get_strides, get_dilations, get_pads
 from ngraph_onnx.onnx_importer.utils.matmul import reshape_for_matmul
 from ngraph_onnx.onnx_importer.utils.types import onnx_tensor_type_to_numpy_type
@@ -554,6 +555,7 @@ def Gemm(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngra
     if beta != 1:
         input_c = beta * input_c
 
+    _, input_c = numpy_style_broadcast_for_binary_operation(onnx_node, [a_dot_b, input_c])
     return a_dot_b + input_c
 
 
