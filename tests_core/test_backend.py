@@ -118,7 +118,6 @@ globals().update(backend_test.enable_report().test_cases)
 expectedFailure(OnnxBackendNodeModelTest.test_prelu_example_cpu)
 
 # Matmul ops -> NC5-314
-expectedFailure(OnnxBackendNodeModelTest.test_gemm_broadcast_cpu)
 expectedFailure(OnnxBackendNodeModelTest.test_matmul_3d_cpu)
 expectedFailure(OnnxBackendNodeModelTest.test_matmul_4d_cpu)
 
@@ -138,7 +137,6 @@ expectedFailure(OnnxBackendNodeModelTest.test_tan_example_cpu)
 
 # PyTorch Operator tests -> NC-329
 expectedFailure(OnnxBackendPyTorchOperatorModelTest.test_operator_maxpool_cpu)
-expectedFailure(OnnxBackendPyTorchOperatorModelTest.test_operator_mm_cpu)
 expectedFailure(OnnxBackendPyTorchOperatorModelTest.test_operator_pad_cpu)
 expectedFailure(OnnxBackendPyTorchOperatorModelTest.test_operator_repeat_cpu)
 expectedFailure(OnnxBackendPyTorchOperatorModelTest.test_operator_repeat_dim_overflow_cpu)
