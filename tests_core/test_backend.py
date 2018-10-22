@@ -115,20 +115,6 @@ expectedFailure(OnnxBackendNodeModelTest.test_gemm_broadcast_cpu)
 expectedFailure(OnnxBackendNodeModelTest.test_matmul_3d_cpu)
 expectedFailure(OnnxBackendNodeModelTest.test_matmul_4d_cpu)
 
-# Trigonometric ops -> NC-317
-expectedFailure(OnnxBackendNodeModelTest.test_acos_cpu)
-expectedFailure(OnnxBackendNodeModelTest.test_acos_example_cpu)
-expectedFailure(OnnxBackendNodeModelTest.test_asin_cpu)
-expectedFailure(OnnxBackendNodeModelTest.test_asin_example_cpu)
-expectedFailure(OnnxBackendNodeModelTest.test_atan_cpu)
-expectedFailure(OnnxBackendNodeModelTest.test_atan_example_cpu)
-expectedFailure(OnnxBackendNodeModelTest.test_cos_cpu)
-expectedFailure(OnnxBackendNodeModelTest.test_cos_example_cpu)
-expectedFailure(OnnxBackendNodeModelTest.test_sin_cpu)
-expectedFailure(OnnxBackendNodeModelTest.test_sin_example_cpu)
-expectedFailure(OnnxBackendNodeModelTest.test_tan_cpu)
-expectedFailure(OnnxBackendNodeModelTest.test_tan_example_cpu)
-
 # PyTorch Operator tests -> NC-329
 expectedFailure(OnnxBackendPyTorchOperatorModelTest.test_operator_mm_cpu)
 expectedFailure(OnnxBackendPyTorchOperatorModelTest.test_operator_pad_cpu)
