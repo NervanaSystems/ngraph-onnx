@@ -312,7 +312,6 @@ def test_pool_max(ndarray_1x1x4x4):
     assert np.array_equal(ng_results, [y])
 
 
-@pytest.mark.xfail(reason='Refactoring to nGraph core importer.')
 def test_pool_global_max(ndarray_1x1x4x4):
     node = onnx.helper.make_node('GlobalMaxPool', inputs=['x'], outputs=['y'])
 
@@ -323,7 +322,6 @@ def test_pool_global_max(ndarray_1x1x4x4):
     assert np.array_equal(ng_results, [y])
 
 
-@pytest.mark.xfail(reason='Refactoring to nGraph core importer.')
 def test_pool_global_average(ndarray_1x1x4x4):
     node = onnx.helper.make_node('GlobalAveragePool', inputs=['x'], outputs=['y'])
 
@@ -334,7 +332,6 @@ def test_pool_global_average(ndarray_1x1x4x4):
     assert np.array_equal(ng_results, [y])
 
 
-@pytest.mark.xfail(reason='Refactoring to nGraph core importer.')
 def test_pool_global_average_3d(ndarray_1x1x4x4):
     x = np.broadcast_to(ndarray_1x1x4x4, (1, 1, 4, 4, 4))
 
