@@ -30,7 +30,8 @@ import ngraph as ng
 
 from ngraph_onnx.onnx_importer.utils.binary import broadcast_for_binary_operation, \
     numpy_style_broadcast_for_binary_operation
-from ngraph_onnx.onnx_importer.utils.conv import make_convolution_op, get_strides, get_dilations, get_pads
+from ngraph_onnx.onnx_importer.utils.conv import make_convolution_op, get_strides, get_dilations, \
+    get_pads
 from ngraph_onnx.onnx_importer.utils.matmul import reshape_for_matmul
 from ngraph_onnx.onnx_importer.utils.types import onnx_tensor_type_to_numpy_type
 from ngraph_onnx.onnx_importer.utils.misc import split_pads_into_pairs
@@ -915,7 +916,7 @@ def BatchNormalization(onnx_node, ng_inputs):  # type: (NodeWrapper, List[Ngraph
         raise NotImplementedError('BatchNormalization node (%s): only `spatial` mode is currently '
                                   'supported.', onnx_node.name)
 
-    return ng.batch_norm(epsilon, scale, bias, x, mean, var, False)
+    return ng.batch_norm(epsilon, scale, bias, x, mean, var)
 
 
 def LRN(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> NgraphNode
