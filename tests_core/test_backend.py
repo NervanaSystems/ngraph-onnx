@@ -131,7 +131,6 @@ expectedFailure(OnnxBackendNodeModelTest.test_tan_example_cpu)
 
 # PyTorch Operator tests -> NC-329
 expectedFailure(OnnxBackendPyTorchOperatorModelTest.test_operator_mm_cpu)
-expectedFailure(OnnxBackendPyTorchOperatorModelTest.test_operator_maxpool_cpu)
 expectedFailure(OnnxBackendPyTorchOperatorModelTest.test_operator_pad_cpu)
 expectedFailure(OnnxBackendPyTorchOperatorModelTest.test_operator_repeat_cpu)
 expectedFailure(OnnxBackendPyTorchOperatorModelTest.test_operator_repeat_dim_overflow_cpu)
