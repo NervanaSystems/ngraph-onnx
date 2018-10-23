@@ -15,7 +15,6 @@
 # ******************************************************************************
 
 import pytest
-from unittest import expectedFailure
 
 from ngraph_onnx.core_importer.backend import NgraphBackend
 from tests_core.utils.model_zoo_tester import ModelZooTestRunner
@@ -143,28 +142,28 @@ if backend_name != 'INTERPRETER':
 
     # Exclude failing tests...
     # RuntimeError: Broadcast argument shape, target shape, and axes are incompatible.
-    expectedFailure(test_cases.test_densenet121_opset3_cpu)
-    expectedFailure(test_cases.test_densenet121_opset6_cpu)
-    expectedFailure(test_cases.test_inception_v2_opset3_cpu)
-    expectedFailure(test_cases.test_inception_v2_opset6_cpu)
-    expectedFailure(test_cases.test_emotion_ferplus_opset2_cpu)
+    pytest.mark.xfail(test_cases.test_densenet121_opset3_cpu)
+    pytest.mark.xfail(test_cases.test_densenet121_opset6_cpu)
+    pytest.mark.xfail(test_cases.test_inception_v2_opset3_cpu)
+    pytest.mark.xfail(test_cases.test_inception_v2_opset6_cpu)
+    pytest.mark.xfail(test_cases.test_emotion_ferplus_opset2_cpu)
 
     # RuntimeError: BatchNormalization: only 'spatial' mode is supported.
-    expectedFailure(test_cases.test_duc_resnet101_hdc_opset7_cpu)
+    pytest.mark.xfail(test_cases.test_duc_resnet101_hdc_opset7_cpu)
 
     # RuntimeError: Subtract: Argument element types are inconsistent.
-    expectedFailure(test_cases.test_arcface_lresnet100e_opset7_cpu)
+    pytest.mark.xfail(test_cases.test_arcface_lresnet100e_opset7_cpu)
 
     # RuntimeError: 'Dot': Paired axes do not have same length. (OpSet 3)
-    expectedFailure(test_cases.test_resnet50_opset3_cpu)
-    expectedFailure(test_cases.test_shufflenet_opset3_cpu)
-    expectedFailure(test_cases.test_bvlc_alexnet_opset3_cpu)
-    expectedFailure(test_cases.test_bvlc_caffenet_opset3_cpu)
-    expectedFailure(test_cases.test_bvlc_googlenet_opset3_cpu)
-    expectedFailure(test_cases.test_bvlc_rcnn_ilsvrc13_opset3_cpu)
-    expectedFailure(test_cases.test_inception_v1_opset3_cpu)
-    expectedFailure(test_cases.test_vgg19_opset3_cpu)
-    expectedFailure(test_cases.test_zfnet512_opset3_cpu)
+    pytest.mark.xfail(test_cases.test_resnet50_opset3_cpu)
+    pytest.mark.xfail(test_cases.test_shufflenet_opset3_cpu)
+    pytest.mark.xfail(test_cases.test_bvlc_alexnet_opset3_cpu)
+    pytest.mark.xfail(test_cases.test_bvlc_caffenet_opset3_cpu)
+    pytest.mark.xfail(test_cases.test_bvlc_googlenet_opset3_cpu)
+    pytest.mark.xfail(test_cases.test_bvlc_rcnn_ilsvrc13_opset3_cpu)
+    pytest.mark.xfail(test_cases.test_inception_v1_opset3_cpu)
+    pytest.mark.xfail(test_cases.test_vgg19_opset3_cpu)
+    pytest.mark.xfail(test_cases.test_zfnet512_opset3_cpu)
 
     # RuntimeError: sporadic result mismatch 0.1%
     backend_test.exclude('test_resnet50_v2_opset7')
