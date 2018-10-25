@@ -101,25 +101,7 @@ OnnxBackendPyTorchOperatorModelTest = None
 OnnxBackendPyTorchConvertedModelTest = None
 globals().update(backend_test.enable_report().test_cases)
 
-# ArgMin/ArgMax -> NC-316
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_argmax_default_axis_example_cpu)
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_argmax_default_axis_random_cpu)
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_argmax_keepdims_example_cpu)
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_argmax_keepdims_random_cpu)
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_argmax_no_keepdims_example_cpu)
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_argmax_no_keepdims_random_cpu)
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_argmin_default_axis_example_cpu)
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_argmin_default_axis_random_cpu)
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_argmin_keepdims_example_cpu)
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_argmin_keepdims_random_cpu)
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_argmin_no_keepdims_example_cpu)
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_argmin_no_keepdims_random_cpu)
-
-# Non-linear ops -> NC-320
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_prelu_example_cpu)
-
 # Matmul ops -> NC5-314
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_gemm_broadcast_cpu)
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_matmul_3d_cpu)
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_matmul_4d_cpu)
 

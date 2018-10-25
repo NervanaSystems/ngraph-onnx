@@ -115,10 +115,8 @@ backend_test.exclude('test_cast_DOUBLE_to_FLOAT16_cpu')
 backend_test.exclude('test_cast_FLOAT_to_FLOAT16_cpu')
 
 # RuntimeError msg='Broadcast arg, shape, and axes are incompatible' -> NC5-232
-backend_test.exclude('test_gemm_broadcast_cpu')
 backend_test.exclude('test_operator_add_size1_broadcast_cpu')
 backend_test.exclude('test_operator_add_size1_singleton_broadcast_cpu')
-backend_test.exclude('test_operator_mm_cpu')
 backend_test.exclude('test_prelu_broadcast_cpu')
 
 # RuntimeError msg='Convolution padding-below rank does not match number of spatial dimensions.' -> NC5-233

@@ -28,7 +28,8 @@ from ngraph_onnx import TYPE_CHECKING
 from ngraph.impl import Node as NgraphNode
 import ngraph as ng
 
-from ngraph_onnx.onnx_importer.utils.binary import broadcast_for_binary_operation
+from ngraph_onnx.onnx_importer.utils.binary import broadcast_for_binary_operation, \
+    numpy_style_broadcast_for_binary_operation
 from ngraph_onnx.onnx_importer.utils.conv import make_convolution_op, get_strides, get_dilations, \
     get_pads
 from ngraph_onnx.onnx_importer.utils.matmul import reshape_for_matmul
@@ -555,6 +556,7 @@ def Gemm(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]) -> Ngra
     if beta != 1:
         input_c = beta * input_c
 
+    _, input_c = numpy_style_broadcast_for_binary_operation(onnx_node, [a_dot_b, input_c])
     return a_dot_b + input_c
 
 
@@ -611,8 +613,15 @@ def ConvTranspose(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]
         # pb  - padding below
         # s   - strides
         # ws  - weights shape
-        data_batch_shape[i + 2] = ((padding_below[i] + ((data_shape[i + 2] - 1) * strides[i] + 1) + output_padding[i]) -
-                                   ((weights_shape[i + 2] - 1) * dilation[i] + 1) + 1) // data_dilation_strides[i] + 1
+        data_batch_shape[i + 2] = (
+            (
+                padding_below[i]
+                + ((data_shape[i + 2] - 1) * strides[i] + 1)
+                + output_padding[i]
+            )
+            - ((weights_shape[i + 2] - 1) * dilation[i] + 1)
+            + 1
+        ) // data_dilation_strides[i] + 1
 
     transconv = ng.convolution_backprop_data(data_batch_shape,
                                              weights,
