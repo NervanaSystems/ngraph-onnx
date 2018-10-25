@@ -110,7 +110,6 @@ globals().update(backend_test.enable_report().test_cases)
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_prelu_example_cpu)
 
 # Matmul ops -> NC5-314
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_gemm_broadcast_cpu)
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_matmul_3d_cpu)
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_matmul_4d_cpu)
 
