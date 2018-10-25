@@ -45,8 +45,8 @@ def run_node(onnx_node, data_inputs, **kwargs):
     if NgraphBackend.supports_ngraph_device(NgraphBackend.backend_name):
         return NgraphBackend.run_node(onnx_node, data_inputs, **kwargs)
     else:
-        raise RuntimeError('The requested nGraph backend <' + NgraphBackend.backend_name +
-                           '> is not supported!')
+        raise RuntimeError('The requested nGraph backend <' + NgraphBackend.backend_name
+                           + '> is not supported!')
 
 
 def run_model(onnx_model, data_inputs):
@@ -66,8 +66,8 @@ def run_model(onnx_model, data_inputs):
                         model in ng_model]
         return [computation(*data_inputs) for computation in computations]
     else:
-        raise RuntimeError('The requested nGraph backend <' + NgraphBackend.backend_name +
-                           '> is not supported!')
+        raise RuntimeError('The requested nGraph backend <' + NgraphBackend.backend_name
+                           + '> is not supported!')
 
 
 def get_node_model(op_type, *input_data, opset=1, num_outputs=1, **node_attributes):

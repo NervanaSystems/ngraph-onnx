@@ -102,8 +102,8 @@ class NgraphBackend(Backend):
         # Check whether:
         # 1. There is mapping between onnx_device_name and requested nGraph backend to run tests on.
         # 2. Current nGraph version supports requested backend.
-        return (onnx_device_name == requested_backend_name_mapped_to_onnx_device and
-                cls.supports_ngraph_device(cls.backend_name))
+        return (onnx_device_name == requested_backend_name_mapped_to_onnx_device
+                and cls.supports_ngraph_device(cls.backend_name))
 
     @classmethod
     def run_model(cls, onnx_model, inputs, device='CPU', **kwargs):
