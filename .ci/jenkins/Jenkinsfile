@@ -23,7 +23,7 @@ CI_ROOT = ".ci/jenkins"
 CI_PARAMS = "${ghprbCommentBody}"
 DOCKER_CONTAINER_NAME = "jenkins_${PROJECT_NAME}_ci"
 REPOSITORY_GIT_ADDRESS = "https://www.github.com/NervanaSystems/${PROJECT_NAME}.git"
-JENKINS_GITHUB_CREDENTIAL_ID = "6887a177-8c4d-4fe9-9c3b-fcd71b22bfba"
+JENKINS_GITHUB_CREDENTIAL_ID = "7157091e-bc04-42f0-99fd-dc4da2922a55"
 NGRAPH_DIRECTORY="/home"
 ENVPREP_ARGS=""
 
