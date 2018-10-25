@@ -613,8 +613,15 @@ def ConvTranspose(onnx_node, ng_inputs):  # type: (NodeWrapper, List[NgraphNode]
         # pb  - padding below
         # s   - strides
         # ws  - weights shape
-        data_batch_shape[i + 2] = ((padding_below[i] + ((data_shape[i + 2] - 1) * strides[i] + 1) + output_padding[i]) -
-                                   ((weights_shape[i + 2] - 1) * dilation[i] + 1) + 1) // data_dilation_strides[i] + 1
+        data_batch_shape[i + 2] = (
+            (
+                padding_below[i]
+                + ((data_shape[i + 2] - 1) * strides[i] + 1)
+                + output_padding[i]
+            )
+            - ((weights_shape[i + 2] - 1) * dilation[i] + 1)
+            + 1
+        ) // data_dilation_strides[i] + 1
 
     transconv = ng.convolution_backprop_data(data_batch_shape,
                                              weights,
