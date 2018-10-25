@@ -110,7 +110,6 @@ pytest.mark.xfail(OnnxBackendNodeModelTest.test_matmul_3d_cpu)
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_matmul_4d_cpu)
 
 # PyTorch Operator tests -> NC-329
-pytest.mark.xfail(OnnxBackendPyTorchOperatorModelTest.test_operator_mm_cpu)
 pytest.mark.xfail(OnnxBackendPyTorchOperatorModelTest.test_operator_pad_cpu)
 pytest.mark.xfail(OnnxBackendPyTorchOperatorModelTest.test_operator_repeat_cpu)
 pytest.mark.xfail(OnnxBackendPyTorchOperatorModelTest.test_operator_repeat_dim_overflow_cpu)
