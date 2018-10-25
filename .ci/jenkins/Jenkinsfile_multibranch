@@ -113,7 +113,7 @@ def Notify() {
     configurationMaps.add([
         "name": "notify"
     ])
-    String notifyPeople = "$ghprbPullAuthorEmail, $ghprbActualCommitAuthorEmail"
+    String notifyPeople = "$GIT_PR_AUTHOR_EMAIL, $GIT_COMMIT_AUTHOR_EMAIL"
     Closure notifyMethod = { configMap ->
         if(currentBuild.result == "FAILURE") {
             emailext (
