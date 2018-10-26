@@ -142,8 +142,6 @@ if backend_name != 'INTERPRETER':
 
     # Exclude failing tests...
     # RuntimeError: Broadcast argument shape, target shape, and axes are incompatible.
-    pytest.mark.xfail(test_cases.test_densenet121_opset3_cpu)
-    pytest.mark.xfail(test_cases.test_densenet121_opset6_cpu)
     pytest.mark.xfail(test_cases.test_inception_v2_opset3_cpu)
     pytest.mark.xfail(test_cases.test_inception_v2_opset6_cpu)
     pytest.mark.xfail(test_cases.test_emotion_ferplus_opset2_cpu)
