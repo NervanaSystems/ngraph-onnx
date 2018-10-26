@@ -122,8 +122,7 @@ def test_ceil(input_data):
 ])
 def test_clip(min_value, max_value):
     np.random.seed(133391)
-    data = (np.float32(-100.) +
-            np.random.randn(3, 4, 5).astype(np.float32) * np.float32(200.))
+    data = np.float32(-100.0) + np.random.randn(3, 4, 5).astype(np.float32) * np.float32(200.0)
 
     node = onnx.helper.make_node('Clip', inputs=['x'], outputs=['y'],
                                  min=float(min_value), max=float(max_value))

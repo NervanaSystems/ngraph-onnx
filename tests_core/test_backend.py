@@ -105,29 +105,10 @@ OnnxBackendPyTorchOperatorModelTest = None
 OnnxBackendPyTorchConvertedModelTest = None
 globals().update(backend_test.enable_report().test_cases)
 
-
-# Non-linear ops -> NC-320
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_prelu_example_cpu)
-
 # Matmul ops -> NC5-314
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_gemm_broadcast_cpu)
 
-# Trigonometric ops -> NC-317
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_acos_cpu)
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_acos_example_cpu)
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_asin_cpu)
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_asin_example_cpu)
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_atan_cpu)
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_atan_example_cpu)
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_cos_cpu)
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_cos_example_cpu)
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_sin_cpu)
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_sin_example_cpu)
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_tan_cpu)
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_tan_example_cpu)
-
 # PyTorch Operator tests -> NC-329
-pytest.mark.xfail(OnnxBackendPyTorchOperatorModelTest.test_operator_mm_cpu)
 pytest.mark.xfail(OnnxBackendPyTorchOperatorModelTest.test_operator_pad_cpu)
 pytest.mark.xfail(OnnxBackendPyTorchOperatorModelTest.test_operator_repeat_cpu)
 pytest.mark.xfail(OnnxBackendPyTorchOperatorModelTest.test_operator_repeat_dim_overflow_cpu)

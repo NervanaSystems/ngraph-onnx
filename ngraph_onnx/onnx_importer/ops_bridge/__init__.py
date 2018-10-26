@@ -50,7 +50,7 @@ def make_ng_nodes(node_factory, onnx_node):  # type: (ModuleType, NodeWrapper) -
     return ng_outputs
 
 
-def get_node_factory(opset_version: int=None) -> ModuleType:
+def get_node_factory(opset_version: int = None) -> ModuleType:
     """Import the factory module which converts ops to nGraph nodes.
 
     :param opset_version: specify `ai.onnx` operator set version
