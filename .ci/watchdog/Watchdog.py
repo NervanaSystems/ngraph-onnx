@@ -205,7 +205,8 @@ class Watchdog:
                     self._check_finished(pr, build_number)
                     break
                 # CI build in progress - verify timeouts for build queue and duration
-                elif 'Testing in progress' in stat.description:
+                pending_statuses = ['This commit is being built', 'Testing in progress']
+                elif any(phrase in stat.description for phrase in pending_statuses):
                     self._check_in_progress(pr, build_number)
                     break
                 # CI waiting to start for too long
