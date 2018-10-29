@@ -62,7 +62,7 @@ backend_test.exclude('test_rnn')
 backend_test.exclude('test_operator_rnn')
 
 # LSTM -> NC-324
-backend_test.exclude('test_lstm')
+# unknown operations: ConstantFill, Gather
 backend_test.exclude('test_operator_lstm')
 
 # GRU -> NC-325
