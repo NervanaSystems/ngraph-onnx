@@ -87,6 +87,9 @@ zoo_models = {
     'mnist_opset1': _CNTK_MODELS + 'mnist/opset_1/mnist.tar.gz',
     'mnist_opset7': _CNTK_MODELS + 'mnist/opset_7/mnist.tar.gz',
 
+    # Mobile Net
+    'mobilenet_opset7': _S3_MODEL_ZOO + 'mobilenet/mobilenetv2-1.0/mobilenetv2-1.0.tar.gz',
+
     # ResNet-50
     'resnet50_opset3': _S3_DOWNLOAD_ONNX + 'opset_3/resnet50.tar.gz',
     'resnet50_opset6': _S3_DOWNLOAD_ONNX + 'opset_6/resnet50.tar.gz',
@@ -151,10 +154,10 @@ if backend_name != 'INTERPRETER':
     # RuntimeError: BatchNormalization: only 'spatial' mode is supported.
     pytest.mark.xfail(test_cases.test_duc_resnet101_hdc_opset7_cpu)
 
-    # RuntimeError: Subtract: Argument element types are inconsistent.
+    # RuntimeError: Subtract: Argument element types are inconsistent. -> NC5-345
     pytest.mark.xfail(test_cases.test_arcface_lresnet100e_opset7_cpu)
 
-    # RuntimeError: 'Dot': Paired axes do not have same length. (OpSet 3)
+    # RuntimeError: 'Dot': Paired axes do not have same length. (OpSet 3) -> NC5-342
     pytest.mark.xfail(test_cases.test_resnet50_opset3_cpu)
     pytest.mark.xfail(test_cases.test_shufflenet_opset3_cpu)
     pytest.mark.xfail(test_cases.test_bvlc_alexnet_opset3_cpu)
@@ -165,8 +168,9 @@ if backend_name != 'INTERPRETER':
     pytest.mark.xfail(test_cases.test_vgg19_opset3_cpu)
     pytest.mark.xfail(test_cases.test_zfnet512_opset3_cpu)
 
-    # RuntimeError: sporadic result mismatch 0.1%
+    # RuntimeError: sporadic result mismatch 0.1% -> NC5-346
     backend_test.exclude('test_resnet50_v2_opset7')
+    backend_test.exclude('test_mobilenet_opset7')
 
     # RuntimeError: unknown operation: ImageScaler
     backend_test.exclude('test_tiny_yolov2_opset7')
