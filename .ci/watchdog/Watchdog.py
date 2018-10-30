@@ -277,7 +277,7 @@ class Watchdog:
         pr_number = str(pr.number)
         log.info('CI for PR %s: FINISHED', pr_number)
         # Check if FINISH was valid FAIL / SUCCESS
-        project_name_full = self._ci_job_name + "/PR-" + pr_number
+        project_name_full = self._ci_job_name + '/PR-' + pr_number
         build_output = self._jenkins.get_build_console_output(project_name_full, build_number)
         if _CI_BUILD_FAIL_MESSAGE not in build_output \
                 and _CI_BUILD_SUCCESS_MESSAGE not in build_output:
@@ -339,7 +339,7 @@ class Watchdog:
         """
         pr_number = str(pr.number)
         log.info('CI for PR %s: TESTING IN PROGRESS', pr_number)
-        project_name_full = self._ci_job_name + "/PR-" + pr_number
+        project_name_full = self._ci_job_name + '/PR-' + pr_number
         build_info = self._jenkins.get_build_info(project_name_full, build_number)
         build_datetime = datetime.datetime.fromtimestamp(build_info['timestamp'] / 1000.0)
         # If build still waiting in queue
