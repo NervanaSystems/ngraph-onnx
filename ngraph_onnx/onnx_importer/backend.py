@@ -67,6 +67,12 @@ class NgraphBackend(Backend):
                      if ngraph_device_name == ng_device), None)
 
     @classmethod
+    def _get_onnx_device_name(cls, ngraph_device_name=[]):  # type: (str) -> Optional[str]
+        return next((onnx_device for (ng_device, onnx_device) in cls._ngraph_onnx_device_map
+                     if ngraph_device_name == ng_device), None)
+
+
+    @classmethod
     @lru_cache(maxsize=16)
     def supports_ngraph_device(cls, ngraph_device_name):  # type: (str) -> bool
         """Check whether particular nGraph device is supported by current nGraph library.
