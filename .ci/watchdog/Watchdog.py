@@ -201,11 +201,11 @@ class Watchdog:
                 build_number = self._retrieve_build_number(stat.target_url)
                 # CI build finished - verify if expected output is present
                 finished_statuses = ['Build finished', 'This commit cannot be built', 'This commit looks good']
+                pending_statuses = ['This commit is being built', 'Testing in progress']
                 if any(phrase in stat.description for phrase in finished_statuses):
                     self._check_finished(pr, build_number)
                     break
                 # CI build in progress - verify timeouts for build queue and duration
-                pending_statuses = ['This commit is being built', 'Testing in progress']
                 elif any(phrase in stat.description for phrase in pending_statuses):
                     self._check_in_progress(pr, build_number)
                     break
