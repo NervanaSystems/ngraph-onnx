@@ -147,11 +147,10 @@ if backend_name != 'INTERPRETER':
     # RuntimeError: BatchNormalization: only 'spatial' mode is supported.
     pytest.mark.xfail(test_cases.test_duc_resnet101_hdc_opset7_cpu)
 
-    # RuntimeError: Subtract: Argument element types are inconsistent.
+    # RuntimeError: Subtract: Argument element types are inconsistent. -> NC5-345
     pytest.mark.xfail(test_cases.test_arcface_lresnet100e_opset7_cpu)
 
-    # RuntimeError: 'Dot': Paired axes do not have same length. (OpSet 3)
-    pytest.mark.xfail(test_cases.test_inception_v2_opset3_cpu)
+    # RuntimeError: 'Dot': Paired axes do not have same length. (OpSet 3) -> NC5-342
     pytest.mark.xfail(test_cases.test_resnet50_opset3_cpu)
     pytest.mark.xfail(test_cases.test_shufflenet_opset3_cpu)
     pytest.mark.xfail(test_cases.test_bvlc_alexnet_opset3_cpu)
@@ -159,10 +158,11 @@ if backend_name != 'INTERPRETER':
     pytest.mark.xfail(test_cases.test_bvlc_googlenet_opset3_cpu)
     pytest.mark.xfail(test_cases.test_bvlc_rcnn_ilsvrc13_opset3_cpu)
     pytest.mark.xfail(test_cases.test_inception_v1_opset3_cpu)
+    pytest.mark.xfail(test_cases.test_inception_v2_opset3_cpu)
     pytest.mark.xfail(test_cases.test_vgg19_opset3_cpu)
     pytest.mark.xfail(test_cases.test_zfnet512_opset3_cpu)
 
-    # RuntimeError: sporadic result mismatch 0.1%
+    # RuntimeError: sporadic result mismatch 0.1% -> NC5-346
     backend_test.exclude('test_resnet50_v2_opset7')
     backend_test.exclude('test_mobilenet_opset7')
 
