@@ -81,7 +81,7 @@ class NgraphBackend(Backend):
         :return: True if current nGraph library supports ngraph_device_name.
         """
         
-        """This is superfluous, it could be rewritten as comments."""
+        """This is superfluous, it could be rewritten as comments..."""
         try:
             ng.runtime(backend_name=ngraph_device_name)
         except RuntimeError as e:
