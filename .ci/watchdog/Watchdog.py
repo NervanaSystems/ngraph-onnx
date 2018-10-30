@@ -200,11 +200,13 @@ class Watchdog:
                 # Retrieve build number for Jenkins build related to this PR
                 build_number = self._retrieve_build_number(stat.target_url)
                 # CI build finished - verify if expected output is present
-                if 'Build finished' in stat.description:
+                finished_statuses = ['Build finished', 'This commit cannot be built', 'This commit looks good']
+                pending_statuses = ['This commit is being built', 'Testing in progress']
+                if any(phrase in stat.description for phrase in finished_statuses):
                     self._check_finished(pr, build_number)
                     break
                 # CI build in progress - verify timeouts for build queue and duration
-                elif 'Testing in progress' in stat.description:
+                elif any(phrase in stat.description for phrase in pending_statuses):
                     self._check_in_progress(pr, build_number)
                     break
                 # CI waiting to start for too long
