@@ -144,13 +144,6 @@ if backend_name != 'INTERPRETER':
     test_cases = backend_test.test_cases['OnnxBackendZooModelTest']
 
     # Exclude failing tests...
-    # RuntimeError: Broadcast argument shape, target shape, and axes are incompatible.
-    pytest.mark.xfail(test_cases.test_densenet121_opset3_cpu)
-    pytest.mark.xfail(test_cases.test_densenet121_opset6_cpu)
-    pytest.mark.xfail(test_cases.test_inception_v2_opset3_cpu)
-    pytest.mark.xfail(test_cases.test_inception_v2_opset6_cpu)
-    pytest.mark.xfail(test_cases.test_emotion_ferplus_opset2_cpu)
-
     # RuntimeError: BatchNormalization: only 'spatial' mode is supported.
     pytest.mark.xfail(test_cases.test_duc_resnet101_hdc_opset7_cpu)
 
@@ -165,6 +158,7 @@ if backend_name != 'INTERPRETER':
     pytest.mark.xfail(test_cases.test_bvlc_googlenet_opset3_cpu)
     pytest.mark.xfail(test_cases.test_bvlc_rcnn_ilsvrc13_opset3_cpu)
     pytest.mark.xfail(test_cases.test_inception_v1_opset3_cpu)
+    pytest.mark.xfail(test_cases.test_inception_v2_opset3_cpu)
     pytest.mark.xfail(test_cases.test_vgg19_opset3_cpu)
     pytest.mark.xfail(test_cases.test_zfnet512_opset3_cpu)
 
