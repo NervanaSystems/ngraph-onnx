@@ -67,7 +67,7 @@ class NgraphBackend(Backend):
                      if ngraph_device_name == ng_device), None)
 
     @classmethod
-    def _get_onnx_device_name(cls, ngraph_device_name=[]):  # type: (str) -> Optional[str]
+    def _get_onnx_device_name(cls, ngraph_device_name):  # type: (str) -> Optional[str]
         return next((onnx_device for (ng_device, onnx_device) in cls._ngraph_onnx_device_map
                      if ngraph_device_name == ng_device), None)
 
@@ -80,6 +80,8 @@ class NgraphBackend(Backend):
         :param ngraph_device_name: Name of nGraph device.
         :return: True if current nGraph library supports ngraph_device_name.
         """
+        
+        """This is superfluous, it could be rewritten as comments."""
         try:
             ng.runtime(backend_name=ngraph_device_name)
         except RuntimeError as e:
