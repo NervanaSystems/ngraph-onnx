@@ -42,7 +42,6 @@ ch.setFormatter(logging.Formatter('%(name)s - %(levelname)s - %(message)s'))
 log.addHandler(ch)
 
 # Watchdog static constant variables
-_CONFIG_PATH = '/tmp/onnx_ci_watchdog.json'
 _BUILD_DURATION_THRESHOLD = datetime.timedelta(minutes=60)
 _CI_START_THRESHOLD = datetime.timedelta(minutes=10)
 _AWAITING_JENKINS_THRESHOLD = datetime.timedelta(minutes=5)
@@ -81,6 +80,7 @@ class Watchdog:
 
     def __init__(self, jenkins_token, jenkins_server, jenkins_user, git_token, git_org,
                  git_project, slack_token, ci_job_name, watchdog_job_name):
+        self._config_path = '/tmp/' + git_project + '_ci_watchdog.json'
         # Jenkins Wrapper object for CI job
         self._jenkins = JenkinsWrapper(jenkins_token,
                                        jenkins_user=jenkins_user,
@@ -126,9 +126,9 @@ class Watchdog:
             :return:            Returns dict of dicts with reported fails with their timestamps
             :rtype:             dict of dicts
         """
-        if os.path.isfile(_CONFIG_PATH):
+        if os.path.isfile(self._config_path):
             log.info('Config file exists, reading.')
-            file = open(_CONFIG_PATH, 'r')
+            file = open(self._config_path, 'r')
             data = json.load(file)
         else:
             log.info('No config file.')
@@ -397,5 +397,5 @@ class Watchdog:
             if pr not in current_prs:
                 self._config[_PR_REPORTS_CONFIG_KEY].pop(pr)
         log.info('Writing to config file.')
-        file = open(_CONFIG_PATH, 'w+')
+        file = open(self._config_path, 'w+')
         json.dump(self._config, file)
