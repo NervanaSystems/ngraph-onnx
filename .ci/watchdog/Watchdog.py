@@ -114,7 +114,7 @@ class Watchdog:
             self._queue_message(str(e), message_severity=999)
         self._send_message()
 
-    def _read_config_file():
+    def _read_config_file(self):
         """Read Watchdog config file stored on the system.
 
         The file stores every fail already reported along with timestamp. This
