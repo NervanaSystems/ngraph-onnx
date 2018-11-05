@@ -372,8 +372,6 @@ def test_reduce_sum_square_default_axes():
     assert np.allclose(expected, ng_result)
 
 
-# -> NGRAPH-1839
-@pytest.mark.xfail(reason='ngraph does not support argmin yet')
 def test_reduce_argmin():
     def argmin(ndarray, axis, keepdims=False):
         res = np.argmin(ndarray, axis=axis)
@@ -397,8 +395,6 @@ def test_reduce_argmin():
                           argmin(data, keepdims=False, axis=2))
 
 
-# -> NGRAPH-1839
-@pytest.mark.xfail(reason='ngraph dos not support argmax yet')
 def test_reduce_argmax():
     def argmax(ndarray, axis, keepdims=False):
         res = np.argmax(ndarray, axis=axis)

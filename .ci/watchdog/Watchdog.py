@@ -200,11 +200,13 @@ class Watchdog:
                 # Retrieve build number for Jenkins build related to this PR
                 build_number = self._retrieve_build_number(stat.target_url)
                 # CI build finished - verify if expected output is present
-                if 'Build finished' in stat.description:
+                finished_statuses = ['Build finished', 'This commit cannot be built', 'This commit looks good']
+                pending_statuses = ['This commit is being built', 'Testing in progress']
+                if any(phrase in stat.description for phrase in finished_statuses):
                     self._check_finished(pr, build_number)
                     break
                 # CI build in progress - verify timeouts for build queue and duration
-                elif 'Testing in progress' in stat.description:
+                elif any(phrase in stat.description for phrase in pending_statuses):
                     self._check_in_progress(pr, build_number)
                     break
                 # CI waiting to start for too long
@@ -228,10 +230,8 @@ class Watchdog:
             :return:            Returns build number
             :rtype:             int
         """
-        # Get oldest build number
-        # job_info = self._jenkins.get_job_info(self._ci_job_name)
         # Retrieve the build number from url string
-        match_obj = re.search('(?:/' + self._ci_job_name.split('/')[-1] + '/)([0-9]+)', url)
+        match_obj = re.search('(?:/PR-[0-9]+/)([0-9]+)', url)
         try:
             number = int(match_obj.group(1))
             return number
@@ -277,7 +277,8 @@ class Watchdog:
         pr_number = str(pr.number)
         log.info('CI for PR %s: FINISHED', pr_number)
         # Check if FINISH was valid FAIL / SUCCESS
-        build_output = self._jenkins.get_build_console_output(self._ci_job_name, build_number)
+        project_name_full = self._ci_job_name + '/PR-' + pr_number
+        build_output = self._jenkins.get_build_console_output(project_name_full, build_number)
         if _CI_BUILD_FAIL_MESSAGE not in build_output \
                 and _CI_BUILD_SUCCESS_MESSAGE not in build_output:
             message = ('ONNX CI job for PR #{} finished but no tests success or fail '
@@ -338,7 +339,8 @@ class Watchdog:
         """
         pr_number = str(pr.number)
         log.info('CI for PR %s: TESTING IN PROGRESS', pr_number)
-        build_info = self._jenkins.get_build_info(self._ci_job_name, build_number)
+        project_name_full = self._ci_job_name + '/PR-' + pr_number
+        build_info = self._jenkins.get_build_info(project_name_full, build_number)
         build_datetime = datetime.datetime.fromtimestamp(build_info['timestamp'] / 1000.0)
         # If build still waiting in queue
         queue_item = self._jenkins.get_queue_item(build_info['queueId'])

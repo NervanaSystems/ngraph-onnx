@@ -38,10 +38,6 @@ backend_test = onnx.backend.test.BackendTest(NgraphBackend, __name__)
 # MaxPool Indices -> NGRAPH-3131
 backend_test.exclude('test_maxpool_with_argmax')
 
-# ArgMin/ArgMax -> NC-316
-backend_test.exclude('test_argmax')
-backend_test.exclude('test_argmin')
-
 # ConvTranspose -> NC-319
 backend_test.exclude('test_ConvTranspose2d')
 backend_test.exclude('test_convtranspose')
