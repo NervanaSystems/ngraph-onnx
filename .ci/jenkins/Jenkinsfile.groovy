@@ -157,6 +157,9 @@ def main(String label, String projectName, String projectRoot, String dockerCont
                     RunToxTests(configurationMaps)
                 }
             }
+            catch(hudson.AbortException e) {
+                currentBuild.result = 'ABORTED'
+            }
             finally {
                 Cleanup(configurationMaps)
                 Notify()
