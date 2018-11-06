@@ -45,6 +45,7 @@ log.addHandler(ch)
 _BUILD_DURATION_THRESHOLD = datetime.timedelta(minutes=60)
 _CI_START_THRESHOLD = datetime.timedelta(minutes=10)
 _AWAITING_JENKINS_THRESHOLD = datetime.timedelta(minutes=5)
+_WATCHDOG_DIR = '~'
 _PR_REPORTS_CONFIG_KEY = 'pr_reports'
 _CI_BUILD_FAIL_MESSAGE = 'ERROR:   py3: commands failed'
 _CI_BUILD_SUCCESS_MESSAGE = 'py3: commands succeeded'
@@ -80,7 +81,7 @@ class Watchdog:
 
     def __init__(self, jenkins_token, jenkins_server, jenkins_user, git_token, git_org,
                  git_project, slack_token, ci_job_name, watchdog_job_name):
-        self._config_path = '/tmp/' + git_project + '_ci_watchdog.json'
+        self._config_path = '{}/.{}_ci_watchdog.json'.format(_WATCHDOG_DIR, git_project)
         # Jenkins Wrapper object for CI job
         self._jenkins = JenkinsWrapper(jenkins_token,
                                        jenkins_user=jenkins_user,
@@ -126,11 +127,11 @@ class Watchdog:
             :rtype:             dict of dicts
         """
         if os.path.isfile(self._config_path):
-            log.info('Config file exists, reading.')
+            log.info('Reading config file in: {}'.format(self._config_path))
             file = open(self._config_path, 'r')
             data = json.load(file)
         else:
-            log.info('No config file.')
+            log.info('No config file found in: {}'.format(self._config_path))
             data = {_PR_REPORTS_CONFIG_KEY: {}}
         return data
 
@@ -395,6 +396,6 @@ class Watchdog:
         for pr in self._config[_PR_REPORTS_CONFIG_KEY].copy().keys():
             if pr not in current_prs:
                 self._config[_PR_REPORTS_CONFIG_KEY].pop(pr)
-        log.info('Writing to config file.')
+        log.info('Writing to config file at: {}'.format(self._config_path))
         file = open(self._config_path, 'w+')
         json.dump(self._config, file)
