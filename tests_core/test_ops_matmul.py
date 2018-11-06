@@ -125,8 +125,6 @@ def test_op_matmul():
     assert np.array_equal(import_and_compute_matmul(*data), np.matmul(*data))
 
 
-# -> NGRAPH-1838
-@pytest.mark.xfail(reason='ngraph ng.dot does not support matmul-style broadcasting')
 def test_op_matmul_3d():
     # 3d tensor @ 3d tensor
     data = ([[[1, 2], [3, 4]], [[1, 2], [3, 4]]], [[[5, 6], [7, 8]], [[5, 6], [7, 8]]])
