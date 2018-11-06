@@ -45,7 +45,7 @@ log.addHandler(ch)
 _BUILD_DURATION_THRESHOLD = datetime.timedelta(minutes=60)
 _CI_START_THRESHOLD = datetime.timedelta(minutes=10)
 _AWAITING_JENKINS_THRESHOLD = datetime.timedelta(minutes=5)
-_WATCHDOG_DIR = os.path.expanduser("~")
+_WATCHDOG_DIR = os.path.expanduser('~')
 _PR_REPORTS_CONFIG_KEY = 'pr_reports'
 _CI_BUILD_FAIL_MESSAGE = 'ERROR:   py3: commands failed'
 _CI_BUILD_SUCCESS_MESSAGE = 'py3: commands succeeded'
