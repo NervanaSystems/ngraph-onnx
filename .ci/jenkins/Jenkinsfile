@@ -29,6 +29,8 @@ GIT_COMMIT_AUTHOR_EMAIL=""
 GIT_COMMIT_HASH=""
 GIT_COMMIT_SUBJECT=""
 
+// workaround for aborting previous builds on PR update
+// TODO: Move to plugin based solution as soon as it's available
 @NonCPS
 def killPreviousRunningJobs() {
     def jobname = env.JOB_NAME
