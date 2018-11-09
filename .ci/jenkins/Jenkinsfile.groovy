@@ -77,7 +77,7 @@ def buildImage(configurationMaps) {
 
 def runDockerContainers(configurationMaps) {
     Closure runContainerMethod = { configMap ->
-        UTILS.propagateStatus("Build_Image", configMap["name"])
+        UTILS.propagateStatus("Build_image", configMap["name"])
         sh """
             mkdir -p ${HOME}/ONNX_CI
             ${CI_ROOT}/utils/docker.sh start \
