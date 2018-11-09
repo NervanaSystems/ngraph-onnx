@@ -170,7 +170,7 @@ def main(String label, String projectName, String projectRoot, String dockerCont
                     UTILS = load "${CI_ROOT}/utils/utils.groovy"
                     result = 'SUCCESS'
                     // Create configuration maps
-                    configurationMaps = UTILS.GetDockerEnvList(projectName, dockerContainerName, projectRoot)
+                    configurationMaps = UTILS.getDockerEnvList(projectName, dockerContainerName, projectRoot)
                     // Execute CI steps
                     buildImage(configurationMaps)
                     runDockerContainers(configurationMaps)
