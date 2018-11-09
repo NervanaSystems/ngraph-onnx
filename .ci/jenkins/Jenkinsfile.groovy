@@ -29,7 +29,27 @@ GIT_COMMIT_AUTHOR_EMAIL=""
 GIT_COMMIT_HASH=""
 GIT_COMMIT_SUBJECT=""
 
-def CloneRepository(String jenkins_github_credential_id, String repository_git_address) {
+// workaround for aborting previous builds on PR update
+// TODO: Move to plugin based solution as soon as it's available
+@NonCPS
+def killPreviousRunningJobs() {
+    def jobname = env.JOB_NAME
+    def buildnum = env.BUILD_NUMBER.toInteger()
+
+    def job = Jenkins.instance.getItemByFullName(jobname)
+    for (build in job.builds) {
+        if (!build.isBuilding()){ 
+            continue; 
+        }
+        if (buildnum == build.getNumber().toInteger()){ 
+            continue;
+        }
+        echo "Kill task = ${build}"
+        build.doStop();
+    }
+}
+
+def cloneRepository(String jenkins_github_credential_id, String repository_git_address) {
     stage('Clone Repo') {
         checkout([$class: 'GitSCM',
                 branches: [[name: "$CHANGE_BRANCH"]],
@@ -43,7 +63,7 @@ def CloneRepository(String jenkins_github_credential_id, String repository_git_a
     }
 }
 
-def BuildImage(configurationMaps) {
+def buildImage(configurationMaps) {
     Closure buildMethod = { configMap ->
         sh """
             ${CI_ROOT}/utils/docker.sh build \
@@ -52,12 +72,12 @@ def BuildImage(configurationMaps) {
                                 --dockerfile_path=${configMap["dockerfilePath"]}
         """
     }
-    UTILS.CreateStage("Build_Image", buildMethod, configurationMaps)
+    UTILS.createStage("Build_image", buildMethod, configurationMaps)
 }
 
-def RunDockerContainers(configurationMaps) {
+def runDockerContainers(configurationMaps) {
     Closure runContainerMethod = { configMap ->
-        UTILS.PropagateStatus("Build_Image", configMap["name"])
+        UTILS.propagateStatus("Build_image", configMap["name"])
         sh """
             mkdir -p ${HOME}/ONNX_CI
             ${CI_ROOT}/utils/docker.sh start \
@@ -67,32 +87,32 @@ def RunDockerContainers(configurationMaps) {
                                 --volumes="-v ${WORKSPACE}/${BUILD_NUMBER}:/logs -v ${HOME}/ONNX_CI:/home -v ${WORKDIR}:/root"
         """
     }
-    UTILS.CreateStage("Run_docker_containers", runContainerMethod, configurationMaps)
+    UTILS.createStage("Run_docker_containers", runContainerMethod, configurationMaps)
 }
 
-def PrepareEnvironment(configurationMaps) {
+def prepareEnvironment(configurationMaps) {
     Closure prepareEnvironmentMethod = { configMap ->
-        UTILS.PropagateStatus("Run_docker_containers", configMap["dockerContainerName"])
+        UTILS.propagateStatus("Run_docker_containers", configMap["dockerContainerName"])
         sh """
             docker cp ${CI_ROOT}/utils/docker.sh ${configMap["dockerContainerName"]}:/home
             docker exec ${configMap["dockerContainerName"]} bash -c "/root/${CI_ROOT}/prepare_environment.sh"
         """
     }
-    UTILS.CreateStage("Prepare_environment", prepareEnvironmentMethod, configurationMaps)
+    UTILS.createStage("Prepare_environment", prepareEnvironmentMethod, configurationMaps)
 }
 
-def RunToxTests(configurationMaps) {
+def runToxTests(configurationMaps) {
     Closure runToxTestsMethod = { configMap ->
-        UTILS.PropagateStatus("Prepare_environment", configMap["dockerContainerName"])
+        UTILS.propagateStatus("Prepare_environment", configMap["dockerContainerName"])
         sh """
             NGRAPH_WHL=\$(docker exec ${configMap["dockerContainerName"]} bash -c "find  ${NGRAPH_DIRECTORY}/ngraph/python/dist/ -name 'ngraph*.whl' -printf '%Ts\t%p\n' | sort -nr | cut -f2 | head -n1")
             docker exec -e TOX_INSTALL_NGRAPH_FROM=\${NGRAPH_WHL} ${configMap["dockerContainerName"]} tox -c /root
         """
     }
-    UTILS.CreateStage("Run_tox_tests", runToxTestsMethod, configurationMaps)
+    UTILS.createStage("Run_tox_tests", runToxTestsMethod, configurationMaps)
 }
 
-def Cleanup(configurationMaps) {
+def cleanup(configurationMaps) {
     Closure cleanupMethod = { configMap ->
         sh """
             cd ${HOME}/ONNX_CI
@@ -105,13 +125,13 @@ def Cleanup(configurationMaps) {
             rm -rf ${WORKSPACE}/${BUILD_NUMBER}
         """
     }
-    UTILS.CreateStage("Cleanup", cleanupMethod, configurationMaps)
+    UTILS.createStage("Cleanup", cleanupMethod, configurationMaps)
 }
 
-def Notify() {
+def notifyByEmail() {
     configurationMaps = []
     configurationMaps.add([
-        "name": "notify"
+        "name": "Notify"
     ])
     String notifyPeople = "$GIT_PR_AUTHOR_EMAIL, $GIT_COMMIT_AUTHOR_EMAIL"
     Closure notifyMethod = { configMap ->
@@ -133,10 +153,11 @@ def Notify() {
             )
         }
     }
-    UTILS.CreateStage("Notify", notifyMethod, configurationMaps)
+    UTILS.createStage("Notify", notifyMethod, configurationMaps)
 }
 
 def main(String label, String projectName, String projectRoot, String dockerContainerName, String jenkins_github_credential_id, String repository_git_address) {
+    killPreviousRunningJobs()
     node(label) {
         timeout(activity: true, time: 60) {        
             WORKDIR = "${WORKSPACE}/${BUILD_NUMBER}/${PROJECT_NAME}"
@@ -144,25 +165,30 @@ def main(String label, String projectName, String projectRoot, String dockerCont
             try {
                 dir ("${WORKDIR}") {
                     sh "echo WORKAROUND"
-                    CloneRepository(jenkins_github_credential_id, repository_git_address)
+                    cloneRepository(jenkins_github_credential_id, repository_git_address)
                     // Load CI API
                     UTILS = load "${CI_ROOT}/utils/utils.groovy"
                     result = 'SUCCESS'
                     // Create configuration maps
-                    configurationMaps = UTILS.GetDockerEnvList(projectName, dockerContainerName, projectRoot)
+                    configurationMaps = UTILS.getDockerEnvList(projectName, dockerContainerName, projectRoot)
                     // Execute CI steps
-                    BuildImage(configurationMaps)
-                    RunDockerContainers(configurationMaps)
-                    PrepareEnvironment(configurationMaps)
-                    RunToxTests(configurationMaps)
+                    buildImage(configurationMaps)
+                    runDockerContainers(configurationMaps)
+                    prepareEnvironment(configurationMaps)
+                    runToxTests(configurationMaps)
                 }
             }
-            catch(hudson.AbortException e) {
-                currentBuild.result = 'ABORTED'
+            catch(e) {
+                // Set result to ABORTED if exception contains exit code of a process interrupted by SIGTERM
+                if ("$e".contains("143")) {
+                    currentBuild.result = "ABORTED"
+                } else {
+                    currentBuild.result = "FAILURE"
+                }
             }
             finally {
-                Cleanup(configurationMaps)
-                Notify()
+                cleanup(configurationMaps)
+                notifyByEmail()
             }
         }
     }
