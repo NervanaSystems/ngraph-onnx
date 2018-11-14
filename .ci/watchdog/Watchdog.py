@@ -97,7 +97,7 @@ class Watchdog:
         # Time at Watchdog initiation
         self._now_time = self._git.get_git_time()
 
-    def run(self):
+    def run(self, quiet=False):
         """Run main watchdog logic.
 
         Retrieve list of pull requests and passes it to the method responsible for checking them.
@@ -113,7 +113,7 @@ class Watchdog:
         except Exception as e:
             log.exception(str(e))
             self._queue_message(str(e), message_severity=999)
-        self._send_message()
+        self._send_message(quiet=quiet)
 
     def _read_config_file(self):
         """Read Watchdog config file stored on the system.
@@ -307,7 +307,7 @@ class Watchdog:
         else:
             log.info('PR ' + pr_number + ' -- fail already reported.')
 
-    def _send_message(self):
+    def _send_message(self, quiet=False):
         """Send messages queued in Slack App object to designated Slack channel.
 
         Queued messages are being sent as a single communication.
@@ -322,7 +322,7 @@ class Watchdog:
                 watchdog_build_link = self._jenkins.jenkins_server
             send = self._watchdog_job_name + '- build ' + str(
                 watchdog_build_number) + ' - ' + watchdog_build_link
-            self._slack_app.send_message(send)
+            self._slack_app.send_message(send, quiet=quiet)
         else:
             log.info('Nothing to report.')
 
