@@ -56,7 +56,7 @@ def import_and_compute_conv(x, weights, transpose=False, **attributes):
                                              transpose=transpose, **attributes)
     ng_model = import_onnx_model(onnx_model)[0]
     computation = get_runtime().computation(ng_model['output'], *ng_model['inputs'])
-    return computation(x, weights)
+    return computation(x, weights)[0]
 
 
 def test_2d_conv():
@@ -212,14 +212,14 @@ def test_pad_opset_1():
 
     model = get_node_model('Pad', x, paddings=[1, 1, 1, 1])
     ng_results = run_model(model, [x])
-    assert np.array_equal(ng_results, [y])
+    assert np.array_equal(ng_results[0], [y])
 
     x = np.random.randn(1, 3, 4, 5).astype(np.float32)
     y = np.pad(x, pad_width=((0, 0), (0, 0), (1, 2), (3, 4)), mode='constant')
 
     model = get_node_model('Pad', x, mode='constant', paddings=[0, 0, 1, 3, 0, 0, 2, 4])
     ng_results = run_model(model, [x])
-    assert np.array_equal(ng_results, [y])
+    assert np.array_equal(ng_results[0], [y])
 
     # incorrect paddings rank
     x = np.ones((2, 2), dtype=np.float32)
@@ -239,14 +239,14 @@ def test_pad_opset_2():
 
     model = get_node_model('Pad', x, opset=2, pads=[1, 1, 1, 1])
     ng_results = run_model(model, [x])
-    assert np.array_equal(ng_results, [y])
+    assert np.array_equal(ng_results[0], [y])
 
     x = np.random.randn(1, 3, 4, 5).astype(np.float32)
     y = np.pad(x, pad_width=((0, 0), (0, 0), (1, 2), (3, 4)), mode='constant')
 
     model = get_node_model('Pad', x, opset=2, mode='constant', pads=[0, 0, 1, 3, 0, 0, 2, 4])
     ng_results = run_model(model, [x])
-    assert np.array_equal(ng_results, [y])
+    assert np.array_equal(ng_results[0], [y])
 
     # incorrect pads rank
     x = np.ones((2, 2), dtype=np.float32)
@@ -272,7 +272,7 @@ def test_pool_average(ndarray_1x1x4x4):
     y = np.array([[13.5, 15.5],
                   [21.5, 23.5]], dtype=np.float32).reshape(1, 1, 2, 2)
     ng_results = run_node(node, [x])
-    assert np.array_equal(ng_results, [y])
+    assert np.array_equal(list(ng_results), [y])
 
     node = onnx.helper.make_node('AveragePool', inputs=['x'], outputs=['y'],
                                  kernel_shape=(2, 2), strides=(2, 2), pads=(1, 1, 1, 1))
@@ -280,7 +280,7 @@ def test_pool_average(ndarray_1x1x4x4):
                   [17, 18.5, 20],
                   [23, 24.5, 26]], dtype=np.float32).reshape(1, 1, 3, 3)
     ng_results = run_node(node, [x])
-    assert np.array_equal(ng_results, [y])
+    assert np.array_equal(list(ng_results), [y])
 
 
 def test_pool_average_3d(ndarray_1x1x4x4):
@@ -293,7 +293,7 @@ def test_pool_average_3d(ndarray_1x1x4x4):
                   [[13.5, 15.5],
                    [21.5, 23.5]]], dtype=np.float32).reshape(1, 1, 2, 2, 2)
     ng_results = run_node(node, [x])
-    assert np.array_equal(ng_results, [y])
+    assert np.array_equal(list(ng_results), [y])
 
 
 def test_pool_max(ndarray_1x1x4x4):
@@ -305,7 +305,7 @@ def test_pool_max(ndarray_1x1x4x4):
                   [24, 26]], dtype=np.float32).reshape(1, 1, 2, 2)
 
     ng_results = run_node(node, [x])
-    assert np.array_equal(ng_results, [y])
+    assert np.array_equal(list(ng_results), [y])
 
 
 def test_pool_global_max(ndarray_1x1x4x4):
@@ -315,7 +315,7 @@ def test_pool_global_max(ndarray_1x1x4x4):
     y = np.array([26], dtype=np.float32).reshape(1, 1, 1, 1)
 
     ng_results = run_node(node, [x])
-    assert np.array_equal(ng_results, [y])
+    assert np.array_equal(list(ng_results), [y])
 
 
 def test_pool_global_average(ndarray_1x1x4x4):
@@ -325,7 +325,7 @@ def test_pool_global_average(ndarray_1x1x4x4):
     y = np.array([18.5], dtype=np.float32).reshape(1, 1, 1, 1)
 
     ng_results = run_node(node, [x])
-    assert np.array_equal(ng_results, [y])
+    assert np.array_equal(list(ng_results), [y])
 
 
 def test_pool_global_average_3d(ndarray_1x1x4x4):
@@ -334,4 +334,4 @@ def test_pool_global_average_3d(ndarray_1x1x4x4):
     node = onnx.helper.make_node('GlobalAveragePool', inputs=['x'], outputs=['y'])
     y = np.array([18.5], dtype=np.float32).reshape(1, 1, 1, 1, 1)
     ng_results = run_node(node, [x])
-    assert np.array_equal(ng_results, [y])
+    assert np.array_equal(list(ng_results), [y])

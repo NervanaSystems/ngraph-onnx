@@ -37,7 +37,7 @@ def test_variadic(onnx_op, numpy_func):
     expected_output = reduce(numpy_func, data)
 
     ng_results = run_node(node, data)
-    assert np.array_equal(ng_results, [expected_output])
+    assert np.array_equal(list(ng_results), [expected_output])
 
 
 def test_mean():
@@ -46,4 +46,4 @@ def test_mean():
     expected_output = reduce(np.add, data) / len(data)
 
     ng_results = run_node(node, data)
-    assert np.array_equal(ng_results, [expected_output])
+    assert np.array_equal(list(ng_results), [expected_output])

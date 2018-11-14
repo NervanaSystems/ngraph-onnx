@@ -32,7 +32,7 @@ from cachetools.func import lru_cache
 
 from onnx.helper import make_tensor_value_info, make_graph, make_model
 from onnx.backend.base import Backend, BackendRep
-from typing import Any, Dict, List, Optional, Sequence, Text, Tuple
+from typing import Any, Dict, Generator, List, Optional, Sequence, Text, Tuple
 
 from ngraph_onnx.onnx_importer.importer import import_onnx_model
 from ngraph_onnx.onnx_importer.utils.types import np_dtype_to_tensor_type
@@ -107,7 +107,7 @@ class NgraphBackend(Backend):
 
     @classmethod
     def run_model(cls, onnx_model, inputs, device='CPU', **kwargs):
-        # type: (onnx.ModelProto, List[np.ndarray], str, Dict) -> List[np.ndarray]
+        # type: (onnx.ModelProto, List[np.ndarray], str, Dict) -> Generator
         """Prepare and run a computation on an ONNX model."""
         return cls.prepare(onnx_model, device, **kwargs).run(inputs)
 
@@ -118,7 +118,7 @@ class NgraphBackend(Backend):
                  device='CPU',  # type: Text
                  outputs_info=None,  # type: Optional[Sequence[Tuple[np.dtype, Tuple[int, ...]]]]
                  **kwargs  # type: Any
-                 ):  # type: (...) -> List[np.ndarray]
+                 ):  # type: (...) -> Generator
         """Prepare and run a computation on an ONNX node."""
         # default values for input/output tensors
         input_tensor_types = [np_dtype_to_tensor_type(node_input.dtype) for node_input in inputs]
@@ -155,9 +155,11 @@ class NgraphBackendRep(BackendRep):
         self.computations = [self.runtime.computation(model['output'], *model['inputs']) for
                              model in ng_model]
 
-    def run(self, inputs, **kwargs):  # type: (List[np.ndarray], Dict) -> List[np.ndarray]
+    def run(self, inputs, **kwargs):  # type: (List[np.ndarray], Dict) -> Generator
         """Execute computation on the backend representation of model."""
-        return [computation(*inputs) for computation in self.computations]
+        for computation in self.computations:
+            for result in computation(*inputs):
+                yield result
 
     def _get_ngraph_device_name(self, onnx_device):  # type: (str) -> str
         return 'GPU' if onnx_device == 'CUDA' else onnx_device

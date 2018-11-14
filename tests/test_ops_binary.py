@@ -38,7 +38,7 @@ def import_and_compute(op_type, input_data_left, input_data_right, opset=4, **no
     model = make_model(graph, producer_name='NgraphBackend')
     model.opset_import[0].version = opset
 
-    return run_model(model, inputs)[0]
+    return run_model(model, inputs)[0][0]
 
 
 def test_add():

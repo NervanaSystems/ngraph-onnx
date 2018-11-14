@@ -17,7 +17,7 @@ import onnx
 from typing import List
 
 from ngraph.impl import Function
-from ngraph.impl.onnx_import import load_onnx_model, load_onnx_model_file
+from ngraph.impl import onnx_import
 
 
 def import_onnx_model(onnx_protobuf):  # type: (onnx.ModelProto) -> List[Function]
@@ -27,7 +27,7 @@ def import_onnx_model(onnx_protobuf):  # type: (onnx.ModelProto) -> List[Functio
     :param onnx_protobuf: ONNX Protocol Buffers model (onnx_pb2.ModelProto object)
     :return: list of ngraph Functions representing computations for each output.
     """
-    return load_onnx_model(onnx_protobuf.SerializeToString())
+    return onnx_import.import_onnx_model(onnx_protobuf.SerializeToString())
 
 
 def import_onnx_file(filename):  # type: (str) -> List[Function]
@@ -37,4 +37,4 @@ def import_onnx_file(filename):  # type: (str) -> List[Function]
     :param filename: path to an ONNX file
     :return: List of imported ngraph Functions (see docs for import_onnx_model).
     """
-    return load_onnx_model_file(filename)
+    return onnx_import.import_onnx_model_file(filename)

@@ -54,9 +54,9 @@ def import_and_compute_conv(x, weights, transpose=False, **attributes):
     x, weights = np.array(x), np.array(weights)
     onnx_model = make_onnx_model_for_conv_op(x.shape, weights.shape,
                                              transpose=transpose, **attributes)
-    ng_model_function = import_onnx_model(onnx_model)[0]
+    ng_model_function = import_onnx_model(onnx_model)
     computation = get_runtime().computation(ng_model_function)
-    return computation(x, weights)
+    return computation(x, weights)[0]
 
 
 
@@ -233,7 +233,7 @@ def test_pad_opset_1():
     # no paddings arttribute
     model = get_node_model('Pad', x)
     with pytest.raises(ValueError):
-        import_onnx_model(model)[0]
+        import_onnx_model(model)
 
 
 @pytest.mark.xfail(reason='Refactoring to nGraph core importer.')
@@ -266,7 +266,7 @@ def test_pad_opset_2():
     # no pads attribute
     model = get_node_model('Pad', x, opset=2)
     with pytest.raises(ValueError):
-        import_onnx_model(model)[0]
+        import_onnx_model(model)
 
 
 def test_pool_average(ndarray_1x1x4x4):
