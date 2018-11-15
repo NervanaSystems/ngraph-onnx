@@ -1,4 +1,5 @@
 {
+    "pr_mergeable_state": ["behind", "dirty"],
     "pr_title_contains": ["[WIP]"],
     "pr_labels": ["WIP"]
 }

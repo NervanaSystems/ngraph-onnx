@@ -152,6 +152,11 @@ class Watchdog:
             :return:            Returns True if PR should be ignored
             :rtype:             Bool
         """
+        # Filter by mergeable states
+        for ignore_state in criteria.get("pr_mergeable_state"):
+            if ignore_state in pr.mergeable_state:
+                log.info('PR#{} should be ignored because mergeable state is \"{}\" .'.format(str(pr.number), ignore_state))
+                return True
         # Filter by title
         for ignore_title in criteria.get("pr_title_contains"):
             if ignore_title in pr.title:
