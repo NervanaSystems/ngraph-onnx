@@ -103,7 +103,7 @@ if __name__ == '__main__':
                         default=DEFAULT_WATCHDOG_JOB_NAME, action='store', required=False)
     
     parser.add_argument('--quiet', help='Quiet mode - doesn\'t send message to slack channel.
-                        default=False, action='store', required=False)
+                        action='store_true', required=False)
 
     args = parser.parse_args()
     sys.exit(main(args))
