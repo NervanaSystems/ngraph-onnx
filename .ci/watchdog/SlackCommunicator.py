@@ -59,7 +59,9 @@ class SlackCommunicator:
         Send queued messages as single communication.
 
             :param message:     Final message's content
+            :param quiet:       Flag for disabling sending report through Slack
             :type message:      String
+            :type quiet:        Boolean
         """
         if self.slack_client is None:
             try:
