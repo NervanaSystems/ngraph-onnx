@@ -42,10 +42,12 @@ ch.setFormatter(logging.Formatter('%(name)s - %(levelname)s - %(message)s'))
 log.addHandler(ch)
 
 # Watchdog static constant variables
+_SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 _BUILD_DURATION_THRESHOLD = datetime.timedelta(minutes=60)
 _CI_START_THRESHOLD = datetime.timedelta(minutes=10)
 _AWAITING_JENKINS_THRESHOLD = datetime.timedelta(minutes=5)
 _WATCHDOG_DIR = os.path.expanduser('~')
+_IGNORE_FILE_PATH = os.path.join(_SCRIPT_DIR, "ignore.json")
 _PR_REPORTS_CONFIG_KEY = 'pr_reports'
 _CI_BUILD_FAIL_MESSAGE = 'ERROR:   py3: commands failed'
 _CI_BUILD_SUCCESS_MESSAGE = 'py3: commands succeeded'
@@ -100,6 +102,9 @@ class Watchdog:
     def run(self, quiet=False):
         """Run main watchdog logic.
 
+            :param quiet:   Flag for disabling sending report through Slack
+            :type quiet:    Boolean
+
         Retrieve list of pull requests and passes it to the method responsible for checking them.
         """
         try:
@@ -135,6 +140,32 @@ class Watchdog:
             data = {_PR_REPORTS_CONFIG_KEY: {}}
         return data
 
+    def should_ignore(self, pr, criteria):
+        """
+        Determines if PR should be ignored based on criteria in ignore.json file.
+
+            :param pr:          Single PR being currently checked
+            :param criteria:    Dictionary containing ignore criteria      
+            :type pr:           github.PullRequest.PullRequest
+            :type criteria:     Dict
+
+            :return:            Returns True if PR should be ignored
+            :rtype:             Bool
+        """
+        # Filter by title
+        for ignore_title in criteria.get("pr_title_contains"):
+            if ignore_title in pr.title:
+                log.info('PR#{} should be ignored because \"{}\" present in title: \"{}\"'.format(str(pr.number), ignore_title, pr.title))
+                return True
+        # Filter by labels
+        label_names = lambda pr : [ label.name for label in pr.get_labels() ]
+        for ignore_label in criteria.get("pr_labels"):
+            if ignore_label in label_names(pr):
+                log.info('PR#{} should be ignored because label \"{}\" is present.'.format(str(pr.number), ignore_label))
+                return True
+        
+        return False
+
     def _check_prs(self, pull_requests):
         """
         Loop through pull requests, retrieving list of statuses for every PR's last commit.
@@ -151,9 +182,15 @@ class Watchdog:
                                         of github.PullRequest.PullRequest
         """
         current_prs = []
+        log.info('Reading ignore.json file in: {}'.format(_IGNORE_FILE_PATH))
+        file = open(_IGNORE_FILE_PATH, 'r')
+        ignore_criteria = json.load(file)
         # Check all pull requests
         for pr in pull_requests:
             log.info('===============================================')
+            if self.should_ignore(pr, ignore_criteria):
+                log.info('Ignoring PR#%s', pr_number)
+                continue
             pr_number = str(pr.number)
             log.info('Checking PR#%s', pr_number)
             # Append PRs checked in current run for Watchdog config cleanup
@@ -309,6 +346,9 @@ class Watchdog:
 
     def _send_message(self, quiet=False):
         """Send messages queued in Slack App object to designated Slack channel.
+
+            :param quiet:   Flag for disabling sending report through Slack
+            :type quiet:    Boolean
 
         Queued messages are being sent as a single communication.
         """
