@@ -38,10 +38,6 @@ backend_test = onnx.backend.test.BackendTest(NgraphBackend, __name__)
 # MaxPool Indices -> NGRAPH-3131
 backend_test.exclude('test_maxpool_with_argmax')
 
-# ArgMin/ArgMax -> NC-316
-backend_test.exclude('test_argmax')
-backend_test.exclude('test_argmin')
-
 # ConvTranspose -> NC-319
 backend_test.exclude('test_ConvTranspose2d')
 backend_test.exclude('test_convtranspose')
@@ -104,10 +100,6 @@ OnnxBackendSimpleModelTest = None
 OnnxBackendPyTorchOperatorModelTest = None
 OnnxBackendPyTorchConvertedModelTest = None
 globals().update(backend_test.enable_report().test_cases)
-
-# Matmul ops -> NC5-314
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_matmul_3d_cpu)
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_matmul_4d_cpu)
 
 # PyTorch Operator tests -> NC-329
 pytest.mark.xfail(OnnxBackendPyTorchOperatorModelTest.test_operator_pad_cpu)

@@ -21,7 +21,8 @@ from tests_core.utils.model_zoo_tester import ModelZooTestRunner
 
 _S3_DOWNLOAD_ONNX = 'https://s3.amazonaws.com/download.onnx/models/'
 _S3_MODEL_ZOO = 'https://s3.amazonaws.com/onnx-model-zoo/'
-_CNTK_MODELS = 'https://www.cntk.ai/OnnxModels/'
+_WINDOWS_NET = 'https://onnxzoo.blob.core.windows.net/models/'
+
 
 zoo_models = {
     # ArcFace
@@ -66,8 +67,9 @@ zoo_models = {
     'duc_resnet101_hdc_opset7': _S3_MODEL_ZOO + 'duc/ResNet101_DUC_HDC.tar.gz',
 
     # Emotion-FERPlus
-    'emotion_ferplus_opset2': _CNTK_MODELS + 'emotion_ferplus/opset_2/emotion_ferplus.tar.gz',
-    'emotion_ferplus_opset7': _CNTK_MODELS + 'emotion_ferplus/opset_7/emotion_ferplus.tar.gz',
+    'emotion_ferplus_opset2': _WINDOWS_NET + 'opset_2/emotion_ferplus/emotion_ferplus.tar.gz',
+    'emotion_ferplus_opset7': _WINDOWS_NET + 'opset_7/emotion_ferplus/emotion_ferplus.tar.gz',
+    'emotion_ferplus_opset8': _WINDOWS_NET + 'opset_8/emotion_ferplus/emotion_ferplus.tar.gz',
 
     # Inception-v1
     'inception_v1_opset3': _S3_DOWNLOAD_ONNX + 'opset_3/inception_v1.tar.gz',
@@ -84,8 +86,9 @@ zoo_models = {
     'inception_v2_opset9': _S3_DOWNLOAD_ONNX + 'opset_9/inception_v2.tar.gz',
 
     # MNIST
-    'mnist_opset1': _CNTK_MODELS + 'mnist/opset_1/mnist.tar.gz',
-    'mnist_opset7': _CNTK_MODELS + 'mnist/opset_7/mnist.tar.gz',
+    'mnist_opset1': _WINDOWS_NET + 'opset_1/mnist/mnist.tar.gz',
+    'mnist_opset7': _WINDOWS_NET + 'opset_7/mnist/mnist.tar.gz',
+    'mnist_opset8': _WINDOWS_NET + 'opset_8/mnist/mnist.tar.gz',
 
     # Mobile Net
     'mobilenet_opset7': _S3_MODEL_ZOO + 'mobilenet/mobilenetv2-1.0/mobilenetv2-1.0.tar.gz',
@@ -115,8 +118,9 @@ zoo_models = {
     'squeezenet_opset9': _S3_DOWNLOAD_ONNX + 'opset_9/squeezenet.tar.gz',
 
     # Tiny-YOLOv2
-    'tiny_yolov2_opset1': _CNTK_MODELS + 'tiny_yolov2/opset_1/tiny_yolov2.tar.gz',
-    'tiny_yolov2_opset7': _CNTK_MODELS + 'tiny_yolov2/opset_7/tiny_yolov2.tar.gz',
+    'tiny_yolov2_opset1': _WINDOWS_NET + 'opset_1/tiny_yolov2/tiny_yolov2.tar.gz',
+    'tiny_yolov2_opset7': _WINDOWS_NET + 'opset_7/tiny_yolov2/tiny_yolov2.tar.gz',
+    'tiny_yolov2_opset8': _WINDOWS_NET + 'opset_8/tiny_yolov2/tiny_yolov2.tar.gz',
 
     # VGG-19
     'vgg19_opset3': _S3_DOWNLOAD_ONNX + 'opset_3/vgg19.tar.gz',
@@ -132,7 +136,6 @@ zoo_models = {
     'zfnet512_opset8': _S3_DOWNLOAD_ONNX + 'opset_8/zfnet512.tar.gz',
     'zfnet512_opset9': _S3_DOWNLOAD_ONNX + 'opset_9/zfnet512.tar.gz',
 }
-
 backend_name = pytest.config.getoption('backend', default='CPU')
 
 if backend_name != 'INTERPRETER':
@@ -144,13 +147,6 @@ if backend_name != 'INTERPRETER':
     test_cases = backend_test.test_cases['OnnxBackendZooModelTest']
 
     # Exclude failing tests...
-    # RuntimeError: Broadcast argument shape, target shape, and axes are incompatible.
-    pytest.mark.xfail(test_cases.test_densenet121_opset3_cpu)
-    pytest.mark.xfail(test_cases.test_densenet121_opset6_cpu)
-    pytest.mark.xfail(test_cases.test_inception_v2_opset3_cpu)
-    pytest.mark.xfail(test_cases.test_inception_v2_opset6_cpu)
-    pytest.mark.xfail(test_cases.test_emotion_ferplus_opset2_cpu)
-
     # RuntimeError: BatchNormalization: only 'spatial' mode is supported.
     pytest.mark.xfail(test_cases.test_duc_resnet101_hdc_opset7_cpu)
 
@@ -165,6 +161,7 @@ if backend_name != 'INTERPRETER':
     pytest.mark.xfail(test_cases.test_bvlc_googlenet_opset3_cpu)
     pytest.mark.xfail(test_cases.test_bvlc_rcnn_ilsvrc13_opset3_cpu)
     pytest.mark.xfail(test_cases.test_inception_v1_opset3_cpu)
+    pytest.mark.xfail(test_cases.test_inception_v2_opset3_cpu)
     pytest.mark.xfail(test_cases.test_vgg19_opset3_cpu)
     pytest.mark.xfail(test_cases.test_zfnet512_opset3_cpu)
 
@@ -174,6 +171,7 @@ if backend_name != 'INTERPRETER':
 
     # RuntimeError: unknown operation: ImageScaler
     backend_test.exclude('test_tiny_yolov2_opset7')
+    backend_test.exclude('test_tiny_yolov2_opset8')
 
     # ONNX ValidationError
     backend_test.exclude('test_mnist_opset1')
