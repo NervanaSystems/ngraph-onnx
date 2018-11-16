@@ -107,24 +107,28 @@ pytest.mark.xfail(OnnxBackendPyTorchOperatorModelTest.test_operator_repeat_cpu)
 pytest.mark.xfail(OnnxBackendPyTorchOperatorModelTest.test_operator_repeat_dim_overflow_cpu)
 pytest.mark.xfail(OnnxBackendPyTorchOperatorModelTest.test_operator_symbolic_override_cpu)
 
-# Reshape ops -> NC-321
+# Dynamic Expand -> NGONNX-367
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_expand_dim_changed_cpu)
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_expand_dim_unchanged_cpu)
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_gather_0_cpu)
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_gather_1_cpu)
+pytest.mark.xfail(OnnxBackendSimpleModelTest.test_expand_shape_model1_cpu)
+pytest.mark.xfail(OnnxBackendSimpleModelTest.test_expand_shape_model2_cpu)
+pytest.mark.xfail(OnnxBackendSimpleModelTest.test_expand_shape_model3_cpu)
+pytest.mark.xfail(OnnxBackendSimpleModelTest.test_expand_shape_model4_cpu)
+
+# Dynamic Reshape -> NGONNX-357
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_reshape_extended_dims_cpu)
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_reshape_negative_dim_cpu)
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_reshape_one_dim_cpu)
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_reshape_reduced_dims_cpu)
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_reshape_reordered_dims_cpu)
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_size_cpu)
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_size_example_cpu)
+
+# Dynamic Gather -> NGONNX-369
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_gather_0_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_gather_1_cpu)
+
+# Dynamic Tile -> NGONNX-368
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_tile_cpu)
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_tile_precomputed_cpu)
-pytest.mark.xfail(OnnxBackendSimpleModelTest.test_expand_shape_model1_cpu)
-pytest.mark.xfail(OnnxBackendSimpleModelTest.test_expand_shape_model2_cpu)
-pytest.mark.xfail(OnnxBackendSimpleModelTest.test_expand_shape_model3_cpu)
-pytest.mark.xfail(OnnxBackendSimpleModelTest.test_expand_shape_model4_cpu)
 pytest.mark.xfail(OnnxBackendPyTorchConvertedModelTest.test_Embedding_cpu)
 pytest.mark.xfail(OnnxBackendPyTorchConvertedModelTest.test_Embedding_sparse_cpu)
 
