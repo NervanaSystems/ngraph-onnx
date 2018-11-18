@@ -155,7 +155,7 @@ class Watchdog:
         # Filter by base branch ref
         for ignore_base_ref in criteria.get("pr_base_ref_not_equal"):
             if ignore_base_ref != pr.base.ref:
-                log.info('PR#{} should be ignored because base ref (\"{}\") is not \"{}\" .'.format(str(pr.number), pr.base.ref , ignore_state))
+                log.info('PR#{} should be ignored because base ref (\"{}\") is not \"{}\" .'.format(str(pr.number), pr.base.ref , ignore_base_ref))
                 return True
         # Filter by mergeable states
         for ignore_state in criteria.get("pr_mergeable_state"):
