@@ -152,6 +152,11 @@ class Watchdog:
             :return:            Returns True if PR should be ignored
             :rtype:             Bool
         """
+        # Filter by base branch ref
+        for ignore_base_ref in criteria.get("pr_base_ref_not_equal"):
+            if ignore_base_ref != pr.base.ref:
+                log.info('PR#{} should be ignored because base ref (\"{}\") is not \"{}\" .'.format(str(pr.number), pr.base.ref , ignore_state))
+                return True
         # Filter by mergeable states
         for ignore_state in criteria.get("pr_mergeable_state"):
             if ignore_state in pr.mergeable_state:
@@ -193,10 +198,10 @@ class Watchdog:
         # Check all pull requests
         for pr in pull_requests:
             log.info('===============================================')
+            pr_number = str(pr.number)
             if self.should_ignore(pr, ignore_criteria):
                 log.info('Ignoring PR#%s', pr_number)
                 continue
-            pr_number = str(pr.number)
             log.info('Checking PR#%s', pr_number)
             # Append PRs checked in current run for Watchdog config cleanup
             current_prs.append(pr_number)
