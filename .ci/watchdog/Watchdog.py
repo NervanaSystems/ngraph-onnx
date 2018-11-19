@@ -47,7 +47,7 @@ _BUILD_DURATION_THRESHOLD = datetime.timedelta(minutes=60)
 _CI_START_THRESHOLD = datetime.timedelta(minutes=10)
 _AWAITING_JENKINS_THRESHOLD = datetime.timedelta(minutes=5)
 _WATCHDOG_DIR = os.path.expanduser('~')
-_IGNORE_FILE_PATH = os.path.join(_SCRIPT_DIR, "ignore.json")
+_IGNORE_FILE_PATH = os.path.join(_SCRIPT_DIR, 'ignore.json')
 _PR_REPORTS_CONFIG_KEY = 'pr_reports'
 _CI_BUILD_FAIL_MESSAGE = 'ERROR:   py3: commands failed'
 _CI_BUILD_SUCCESS_MESSAGE = 'py3: commands succeeded'
@@ -141,8 +141,7 @@ class Watchdog:
         return data
 
     def should_ignore(self, pr, criteria):
-        """
-        Determines if PR should be ignored based on criteria in ignore.json file.
+        """Determines if PR should be ignored based on criteria in ignore.json file.
 
             :param pr:          Single PR being currently checked
             :param criteria:    Dictionary containing ignore criteria      
@@ -153,16 +152,18 @@ class Watchdog:
             :rtype:             Bool
         """
         # Filter by base branch ref
-        for ignore_base_ref in criteria.get("pr_base_ref_not_equal"):
+        for ignore_base_ref in criteria.get('pr_base_ref_not_equal'):
             if ignore_base_ref != pr.base.ref:
-                log.info('PR#{} should be ignored because base ref (\"{}\") is not \"{}\" .'.format(str(pr.number), pr.base.ref , ignore_base_ref))
+                log.info('PR#{} should be ignored because base ref (\"{}\") is not \"{}\" .'.format(
+                    str(pr.number), pr.base.ref, ignore_base_ref))
                 return True
         # Filter by mergeable states
-        for ignore_state in criteria.get("pr_mergeable_state"):
+        for ignore_state in criteria.get('pr_mergeable_state'):
             if ignore_state in pr.mergeable_state:
-                log.info('PR#{} should be ignored because mergeable state is \"{}\" .'.format(str(pr.number), ignore_state))
+                log.info('PR#{} should be ignored because mergeable state is \"{}\" .'.format(
+                    str(pr.number), ignore_state))
                 return True
-        
+
         return False
 
     def _check_prs(self, pull_requests):

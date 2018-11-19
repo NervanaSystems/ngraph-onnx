@@ -101,7 +101,7 @@ if __name__ == '__main__':
 
     parser.add_argument('--watchdog-job', help='Jenkins CI Watchdog job name.',
                         default=DEFAULT_WATCHDOG_JOB_NAME, action='store', required=False)
-    
+
     parser.add_argument('--quiet', help='Quiet mode - doesn\'t send message to slack channel.',
                         action='store_true', required=False)
 
