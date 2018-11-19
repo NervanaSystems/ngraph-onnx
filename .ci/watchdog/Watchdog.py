@@ -162,17 +162,6 @@ class Watchdog:
             if ignore_state in pr.mergeable_state:
                 log.info('PR#{} should be ignored because mergeable state is \"{}\" .'.format(str(pr.number), ignore_state))
                 return True
-        # Filter by title
-        for ignore_title in criteria.get("pr_title_contains"):
-            if ignore_title in pr.title:
-                log.info('PR#{} should be ignored because \"{}\" present in title: \"{}\"'.format(str(pr.number), ignore_title, pr.title))
-                return True
-        # Filter by labels
-        label_names = lambda pr : [ label.name for label in pr.get_labels() ]
-        for ignore_label in criteria.get("pr_labels"):
-            if ignore_label in label_names(pr):
-                log.info('PR#{} should be ignored because label \"{}\" is present.'.format(str(pr.number), ignore_label))
-                return True
         
         return False
 
