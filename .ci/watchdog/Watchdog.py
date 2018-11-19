@@ -142,7 +142,8 @@ class Watchdog:
 
     @staticmethod
     def _should_ignore(self, pr, criteria):
-        """Determines if PR should be ignored based on criteria in ignore.json file.
+        """
+        Determine if PR should be ignored based on criteria in ignore.json file.
 
             :param pr:          Single PR being currently checked
             :param criteria:    Dictionary containing ignore criteria
