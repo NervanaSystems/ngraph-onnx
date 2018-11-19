@@ -26,7 +26,7 @@ _WINDOWS_NET = 'https://onnxzoo.blob.core.windows.net/models/'
 
 zoo_models = {
     # ArcFace
-    'arcface_lresnet100e_opset7': _S3_MODEL_ZOO + 'arcface/resnet100/resnet100.tar.gz',
+    'arcface_lresnet100e_opset8': _S3_MODEL_ZOO + 'arcface/resnet100/resnet100.tar.gz',
 
     # BVLC AlexNet
     'bvlc_alexnet_opset3': _S3_DOWNLOAD_ONNX + 'opset_3/bvlc_alexnet.tar.gz',
@@ -147,11 +147,8 @@ if backend_name != 'INTERPRETER':
     test_cases = backend_test.test_cases['OnnxBackendZooModelTest']
 
     # Exclude failing tests...
-    # RuntimeError: BatchNormalization: only 'spatial' mode is supported.
-    pytest.mark.xfail(test_cases.test_duc_resnet101_hdc_opset7_cpu)
-
-    # RuntimeError: Subtract: Argument element types are inconsistent. -> NC5-345
-    pytest.mark.xfail(test_cases.test_arcface_lresnet100e_opset7_cpu)
+    # Too long execution time.
+    pytest.mark.skip(test_cases.test_duc_resnet101_hdc_opset7_cpu)
 
     # RuntimeError: 'Dot': Paired axes do not have same length. (OpSet 3) -> NC5-342
     pytest.mark.xfail(test_cases.test_resnet50_opset3_cpu)
