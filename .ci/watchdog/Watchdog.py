@@ -140,11 +140,12 @@ class Watchdog:
             data = {_PR_REPORTS_CONFIG_KEY: {}}
         return data
 
-    def should_ignore(self, pr, criteria):
+    @staticmethod
+    def _should_ignore(self, pr, criteria):
         """Determines if PR should be ignored based on criteria in ignore.json file.
 
             :param pr:          Single PR being currently checked
-            :param criteria:    Dictionary containing ignore criteria      
+            :param criteria:    Dictionary containing ignore criteria
             :type pr:           github.PullRequest.PullRequest
             :type criteria:     Dict
 
@@ -189,7 +190,7 @@ class Watchdog:
         for pr in pull_requests:
             log.info('===============================================')
             pr_number = str(pr.number)
-            if self.should_ignore(pr, ignore_criteria):
+            if self._should_ignore(pr, ignore_criteria):
                 log.info('Ignoring PR#%s', pr_number)
                 continue
             log.info('Checking PR#%s', pr_number)
