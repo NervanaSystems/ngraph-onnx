@@ -141,7 +141,7 @@ class Watchdog:
         return data
 
     @staticmethod
-    def _should_ignore(self, pr, criteria):
+    def _should_ignore(pr, criteria):
         """
         Determine if PR should be ignored based on criteria in ignore.json file.
 
