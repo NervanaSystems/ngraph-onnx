@@ -1,6 +1,6 @@
 {
     "pr_base_ref_not_equal" : ["master"],
     "pr_mergeable_state": ["behind", "dirty"],
-    "pr_title_contains": ["[WIP]"],
-    "pr_labels": ["WIP"]
+    "pr_title_contains": [],
+    "pr_labels": []
 }
