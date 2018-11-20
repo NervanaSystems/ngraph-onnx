@@ -100,7 +100,7 @@ def test_run_model(_get_data_shapes):
     ng_results = NgraphBackend.run_model(model, [input_a, input_b, input_c, input_d])
     expected = np.dot(np.abs(input_a + input_b), input_c) + input_d
 
-    assert np.allclose(list(ng_results), [expected])
+    assert np.allclose(ng_results, [expected])
 
 
 def test_run_node():
@@ -108,7 +108,7 @@ def test_run_node():
     node = onnx.helper.make_node('Abs', inputs=['x'], outputs=['y'])
     ng_results = NgraphBackend.run_node(node, input_data)
     expected = np.abs(input_data)
-    assert np.array_equal(list(ng_results), expected)
+    assert np.array_equal(ng_results, expected)
 
 
 def test_prepare(_get_data_shapes):
@@ -120,4 +120,4 @@ def test_prepare(_get_data_shapes):
         input_a, input_b, input_c, input_d = _get_input_data(a_shape, b_shape, c_shape, d_shape)
         ng_results = backend.run([input_a, input_b, input_c, input_d])
         expected = np.dot(np.abs(input_a + input_b), input_c) + input_d
-        assert np.allclose(list(ng_results), [expected])
+        assert np.allclose(ng_results, [expected])

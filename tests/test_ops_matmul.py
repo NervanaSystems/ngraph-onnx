@@ -44,7 +44,7 @@ def import_and_compute_matmul(input_left, input_right):
     transformer = get_runtime()
     ng_model = import_onnx_model(onnx_model)[0]
     computation = transformer.computation(ng_model['output'], *ng_model['inputs'])
-    return computation(input_data_left, input_data_right)[0]
+    return computation(input_data_left, input_data_right)
 
 
 def numpy_gemm(input_a, input_b, input_c, alpha=1, beta=1, trans_a=False, trans_b=False,
@@ -92,7 +92,7 @@ def import_and_compute_gemm(input_a, input_b, input_c, **kwargs):
     transformer = get_runtime()
     ng_model = import_onnx_model(onnx_model)[0]
     computation = transformer.computation(ng_model['output'], *ng_model['inputs'])
-    return computation(input_a, input_b, input_c)[0]
+    return computation(input_a, input_b, input_c)
 
 
 def test_op_matmul():

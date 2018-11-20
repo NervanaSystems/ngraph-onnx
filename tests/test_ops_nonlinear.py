@@ -25,7 +25,7 @@ from tests.utils import run_node
 def import_and_compute(op_type, input_data, **node_attrs):
     data_inputs = [np.array(input_data)]
     node = onnx.helper.make_node(op_type, inputs=['x'], outputs=['y'], **node_attrs)
-    return list(run_node(node, data_inputs))
+    return run_node(node, data_inputs).pop()
 
 
 def assert_onnx_import_equals_callable(onnx_op_type, python_function, data, **kwargs):
@@ -86,8 +86,8 @@ def test_parametric_relu(x, slope):
     x, slope = np.array(x).astype(np.float32), np.array(slope).astype(np.float32)
     expected_output = parametic_relu(x, slope)
     node = onnx.helper.make_node('PRelu', inputs=['x', 'slope'], outputs=['y'])
-    output = run_node(node, [x, slope])
-    assert np.allclose(list(output), expected_output)
+    output = run_node(node, [x, slope]).pop()
+    assert np.allclose(output, expected_output)
 
 
 def test_selu():
