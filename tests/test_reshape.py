@@ -64,7 +64,7 @@ def test_reshape_opset5():
         ng_model = import_onnx_model(model)[0]
         runtime = get_runtime()
         computation = runtime.computation(ng_model['output'], *ng_model['inputs'])
-        ng_results = computation(input_data)
+        ng_results = computation(input_data)[0]
         expected_output = np.reshape(input_data, shape)
         assert np.array_equal(ng_results, expected_output)
 
