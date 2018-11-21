@@ -57,8 +57,7 @@ backend_test.exclude('test_simple_rnn')
 backend_test.exclude('test_rnn')
 backend_test.exclude('test_operator_rnn')
 
-# LSTM -> NC-324
-backend_test.exclude('test_lstm')
+# PyTorch LSTM operator -> NGONNX-373
 backend_test.exclude('test_operator_lstm')
 
 # GRU -> NC-325
