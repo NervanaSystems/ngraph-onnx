@@ -259,6 +259,7 @@ def test_reduce_l2_default_axes():
     assert np.allclose(expected, ng_result)
 
 
+@pytest.config.interpreter_skip(reason='Do not run on INTERPRETER')
 @pytest.mark.parametrize('reduction_axes', [
     (0,),
     (0, 2),
