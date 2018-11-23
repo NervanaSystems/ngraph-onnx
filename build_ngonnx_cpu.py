@@ -16,32 +16,36 @@
 # ==============================================================================
 import argparse
 import errno
+import multiprocessing
 import os
 from subprocess import check_call
 import sys
 import glob
 
 def clone_repo(target_name, repo, *args, version='master'):
-    # First git clone
-    if len(args) > 0:
-        check_call(["git", "clone", *args, repo, target_name])
-    else:
-        check_call(["git", "clone", repo, target_name])
-
-    # Next goto this folder nd determine the name of the root folder
     pwd = os.getcwd()
-    # Go to the tree
-    os.chdir(target_name)
 
-    # checkout the specified branch
-    check_call(["git", "checkout", version])
+    if os.path.exists(target_name) and os.path.isdir(target_name):
+        os.chdir(target_name)
+        check_call(['git', 'checkout', version])
+        check_call(['git', 'pull'])
+    else:
+        if len(args) > 0:
+            check_call(['git', 'clone', *args, repo, target_name])
+        else:
+            check_call(['git', 'clone', repo, target_name])
+
+        os.chdir(target_name)
+        # checkout the specified branch
+        check_call(["git", "checkout", version])
+
     os.chdir(pwd)
 
 def get_wheel_name(whl_name, search_dir):
     pwd = os.getcwd()
     os.chdir(search_dir)
     wheel_files = glob.glob(whl_name +  '*.whl')
-    if (len(wheel_files) != 1):
+    if len(wheel_files) != 1:
         raise Exception('Error getting the ' + whl_name + ' wheel file')
 
     output_wheel = wheel_files[0]
@@ -74,13 +78,10 @@ def build_ngraph(src_location, cmake_flags):
     cmake_cmd.extend([src_location])
 
     print('nGraph CMAKE flags: {}'.format(cmake_cmd))
-    result = call(cmake_cmd)
-    if (result != 0):
-        raise Exception('Error running command: ' + str(cmake_cmd))
+    check_call(cmake_cmd)
+    n_cores = int(multiprocessing.cpu_count() / 2)
+    check_call(["make", "-j" + str(n_cores), "install"])
 
-    result = call(["make", "-j $(lscpu --parse=CORE | grep -v '#' | sort | uniq | wc -l)", "install"])
-    if (result != 0):
-        raise Exception('Error running command: make -j install')
     os.chdir(pwd)
 
 def build_pyngraph(src_location, ngraph_install_dir):
@@ -112,7 +113,7 @@ def build_ngraph_onnx(src_location):
 
     os.chdir(src_location)
     check_call(['python3', 'setup.py', 'bdist_wheel'])
-    wheel_path = get_wheel_name('ngraph-onnx', os.path.join(src_location, 'dist'))
+    wheel_path = get_wheel_name('ngraph_onnx', os.path.join(src_location, 'dist'))
     wheel_path = os.path.join(src_location, 'dist', wheel_path)
 
     os.chdir(pwd)
