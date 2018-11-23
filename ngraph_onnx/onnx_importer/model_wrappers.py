@@ -23,6 +23,7 @@ import onnx.mapping
 from cachetools.func import lru_cache
 from google import protobuf
 from typing import Any, Dict, Optional, List
+from ngraph.exceptions import UserInputError
 from ngraph.impl import Node as NgraphNode
 import ngraph as ng
 
@@ -52,6 +53,9 @@ class ModelWrapper(WrapperBaseClass):
 
     def __init__(self, model_proto):  # type: (onnx.ModelProto) -> None
         self._proto = model_proto
+
+        if not isinstance(model_proto, onnx.ModelProto):
+            raise UserInputError('Input does not seem to be a properly formatted ONNX file.')
 
         # Parse op sets listed in model
         ai_onnx_opset_version = None
