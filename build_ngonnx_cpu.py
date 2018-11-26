@@ -145,8 +145,6 @@ def main():
     build_dir = os.path.abspath('build')
     os.makedirs(build_dir, exist_ok=True)
     print('Build location: ' + os.path.abspath(build_dir))
-
-    pwd = os.getcwd()
     os.chdir(build_dir)
 
     # Component versions
@@ -213,9 +211,9 @@ def main():
     outputs = list(prepared_model.run(inputs))
     ref_outputs = test_data['outputs']
     np.testing.assert_equal(len(ref_outputs), len(outputs))
-    for i in range(len(outputs)):
-        np.testing.assert_equal(ref_outputs[i].dtype, outputs[i].dtype)
-        np.testing.assert_allclose(ref_outputs[i], outputs[i], rtol=1e-3, atol=1e-7)
+    for idx, _ in enumerate(outputs):
+        np.testing.assert_equal(ref_outputs[idx].dtype, outputs[idx].dtype)
+        np.testing.assert_allclose(ref_outputs[idx], outputs[idx], rtol=1e-3, atol=1e-7)
 
     print('SUCCESS!')
 
