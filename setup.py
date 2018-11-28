@@ -12,4 +12,4 @@ setup(name='ngraph-onnx',
       url='http://www.intelnervana.com',
       license='License :: OSI Approved :: Apache Software License',
       packages=find_packages(exclude=['tests', 'tests_core']),
-      install_requires=['cachetools', 'ngraph-core', 'numpy', 'onnx', 'setuptools'])
+      install_requires=['cachetools', 'numpy', 'onnx', 'setuptools'])
