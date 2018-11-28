@@ -84,7 +84,7 @@ If you don't see any errors, nGraph should be installed correctly.
 
 You can install ngraph-onnx using pip:
 
-     (your_venv) $ pip install git+https://github.com/NervanaSystems/ngraph-onnx/@v0.10.0-rc.0
+     (your_venv) $ pip install git+https://github.com/NervanaSystems/ngraph-onnx/@v0.10.0-rc.1
 
 
 ## Usage example
