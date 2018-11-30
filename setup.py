@@ -5,7 +5,7 @@ from distutils.core import setup
 from setuptools import find_packages
 
 setup(name='ngraph-onnx',
-      version='0.10.0-rc.5',
+      version='0.10.0-rc.6',
       description='ONNX support for ngraph',
       author='Intel',
       author_email='intelnervana@intel.com',
@@ -13,4 +13,4 @@ setup(name='ngraph-onnx',
       license='License :: OSI Approved :: Apache Software License',
       packages=find_packages(exclude=['tests', 'tests.*', 'tests_core', 'tests_core.*']),
       data_files=[('', ['LICENSE']), ('licenses', glob('licenses/*'))],
-      install_requires=['cachetools', 'numpy', 'onnx', 'setuptools'])
+      install_requires=['cachetools', 'ngraph-core', 'numpy', 'onnx', 'setuptools'])

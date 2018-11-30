@@ -36,9 +36,9 @@ Prepare System:
     # apt install python3 python3-pip python3-dev
     # apt install build-essential cmake curl clang-3.9 git zlib1g zlib1g-dev libtinfo-dev
 
-Clone nGraph's `v0.10.0-rc.5` tag, build and install it into `$HOME/ngraph_dist`:
+Clone nGraph's `v0.10.0-rc.6` tag, build and install it into `$HOME/ngraph_dist`:
 
-    $ git clone -b 'v0.10.0-rc.5' --single-branch --depth 1 https://github.com/NervanaSystems/ngraph.git
+    $ git clone -b 'v0.10.0-rc.6' --single-branch --depth 1 https://github.com/NervanaSystems/ngraph.git
     $ mkdir ngraph/build
     $ cd ngraph/build
     $ cmake ../ -DNGRAPH_USE_PREBUILT_LLVM=TRUE -DCMAKE_INSTALL_PREFIX=$HOME/ngraph_dist
@@ -78,5 +78,5 @@ If you don't see any errors, nGraph should be installed correctly.
 
 You can install ngraph-onnx using pip:
 
-     (your_venv) $ pip install git+https://github.com/NervanaSystems/ngraph-onnx/@v0.10.0-rc.5
+     (your_venv) $ pip install git+https://github.com/NervanaSystems/ngraph-onnx/@v0.10.0-rc.6
 
