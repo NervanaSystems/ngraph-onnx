@@ -154,7 +154,7 @@ class Watchdog:
         if 'master' not in pr.base.ref:
             log.info('PR#{} should be ignored. Base ref is not master '.format(str(pr.number)))
             return True
-        
+
         # Ignore PR if mergeable state is 'dirty' or 'behind'.
         # Practically this ignores PR in case of merge conflicts
         ignored_mergeable_states = ['behind', 'dirty']
@@ -162,7 +162,7 @@ class Watchdog:
             if state in pr.mergeable_state:
                 log.info('PR#{} should be ignored. Mergeable state is {} '.format(str(pr.number), state))
                 return True
-        
+
         # If no criteria for ignoring PR are met - return false
         return False
 
