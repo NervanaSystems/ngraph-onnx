@@ -2,7 +2,7 @@
 
 nGraph Backend for ONNX.
 
-This repository contains tools to run [ONNX][onnx] models using the [Intel® nGraph™ library][ngraph_github] as a backend.
+This repository contains tools to run [ONNX][onnx] models using the [Intel nGraph library][ngraph_github] as a backend.
 
 ## Installation
 
