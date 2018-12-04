@@ -160,7 +160,7 @@ class Watchdog:
         # Practically this ignores PR in case of merge conflicts
         ignored_mergeable_states = ['behind', 'dirty']
         for state in ignored_mergeable_states:
-            if state in pr.mergeable_state
+            if state in pr.mergeable_state:
                 log.info('PR#{} should be ignored. Mergeable state is {} '.format(str(pr.number), state))
                 return True
         
