@@ -47,7 +47,6 @@ _BUILD_DURATION_THRESHOLD = datetime.timedelta(minutes=60)
 _CI_START_THRESHOLD = datetime.timedelta(minutes=10)
 _AWAITING_JENKINS_THRESHOLD = datetime.timedelta(minutes=5)
 _WATCHDOG_DIR = os.path.expanduser('~')
-_IGNORE_FILE_PATH = os.path.join(_SCRIPT_DIR, 'ignore.json')
 _PR_REPORTS_CONFIG_KEY = 'pr_reports'
 _CI_BUILD_FAIL_MESSAGE = 'ERROR:   py3: commands failed'
 _CI_BUILD_SUCCESS_MESSAGE = 'py3: commands succeeded'
@@ -141,29 +140,28 @@ class Watchdog:
         return data
 
     @staticmethod
-    def _should_ignore(pr, criteria):
+    def _should_ignore(pr):
         """
-        Determine if PR should be ignored based on criteria in ignore.json file.
+        Determine if PR should be ignored.
 
             :param pr:          Single PR being currently checked
-            :param criteria:    Dictionary containing ignore criteria
             :type pr:           github.PullRequest.PullRequest
-            :type criteria:     Dict
 
             :return:            Returns True if PR should be ignored
             :rtype:             Bool
         """
+        # Ignore PR if base ref is not master
+        if 'master' not in pr.base.ref:
+            log.info('PR#{} should be ignored. Base ref is not master '.format(str(pr.number)))
+            return True
         
-        # Go through ignore criteria and perform logical operations defined in ignore.json config file
-        try:
-            for criterion in criteria['ignore_if']:
-                for value in criterion.get('values'):
-                    expression = '{} {} \"{}\"'.format(criterion.get('variable_name'), criterion.get('operation'), value)
-                    if eval(expression):
-                        log.info('PR#{} should be ignored. Criteria met: {} '.format(str(pr.number), expression))
-                        return True
-        except KeyError as e:
-            log.exception('No key: {}'.format(str(e)))
+        # Ignore PR if mergeable state is 'dirty' or 'behind'.
+        # Practically this ignores PR in case of merge conflicts
+        ignored_mergeable_states = ['behind', 'dirty']
+        for state in ignored_mergeable_states:
+            if state in pr.mergeable_state:
+                log.info('PR#{} should be ignored. Mergeable state is {} '.format(str(pr.number), state))
+                return True
         
         # If no criteria for ignoring PR are met - return false
         return False
@@ -184,19 +182,11 @@ class Watchdog:
                                         of github.PullRequest.PullRequest
         """
         current_prs = []
-        log.info('Reading ignore.json file in: {}'.format(_IGNORE_FILE_PATH))
-        ignore_criteria = {}
-        try:
-            file = open(_IGNORE_FILE_PATH, 'r')
-            ignore_criteria = json.load(file)
-        except IOError as e:
-            log.exception(str(e))
-            ignore_criteria = {}
         # Check all pull requests
         for pr in pull_requests:
             log.info('===============================================')
             pr_number = str(pr.number)
-            if self._should_ignore(pr, ignore_criteria):
+            if self._should_ignore(pr):
                 log.info('Ignoring PR#%s', pr_number)
                 continue
             log.info('Checking PR#%s', pr_number)
