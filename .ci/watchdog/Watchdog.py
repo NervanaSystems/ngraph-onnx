@@ -153,23 +153,19 @@ class Watchdog:
             :return:            Returns True if PR should be ignored
             :rtype:             Bool
         """
+        
+        # Go through ignore criteria and perform logical operations defined in ignore.json config file
         try:
-            # Filter by base branch ref
-            for ignore_base_ref in criteria.get('pr_base_ref_not_equal'):
-                if ignore_base_ref != pr.base.ref:
-                    log.info('PR#{} should be ignored because base ref (\"{}\") is not \"{}\" .'.format(
-                        str(pr.number), pr.base.ref, ignore_base_ref))
-                    return True
-            # Filter by mergeable states
-            for ignore_state in criteria.get('pr_mergeable_state'):
-                if ignore_state in pr.mergeable_state:
-                    log.info('PR#{} should be ignored because mergeable state is \"{}\" .'.format(
-                        str(pr.number), ignore_state))
-                    return True
-        except Exception as e:
-            log.exception(str(e))
-            self._queue_message(str(e), message_severity=999)
-
+            for criterion in criteria['ignore_if']:
+                for value in criterion.get('values'):
+                    expression = '{} {} \"{}\"'.format(criterion.get('variable_name'), criterion.get('operation'), value)
+                    if eval(expression):
+                        log.info('PR#{} should be ignored. Criteria met: {} '.format(str(pr.number), expression))
+                        return True
+        except KeyError as e:
+            log.exception('No key: {}'.format(str(e)))
+        
+        # If no criteria for ignoring PR are met - return false
         return False
 
     def _check_prs(self, pull_requests):
@@ -189,10 +185,11 @@ class Watchdog:
         """
         current_prs = []
         log.info('Reading ignore.json file in: {}'.format(_IGNORE_FILE_PATH))
+        ignore_criteria = {}
         try:
             file = open(_IGNORE_FILE_PATH, 'r')
             ignore_criteria = json.load(file)
-        except Exception as e:
+        except IOError as e:
             log.exception(str(e))
             ignore_criteria = {}
         # Check all pull requests

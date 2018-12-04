@@ -1,4 +1,14 @@
 {
-    "pr_base_ref_not_equal" : ["master"],
-    "pr_mergeable_state": ["behind", "dirty"]
+    "ignore_if": [
+        {
+            "variable_name": "pr.base.ref",
+            "operation": "!=",
+            "values": ["master"]
+        },
+        {
+            "variable_name": "pr.mergeable_state",
+            "operation": "==",
+            "values": ["behind", "dirty"]
+        }
+    ]
 }
