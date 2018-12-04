@@ -2,13 +2,13 @@
 
 nGraph Backend for ONNX.
 
-This repository contains tools to run [ONNX](http://onnx.ai/) models using the [Intel® nGraph™ library](https://github.com/NervanaSystems/ngraph) as a backend.
+This repository contains tools to run [ONNX][onnx] models using the [Intel nGraph library][ngraph_github] as a backend.
 
 ## Installation
 
 nGraph and nGraph-ONNX are available as binary wheels you can install from PyPI.
 
-nGraph binary wheels are currently tested on Ubuntu 16.04, if you're using a different system, you may want to [build](BUILDING.md) nGraph-ONNX from sources.
+nGraph binary wheels are currently tested on Ubuntu 16.04, if you're using a different system, you may want to [build][building] nGraph-ONNX from sources.
 
 ### Prerequisites
 
@@ -34,7 +34,7 @@ You may wish to use a virutualenv for your installation.
 
 ### Importing an ONNX model
 
-You can download models from the [ONNX model zoo](https://github.com/onnx/models). For example ResNet-50:
+You can download models from the [ONNX model zoo][onnx_model_zoo]. For example ResNet-50:
 
 ```
 $ wget https://s3.amazonaws.com/download.onnx/models/opset_8/resnet50.tar.gz
@@ -109,4 +109,10 @@ array([[2.16105225e-04, 5.58412459e-04, 9.70510737e-05, 5.76671700e-05,
 * TopK
 
 All other operators except experimental ones are supported. Refer to ONNX docs for the complete
-[operator list](https://github.com/onnx/onnx/blob/master/docs/Operators.md).
+[operator list][onnx_operators].
+
+[onnx]: http://onnx.ai/
+[onnx_model_zoo]: https://github.com/onnx/models
+[onnx_operators]: https://github.com/onnx/onnx/blob/master/docs/Operators.md
+[ngraph_github]: https://github.com/NervanaSystems/ngraph
+[building]: https://github.com/NervanaSystems/ngraph-onnx/blob/master/BUILDING.md
