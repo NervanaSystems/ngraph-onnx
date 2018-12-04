@@ -160,10 +160,10 @@ class Watchdog:
                 for value in criterion.get('values'):
                     expression = '{} {} \"{}\"'.format(criterion.get('variable_name'), criterion.get('operation'), value)
                     if eval(expression):
-                        log.info('PR#{} should be ignored. Criteria met: {} '.format(str(pr.number), command))
+                        log.info('PR#{} should be ignored. Criteria met: {} '.format(str(pr.number), expression))
                         return True
         except KeyError as e:
-            log.exception('No key: {}'.format(str(e))
+            log.exception('No key: {}'.format(str(e)))
         
         # If no criteria for ignoring PR are met - return false
         return False
