@@ -2,96 +2,39 @@
 
 nGraph Backend for ONNX.
 
-This repository contains tools to run [ONNX](http://onnx.ai/) models using the [Intel® nGraph™ library](https://github.com/NervanaSystems/ngraph) as a backend.
+This repository contains tools to run [ONNX][onnx] models using the [Intel nGraph library][ngraph_github] as a backend.
 
 ## Installation
 
+nGraph and nGraph-ONNX are available as binary wheels you can install from PyPI.
+
+nGraph binary wheels are currently tested on Ubuntu 16.04, if you're using a different system, you may want to [build][building] nGraph-ONNX from sources.
+
 ### Prerequisites
 
-Python 3.4 or higher is required.
-
-####  Protocol Buffers
-
-You will need Protocol Buffers `v.2.6.1` or higher installed on your system to use ONNX.
-
-On Ubuntu, for example you can install protobuf using:
-
-    # apt install protobuf-compiler libprotobuf-dev
-
-And on Mac OS you can install protobuf using Homebrew:
-
-    $ brew install protobuf
-
-
-You can verify whether you have version `>=2.6.1` installed using the command:
-
-    $ protoc --version
-    libprotoc 3.4.0
-
-
-#### nGraph
-
-The other requirement is of course nGraph and nGraph's Python bindings.
-You can follow these instructions to build an nGraph Python wheel containing both.
-
-##### nGraph build process on Ubuntu 16.04
-
-Prepare System:
+Python 3.4 or higher is required. 
 
     # apt update
-    # apt install python3 python3-pip python3-dev
-    # apt install build-essential cmake curl clang-3.9 git zlib1g zlib1g-dev libtinfo-dev
+    # apt install python3 python-virtualenv
 
-Clone nGraph's `v0.9.0-rc.3` tag, build and install it into `$HOME/ngraph_dist`:
+### Using a virtualenv (optional)
 
-    $ git clone -b 'v0.9.0-rc.3' --single-branch --depth 1 https://github.com/NervanaSystems/ngraph.git
-    $ mkdir ngraph/build
-    $ cd ngraph/build
-    $ cmake ../ -DNGRAPH_USE_PREBUILT_LLVM=TRUE -DCMAKE_INSTALL_PREFIX=$HOME/ngraph_dist
-    $ make
-    $ make install
+You may wish to use a virutualenv for your installation.
 
-Build Python package (Binary wheel) for nGraph:
+    $ virtualenv -p $(which python3) venv
+    $ source venv/bin/activate
+    (venv) $
 
-    $ cd ngraph/python
-    $ git clone --recursive -b allow-nonconstructible-holders https://github.com/jagerman/pybind11.git
-    $ export PYBIND_HEADERS_PATH=$PWD/pybind11
-    $ export NGRAPH_CPP_BUILD_PATH=$HOME/ngraph_dist
-    $ python3 setup.py bdist_wheel
+### Installing
 
-For additional information how to build nGraph Python bindings see:
-
-https://github.com/NervanaSystems/ngraph/blob/master/python/README.md
-
-Once the Python binary wheel file (`ngraph-*.whl`) is prepared you can install it using pip.
-
-For example:
-
-    (your_venv) $ pip install -U dist/ngraph-0.2.0-cp35-cp35m-linux_x86_64.whl
-
-You can check that nGraph is properly installed in your Python shell:
-
-```python
->>> import ngraph as ng
->>> ng.abs([[1, 2, 3], [4, 5, 6]])
-<Abs: 'Abs_1' ([2, 3])>
-```
-
-If you don't see any errors, nGraph should be installed correctly.
-
-
-### Installing ngraph-onnx
-
-You can install ngraph-onnx using pip:
-
-     (your_venv) $ pip install git+https://github.com/NervanaSystems/ngraph-onnx/@v0.9.0-rc.3
-
+    (venv) $ pip install ngraph-core
+    (venv) $ pip install ngraph-onnx
 
 ## Usage example
 
 ### Importing an ONNX model
 
-You can download models from the [ONNX model zoo](https://github.com/onnx/models). For example ResNet-50:
+You can download models from the [ONNX model zoo][onnx_model_zoo]. For example ResNet-50:
 
 ```
 $ wget https://s3.amazonaws.com/download.onnx/models/opset_8/resnet50.tar.gz
@@ -166,4 +109,10 @@ array([[2.16105225e-04, 5.58412459e-04, 9.70510737e-05, 5.76671700e-05,
 * TopK
 
 All other operators except experimental ones are supported. Refer to ONNX docs for the complete
-[operator list](https://github.com/onnx/onnx/blob/master/docs/Operators.md).
+[operator list][onnx_operators].
+
+[onnx]: http://onnx.ai/
+[onnx_model_zoo]: https://github.com/onnx/models
+[onnx_operators]: https://github.com/onnx/onnx/blob/master/docs/Operators.md
+[ngraph_github]: https://github.com/NervanaSystems/ngraph
+[building]: https://github.com/NervanaSystems/ngraph-onnx/blob/master/BUILDING.md

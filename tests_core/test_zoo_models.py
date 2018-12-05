@@ -14,6 +14,7 @@
 # limitations under the License.
 # ******************************************************************************
 
+import onnx
 import pytest
 
 from ngraph_onnx.core_importer.backend import NgraphBackend
