@@ -197,7 +197,7 @@ class Watchdog:
             # Find last commit in PR
             last_commit = pr.get_commits().reversed[0]
             # Calculate time passed since PR update (any commit, merge or comment)
-            pr_delta = self._now_time - pr.updated_at
+            pr_time_delta = self._now_time - pr.updated_at
             # Get statuses and filter them to contain only those related to Jenkins CI
             # and check if CI in Jenkins started
             statuses = last_commit.get_statuses()
