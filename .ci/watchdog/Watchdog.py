@@ -206,14 +206,70 @@ class Watchdog:
             # Fail if there are no statuses related to Jenkins after assumed time
             if not jenk_statuses:
                 log.info('CI for PR %s: NO JENKINS STATUS YET', pr_number)
-                if pr_delta > _AWAITING_JENKINS_THRESHOLD:
-                    message = 'Jenkins CI report for PR# {} not present on GitHub after {}' \
-                              ' minutes!'.format(pr_number, pr_delta.seconds / 60)
-                    self._queue_fail(message, pr)
+                if pr_time_delta > _AWAITING_JENKINS_THRESHOLD:
+                    self._check_missing_status(pr,pr_time_delta)
             else:
                 # Interpret found CI statuses
                 self._interpret_statuses(jenk_statuses, pr)
         self._update_config(current_prs)
+
+    def _check_missing_status(self, pr, pr_time_delta):
+        """
+        Check if Jenkins build corresponding PR was scheduled.
+
+        This method is used in case no status for nGraph-ONNX CI is present on GitHub.
+        Jenkins job mapping given PR is being searched for CI build. If build is scheduled and waits
+        in a queue this is expected behaviour. A warning may be raised if time waiting for available 
+        executor exceeds treshold. If no appropriate build is present or it's already executing error
+        is communicated - this means Jenkins did not succesfully pass status to GitHub.
+
+            :param pr:                  Single PR being currently checked
+            :param pr_time_delta:       Time since last PR update
+            :type pr:                   github.PullRequest.PullRequest
+            :type pr_time_delta:        datetime.timedelta
+        """
+        pr_number = str(pr.number)
+        project_name_full = self._ci_job_name + '/PR-' + pr_number
+
+        # Retrieve console output from last Jenkins build for job corresponding to this PR
+        last_build = self._jenkins.get_job_info(project_name_full)['lastCompletedBuild']['number']
+        console_output = self._jenkins.get_build_console_output(project_name_full, last_build)
+        
+        # Check if CI build was scheduled - commit hash on GH must match hash in Jenkins build console output
+        # Retrieve hash from Jenkins output
+        match_string = '(?:Obtained .ci/[a-zA-Z/]+Jenkinsfile from ([a-z0-9]{40}))'
+        match_obj = re.search(match_string, console_output)
+        try:
+            retrieved_commit_hash = match_obj.group(0)
+        except Exception:
+            message = 'PR# {}: Failed to retrieve commit SHA from Jenkins console output!'.format(pr_number)
+            self._queue_fail(message, pr)
+            return
+        # If hash strings don't match then job for that PR hasn't started yet
+        if retrieved_commit_hash != pr.get_commits().reversed[0].sha:
+            message = 'PR# {}: missing status on GitHub after {} minutes'
+                    'and no Jenkins build corresponding to this PR found!'.format(pr_number, pr_time_delta.seconds / 60)
+            self._queue_fail(message, pr)
+            return
+
+        # If hash strings match - check if build started executing on machine
+        # If it did - Jenkins failed to send status to GitHub
+        if 'Running on' in console_output:
+            message = 'PR# {}: missing status on GitHub after {} minutes'
+                    'Jenkins build corresponding to this PR is running.!'.format(pr_number, pr_time_delta.seconds / 60)
+            self._queue_fail(message, pr)
+            return
+
+        # If no fail has been detected at this point - status is probably missing due to build waiting in queue
+        # Check if build is waiting in queue
+        if 'Waiting for next available executor on' in console_output:
+            log.info('CI for PR %s: WAITING IN QUEUE', pr_number)
+            if  pr_time_delta > _CI_START_THRESHOLD:
+                # Log warning if build waits in queue for too long
+                message = 'Jenkins CI build for PR# {} still waiting in queue after {}' \
+                              ' minutes!'.format(pr_number, pr_time_delta.seconds / 60)
+                self._queue_fail(message, pr)
+                return
 
     def _interpret_statuses(self, jenk_statuses, pr):
         """
