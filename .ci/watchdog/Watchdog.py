@@ -247,16 +247,16 @@ class Watchdog:
             return
         # If hash strings don't match then job for that PR hasn't started yet
         if retrieved_commit_hash != pr.get_commits().reversed[0].sha:
-            message = 'PR# {}: missing status on GitHub after {} minutes'
-                    'and no Jenkins build corresponding to this PR found!'.format(pr_number, pr_time_delta.seconds / 60)
+            message = ('PR# {}: missing status on GitHub after {} minutes. '
+                    'Jenkins build corresponding to this PR found!'.format(pr_number, pr_time_delta.seconds / 60))
             self._queue_fail(message, pr)
             return
 
         # If hash strings match - check if build started executing on machine
         # If it did - Jenkins failed to send status to GitHub
         if 'Running on' in console_output:
-            message = 'PR# {}: missing status on GitHub after {} minutes'
-                    'Jenkins build corresponding to this PR is running.!'.format(pr_number, pr_time_delta.seconds / 60)
+            message = ('PR# {}: missing status on GitHub after {} minutes. '
+                    'Jenkins build corresponding to this PR is running!'.format(pr_number, pr_time_delta.seconds / 60))
             self._queue_fail(message, pr)
             return
 
@@ -266,8 +266,8 @@ class Watchdog:
             log.info('CI for PR %s: WAITING IN QUEUE', pr_number)
             if  pr_time_delta > _CI_START_THRESHOLD:
                 # Log warning if build waits in queue for too long
-                message = 'Jenkins CI build for PR# {} still waiting in queue after {}' \
-                              ' minutes!'.format(pr_number, pr_time_delta.seconds / 60)
+                message = ('Jenkins CI build for PR# {} still waiting in queue after {}' \
+                              ' minutes!'.format(pr_number, pr_time_delta.seconds / 60))
                 self._queue_fail(message, pr)
                 return
 
