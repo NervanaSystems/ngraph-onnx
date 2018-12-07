@@ -240,7 +240,7 @@ class Watchdog:
         match_string = '(?:Obtained .ci/[a-zA-Z/]+Jenkinsfile from ([a-z0-9]{40}))'
         match_obj = re.search(match_string, console_output)
         try:
-            retrieved_commit_hash = match_obj.group(0)
+            retrieved_commit_hash = match_obj.group(1)
         except Exception:
             message = 'PR# {}: Failed to retrieve commit SHA from Jenkins console output!'.format(pr_number)
             self._queue_fail(message, pr)
@@ -248,7 +248,7 @@ class Watchdog:
         # If hash strings don't match then job for that PR hasn't started yet
         if retrieved_commit_hash != pr.get_commits().reversed[0].sha:
             message = ('PR# {}: missing status on GitHub after {} minutes. '
-                    'Jenkins build corresponding to this PR found!'.format(pr_number, pr_time_delta.seconds / 60))
+                    'Jenkins build corresponding to this PR not found!'.format(pr_number, pr_time_delta.seconds / 60))
             self._queue_fail(message, pr)
             return
 
