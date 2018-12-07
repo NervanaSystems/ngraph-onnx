@@ -220,8 +220,9 @@ class Watchdog:
         This method is used in case no status for nGraph-ONNX CI is present on GitHub.
         Jenkins job mapping given PR is being searched for CI build. If build is scheduled and waits
         in a queue this is expected behaviour. A warning may be raised if time waiting for available 
-        executor exceeds treshold. If no appropriate build is present or it's already executing error
-        is communicated - this means Jenkins did not succesfully pass status to GitHub.
+        executor exceeds treshold. If no appropriate build is present, it's already executing or
+        build does not wait in queue - error is communicated. This means Jenkins did not succesfully 
+        pass status to GitHub.
 
             :param pr:                  Single PR being currently checked
             :param pr_time_delta:       Time since last PR update
@@ -269,7 +270,11 @@ class Watchdog:
                 message = ('Jenkins CI build for PR# {} still waiting in queue after {}' \
                               ' minutes!'.format(pr_number, pr_time_delta.seconds / 60))
                 self._queue_fail(message, pr)
-                return
+            return
+        
+        # If no reason was found for missing status log fail 
+        message = 'PR# {}: missing status on GitHub after {} minutes. '.format(pr_number, pr_time_delta.seconds / 60)
+        self._queue_fail(message, pr)
 
     def _interpret_statuses(self, jenk_statuses, pr):
         """
