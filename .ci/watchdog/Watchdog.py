@@ -100,24 +100,30 @@ class Watchdog:
         self._now_time = self._git.get_git_time()
 
     def run(self, quiet=False):
-        """Run main watchdog logic.
+        """Run main watchdog logic. 
+        
+        Retrieve list of pull requests and pass it to the method responsible for checking them.
 
             :param quiet:   Flag for disabling sending report through Slack
             :type quiet:    Boolean
-
-        Retrieve list of pull requests and passes it to the method responsible for checking them.
         """
         try:
             pull_requests = self._git.get_pull_requests()
         except Exception:
             message = 'Failed to retrieve Pull Requests!'
             log.exception(message)
-            self._queue_message(message, message_severity=999)
+            self._queue_message(message, message_severity='internal')
         try:
-            self._check_prs(pull_requests)
+            current_prs = []
+            # Check all pull requests
+            for pr in pull_requests:
+                # Append PRs checked in current run for Watchdog config cleanup
+                current_prs.append(str(pr.number))
+                self._check_pr(pr)
+            self._update_config(current_prs)
         except Exception as e:
             log.exception(str(e))
-            self._queue_message(str(e), message_severity=999)
+            self._queue_message(str(e), message_severity='internal')
         self._send_message(quiet=quiet)
 
     def _read_config_file(self):
@@ -140,8 +146,7 @@ class Watchdog:
             data = {_PR_REPORTS_CONFIG_KEY: {}}
         return data
 
-    @staticmethod
-    def _should_ignore(pr):
+    def _should_ignore(self, pr):
         """
         Determine if PR should be ignored.
 
@@ -151,9 +156,10 @@ class Watchdog:
             :return:            Returns True if PR should be ignored
             :rtype:             Bool
         """
+        pr_number = str(pr.number)
         # Ignore PR if base ref is not master
         if 'master' not in pr.base.ref:
-            log.info('PR#{} should be ignored. Base ref is not master '.format(str(pr.number)))
+            log.info('PR#{} should be ignored. Base ref is not master'.format(pr_number))
             return True
         
         # Ignore PR if mergeable state is 'dirty' or 'behind'.
@@ -161,65 +167,66 @@ class Watchdog:
         ignored_mergeable_states = ['behind', 'dirty']
         for state in ignored_mergeable_states:
             if state in pr.mergeable_state:
-                log.info('PR#{} should be ignored. Mergeable state is {} '.format(str(pr.number), state))
+                log.info('PR#{} should be ignored. Mergeable state is {} '.format(pr_number, state))
                 return True
         
+        # Ignore if PR was already checked and there was no update in meantime
+        pr_timestamp = time.mktime(pr.updated_at.timetuple())
+        if pr_number in self._config[_PR_REPORTS_CONFIG_KEY] and pr_timestamp == \
+                self._config[_PR_REPORTS_CONFIG_KEY][pr_number]:
+            log.info('PR#{} should be ignored. No update since last check'.format(pr_number))
+            return True
+
         # If no criteria for ignoring PR are met - return false
         return False
 
-    def _check_prs(self, pull_requests):
+    def _check_pr(self, pr):
         """
-        Loop through pull requests, retrieving list of statuses for every PR's last commit.
+        Check pull request (if there's no reason to skip). Retrieve list of statuses for every PR's last 
+        commit and interpret them.
 
-        Filters out statuses unrelated to nGraph-ONNX Jenkins CI and passes
-        relevant statuses to method that interprets them. If no commit statuses
-        related to Jenkins are available after time defined by
-        **_AWAITING_JENKINS_THRESHOLD** reports fail.
+        Filters out statuses unrelated to nGraph-ONNX Jenkins CI and passes relevant statuses to method
+        that interprets them. If no commit statuses related to Jenkins are available after time defined
+        by **_AWAITING_JENKINS_THRESHOLD** calls appropriate method to check for builds waiting in queue.
 
-        This method also updates Watchdog config with current Pull Requests.
-
-            :param pull_requests:       Paginated list of Pull Requests
-            :type pull_requests:        github.PaginatedList.PaginatedList
-                                        of github.PullRequest.PullRequest
+            :param pr:       GitHub Pull Requests
+            :type pr:        github.PullRequest.PullRequest
         """
-        current_prs = []
-        log.info('Reading ignore.json file in: {}'.format(_IGNORE_FILE_PATH))
-        # Check all pull requests
-        for pr in pull_requests:
-            log.info('===============================================')
-            pr_number = str(pr.number)
-            if self._should_ignore(pr):
-                log.info('Ignoring PR#%s', pr_number)
-                continue
-            log.info('Checking PR#%s', pr_number)
-            # Append PRs checked in current run for Watchdog config cleanup
-            current_prs.append(pr_number)
-            # Find last commit in PR
-            last_commit = pr.get_commits().reversed[0]
-            # Calculate time passed since PR update (any commit, merge or comment)
-            pr_time_delta = self._now_time - pr.updated_at
-            # Get statuses and filter them to contain only those related to Jenkins CI
-            # and check if CI in Jenkins started
-            statuses = last_commit.get_statuses()
-            jenk_statuses = [stat for stat in statuses if
-                             'nGraph-ONNX Jenkins CI (IGK)' in stat.context]
-            # Fail if there are no statuses related to Jenkins after assumed time
-            if not jenk_statuses:
-                log.info('CI for PR %s: NO JENKINS STATUS YET', pr_number)
-                if pr_time_delta > _AWAITING_JENKINS_THRESHOLD:
-                    self._check_missing_status(pr,pr_time_delta)
-            else:
-                # Interpret found CI statuses
-                self._interpret_statuses(jenk_statuses, pr)
-        self._update_config(current_prs)
+        log.info('===============================================')
+        pr_number = str(pr.number)
+        if self._should_ignore(pr):
+            log.info('Ignoring PR#%s', pr_number)
+            continue
+        log.info('Checking PR#%s', pr_number)
+        
+        # Find last commit in PR
+        last_commit = pr.get_commits().reversed[0]
+        
+        # Calculate time passed since PR update (any commit, merge or comment)
+        pr_time_delta = self._now_time - pr.updated_at
+        
+        # Get statuses and filter them to contain only those related to Jenkins CI
+        # and check if CI in Jenkins started
+        statuses = last_commit.get_statuses()
+        jenk_statuses = [stat for stat in statuses if
+                            'nGraph-ONNX Jenkins CI (IGK)' in stat.context]
+        
+        # If there's no status after assumed time - check if build is waiting in queue
+        if not jenk_statuses:
+            log.info('CI for PR %s: NO JENKINS STATUS YET', pr_number)
+            if pr_time_delta > _AWAITING_JENKINS_THRESHOLD:
+                self._check_missing_status(pr, pr_time_delta)
+        else:
+            # Interpret found CI statuses
+            self._interpret_statuses(jenk_statuses, pr)
 
     def _check_missing_status(self, pr, pr_time_delta):
         """
         Check if Jenkins build corresponding PR was scheduled.
 
         This method is used in case no status for nGraph-ONNX CI is present on GitHub.
-        Jenkins job mapping given PR is being searched for CI build. If build is scheduled and waits
-        in a queue this is expected behaviour. A warning may be raised if time waiting for available 
+        Jenkins job corresponding to PR is being searched for CI build. If build is scheduled and waits
+        in a queue this is expected behaviour. A warning will be raised if time waiting for available 
         executor exceeds treshold. If no appropriate build is present, it's already executing or
         build does not wait in queue - error is communicated. This means Jenkins did not succesfully 
         pass status to GitHub.
@@ -232,11 +239,14 @@ class Watchdog:
         pr_number = str(pr.number)
         project_name_full = self._ci_job_name + '/PR-' + pr_number
 
-        # Retrieve console output from last Jenkins build for job corresponding to this PR
-        last_build = self._jenkins.get_job_info(project_name_full)['lastCompletedBuild']['number']
-        console_output = self._jenkins.get_build_console_output(project_name_full, last_build)
-        
-        # Check if CI build was scheduled - commit hash on GH must match hash in Jenkins build console output
+        try:
+            # Retrieve console output from last Jenkins build for job corresponding to this PR
+            last_build = self._jenkins.get_job_info(project_name_full)['lastBuild']['number']
+            console_output = self._jenkins.get_build_console_output(project_name_full, last_build)
+        except Exception:
+            self._queue_message(message, message_severity='error', pr=pr)
+            return
+        # Check if CI build was scheduled - commit hash on GH must match hash in last Jenkins build console output
         # Retrieve hash from Jenkins output
         match_string = '(?:Obtained .ci/[a-zA-Z/]+Jenkinsfile from ([a-z0-9]{40}))'
         match_obj = re.search(match_string, console_output)
@@ -244,13 +254,13 @@ class Watchdog:
             retrieved_commit_hash = match_obj.group(1)
         except Exception:
             message = 'PR# {}: Failed to retrieve commit SHA from Jenkins console output!'.format(pr_number)
-            self._queue_fail(message, pr)
+            self._queue_message(message, message_severity='error', pr=pr)
             return
-        # If hash strings don't match then job for that PR hasn't started yet
+        # If hash strings don't match then build for that PR's last commit hasn't started yet
         if retrieved_commit_hash != pr.get_commits().reversed[0].sha:
             message = ('PR# {}: missing status on GitHub after {} minutes. '
                     'Jenkins build corresponding to this PR not found!'.format(pr_number, pr_time_delta.seconds / 60))
-            self._queue_fail(message, pr)
+            self._queue_message(message, message_severity='error', pr=pr)
             return
 
         # If hash strings match - check if build started executing on machine
@@ -258,7 +268,7 @@ class Watchdog:
         if 'Running on' in console_output:
             message = ('PR# {}: missing status on GitHub after {} minutes. '
                     'Jenkins build corresponding to this PR is running!'.format(pr_number, pr_time_delta.seconds / 60))
-            self._queue_fail(message, pr)
+            self._queue_message(message, message_severity='error', pr=pr)
             return
 
         # If no fail has been detected at this point - status is probably missing due to build waiting in queue
@@ -269,12 +279,12 @@ class Watchdog:
                 # Log warning if build waits in queue for too long
                 message = ('Jenkins CI build for PR# {} still waiting in queue after {}' \
                               ' minutes!'.format(pr_number, pr_time_delta.seconds / 60))
-                self._queue_fail(message, pr)
+                self._queue_message(message, message_severity='warning', pr=pr)
             return
         
         # If no reason was found for missing status log fail 
         message = 'PR# {}: missing status on GitHub after {} minutes. '.format(pr_number, pr_time_delta.seconds / 60)
-        self._queue_fail(message, pr)
+        self._queue_message(message, message_severity='error', pr=pr)
 
     def _interpret_statuses(self, jenk_statuses, pr):
         """
@@ -314,7 +324,7 @@ class Watchdog:
                 # Log Watchdog internal error in case any status can't be properly verified
                 message = 'Failed to verify status "' + stat.description + '" for PR ' + pr_number
                 log.exception(message)
-                self._queue_fail(message, pr, message_severity=999)
+                self._queue_message(message, message_severity='internal', pr=pr)
                 break
 
     def _retrieve_build_number(self, url):
@@ -336,7 +346,7 @@ class Watchdog:
             log.exception('Failed to retrieve build number from url link: %s', url)
             raise
 
-    def _queue_message(self, message, message_severity):
+    def _queue_message(self, message, message_severity, pr = None):
         """
         Add a message to message queue in Slack App object.
 
@@ -351,14 +361,18 @@ class Watchdog:
             :type message_severity:         int
         """
         log.info(message)
-        if message_severity is 999:
+        if 'internal' in message_severity:
             message_header = '!!! --- !!! INTERNAL WATCHDOG ERROR !!! --- !!!'
-        elif message_severity is 3:
+        elif 'error' in message_severity:
             message_header = '!!! nGraph-ONNX CI Error !!!'
-        elif message_severity is 2:
+        elif 'warning' in message_severity:
             message_header = 'nGraph-ONNX CI WARNING'
         else:
             message_header = 'nGraph-ONNX CI INFO'
+        # If message is related to PR attatch url
+        if pr:
+            message = message + '\n' + pr.html_url
+            
         send = message_header + '\n' + message
         self._slack_app.queue_message(send)
 
@@ -380,29 +394,7 @@ class Watchdog:
                 and _CI_BUILD_SUCCESS_MESSAGE not in build_output:
             message = ('ONNX CI job for PR #{} finished but no tests success or fail '
                        'confirmation is present in console output!'.format(pr_number))
-            self._queue_fail(message, pr)
-
-    def _queue_fail(self, message, pr, message_severity=3):
-        """Add message to message queue with content and message_severity passed as arguments.
-
-        The fail message is only being queued if it wasn't already reported.
-
-            :param message:                 Fail message content
-            :param pr:                      Single PR being currently checked, related to fail message
-            :param message_severity:        Message severity level
-            :type message:                  String
-            :type pr:                       github.PullRequest.PullRequest
-            :type message_severity:         int
-        """
-        pr_number = str(pr.number)
-        pr_timestamp = time.mktime(pr.updated_at.timetuple())
-        if pr_number not in self._config[_PR_REPORTS_CONFIG_KEY] or pr_timestamp > \
-                self._config[_PR_REPORTS_CONFIG_KEY][pr_number]:
-            self._config[_PR_REPORTS_CONFIG_KEY][pr_number] = pr_timestamp
-            send = message + '\n' + pr.html_url
-            self._queue_message(send, message_severity)
-        else:
-            log.info('PR ' + pr_number + ' -- fail already reported.')
+            self._queue_message(message, message_severity='error', pr=pr)
 
     def _send_message(self, quiet=False):
         """Send messages queued in Slack App object to designated Slack channel.
@@ -452,11 +444,11 @@ class Watchdog:
             if build_delta > _CI_START_THRESHOLD:
                 message = 'ONNX CI job build #{}, for PR #{} waiting in queue after {} ' \
                           'minutes'.format(build_number, pr_number, str(build_delta.seconds / 60))
-                self._queue_fail(message, pr, message_severity=2)
+                self._queue_message(message, message_severity='warning', pr=pr)
                 if self.jenkins.get_idle_ci_hosts() > 0:
                     message = 'ONNX CI job build #{}, for PR #{} waiting ' \
                               'in queue, despite idle executors!'.format(build_number, pr_number)
-                    self._queue_fail(message, pr)
+                    self._queue_message(message, message_severity='error', pr=pr)
                 return
         if build_delta > _BUILD_DURATION_THRESHOLD:
             # CI job take too long, possibly froze - communicate failure
@@ -464,7 +456,7 @@ class Watchdog:
                        'but did not finish in designated time of {} '
                        'minutes!'.format(build_number, pr_number,
                                          str(_BUILD_DURATION_THRESHOLD.seconds / 60)))
-            self._queue_fail(message, pr)
+            self._queue_message(message, message_severity='error', pr=pr)
 
     def _check_awaiting(self, pr, build_number, status_updated_at):
         """
@@ -483,7 +475,7 @@ class Watchdog:
         if delta > _CI_START_THRESHOLD:
             message = 'nGraph-ONNX CI job for PR #{} still awaiting Jenkins after {}' \
                 ' minutes!'.format(pr.number, str(delta.seconds / 60))
-            self._queue_fail(message, pr)
+            self._queue_message(message, message_severity='error', pr=pr)
 
     def _update_config(self, current_prs):
         """
