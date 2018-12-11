@@ -99,8 +99,8 @@ class Watchdog:
         self._now_time = self._git.get_git_time()
 
     def run(self, quiet=False):
-        """Run main watchdog logic. 
-        
+        """Run main watchdog logic.
+
         Retrieve list of pull requests and pass it to the method responsible for checking them.
 
             :param quiet:   Flag for disabling sending report through Slack
@@ -162,7 +162,7 @@ class Watchdog:
         if 'master' not in pr.base.ref:
             log.info('PR#{} should be ignored. Base ref is not master'.format(pr_number))
             return True
-        
+
         # Ignore PR if mergeable state is 'dirty' or 'behind'.
         # Practically this ignores PR in case of merge conflicts
         ignored_mergeable_states = ['behind', 'dirty']
@@ -170,7 +170,7 @@ class Watchdog:
             if state in pr.mergeable_state:
                 log.info('PR#{} should be ignored. Mergeable state is {} '.format(pr_number, state))
                 return True
-        
+
         # Ignore if PR was already checked and there was no update in meantime
         pr_timestamp = time.mktime(pr.updated_at.timetuple())
         if pr_number in self._config[_PR_REPORTS_CONFIG_KEY] and pr_timestamp == \
@@ -183,7 +183,7 @@ class Watchdog:
 
     def _check_pr(self, pr):
         """
-        Check pull request (if there's no reason to skip). Retrieve list of statuses for every PR's last 
+        Check pull request (if there's no reason to skip). Retrieve list of statuses for every PR's last
         commit and interpret them.
 
         Filters out statuses unrelated to nGraph-ONNX Jenkins CI and passes relevant statuses to method
@@ -199,19 +199,19 @@ class Watchdog:
             log.info('Ignoring PR#%s', pr_number)
             return
         log.info('Checking PR#%s', pr_number)
-        
+
         # Find last commit in PR
         last_commit = pr.get_commits().reversed[0]
-        
+
         # Calculate time passed since PR update (any commit, merge or comment)
         pr_time_delta = self._now_time - pr.updated_at
-        
+
         # Get statuses and filter them to contain only those related to Jenkins CI
         # and check if CI in Jenkins started
         statuses = last_commit.get_statuses()
         jenk_statuses = [stat for stat in statuses if
                             'nGraph-ONNX Jenkins CI (IGK)' in stat.context]
-        
+
         # If there's no status after assumed time - check if build is waiting in queue
         if not jenk_statuses:
             log.info('CI for PR %s: NO JENKINS STATUS YET', pr_number)
@@ -227,9 +227,9 @@ class Watchdog:
 
         This method is used in case no status for nGraph-ONNX CI is present on GitHub.
         Jenkins job corresponding to PR is being searched for CI build. If build is scheduled and waits
-        in a queue this is expected behaviour. A warning will be raised if time waiting for available 
+        in a queue this is expected behaviour. A warning will be raised if time waiting for available
         executor exceeds treshold. If no appropriate build is present, it's already executing or
-        build does not wait in queue - error is communicated. This means Jenkins did not succesfully 
+        build does not wait in queue - error is communicated. This means Jenkins did not succesfully
         pass status to GitHub.
 
             :param pr:                  Single PR being currently checked
@@ -285,8 +285,8 @@ class Watchdog:
                               ' minutes!'.format(pr_number, pr_time_delta.seconds / 60))
                 self._queue_message(message, message_severity='warning', pr=pr)
             return
-        
-        # If no reason was found for missing status log fail 
+
+        # If no reason was found for missing status log fail
         message = 'PR# {}: missing status on GitHub after {} minutes. '.format(pr_number, pr_time_delta.seconds / 60)
         self._queue_message(message, message_severity='error', pr=pr)
 
@@ -376,7 +376,7 @@ class Watchdog:
         # If message is related to PR attatch url
         if pr:
             message = message + '\n' + pr.html_url
-            
+
         send = message_header + '\n' + message
         self._slack_app.queue_message(send)
 
