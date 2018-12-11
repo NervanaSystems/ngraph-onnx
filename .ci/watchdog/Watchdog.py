@@ -120,6 +120,8 @@ class Watchdog:
                 # Append PRs checked in current run for Watchdog config cleanup
                 current_prs.append(str(pr.number))
                 self._check_pr(pr)
+                pr_timestamp = time.mktime(pr.updated_at.timetuple())
+                self._config[_PR_REPORTS_CONFIG_KEY][str(pr.number)] = pr_timestamp
             self._update_config(current_prs)
         except Exception as e:
             log.exception(str(e))
@@ -196,7 +198,7 @@ class Watchdog:
         pr_number = str(pr.number)
         if self._should_ignore(pr):
             log.info('Ignoring PR#%s', pr_number)
-            continue
+            return
         log.info('Checking PR#%s', pr_number)
         
         # Find last commit in PR
@@ -244,6 +246,8 @@ class Watchdog:
             last_build = self._jenkins.get_job_info(project_name_full)['lastBuild']['number']
             console_output = self._jenkins.get_build_console_output(project_name_full, last_build)
         except Exception:
+            message = ('PR# {}: missing status on GitHub after {} minutes. '
+                    'Jenkins job corresponding to this PR not created!'.format(pr_number, pr_time_delta.seconds / 60))
             self._queue_message(message, message_severity='error', pr=pr)
             return
         # Check if CI build was scheduled - commit hash on GH must match hash in last Jenkins build console output
@@ -253,13 +257,14 @@ class Watchdog:
         try:
             retrieved_commit_hash = match_obj.group(1)
         except Exception:
-            message = 'PR# {}: Failed to retrieve commit SHA from Jenkins console output!'.format(pr_number)
+            message = ('PR# {}: missing status on GitHub after {} minutes. '
+                'Failed to retrieve commit SHA from Jenkins console output!'.format(pr_number, pr_time_delta.seconds / 60))
             self._queue_message(message, message_severity='error', pr=pr)
             return
         # If hash strings don't match then build for that PR's last commit hasn't started yet
         if retrieved_commit_hash != pr.get_commits().reversed[0].sha:
             message = ('PR# {}: missing status on GitHub after {} minutes. '
-                    'Jenkins build corresponding to this PR not found!'.format(pr_number, pr_time_delta.seconds / 60))
+                    'Jenkins build corresponding to this commit not found!'.format(pr_number, pr_time_delta.seconds / 60))
             self._queue_message(message, message_severity='error', pr=pr)
             return
 
