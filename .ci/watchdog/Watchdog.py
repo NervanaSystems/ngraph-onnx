@@ -30,6 +30,7 @@ import re
 import logging
 from SlackCommunicator import SlackCommunicator
 from JenkinsWrapper import JenkinsWrapper
+from jenkins import NotFoundException
 from GitWrapper import GitWrapper
 import os
 import json
@@ -112,19 +113,19 @@ class Watchdog:
             message = 'Failed to retrieve Pull Requests!'
             log.exception(message)
             self._queue_message(message, message_severity='internal')
-        try:
-            current_prs = []
-            # Check all pull requests
-            for pr in pull_requests:
+        current_prs = []
+        # Check all pull requests
+        for pr in pull_requests:
+            try:
                 # Append PRs checked in current run for Watchdog config cleanup
                 current_prs.append(str(pr.number))
                 self._check_pr(pr)
                 pr_timestamp = time.mktime(pr.updated_at.timetuple())
                 self._config[_PR_REPORTS_CONFIG_KEY][str(pr.number)] = pr_timestamp
-            self._update_config(current_prs)
-        except Exception as e:
-            log.exception(str(e))
-            self._queue_message(str(e), message_severity='internal')
+            except Exception as e:
+                log.exception(str(e))
+                self._queue_message(str(e), message_severity='internal')
+        self._update_config(current_prs)
         self._send_message(quiet=quiet)
 
     def _read_config_file(self):
@@ -182,13 +183,12 @@ class Watchdog:
         return False
 
     def _check_pr(self, pr):
-        """
-        Check pull request (if there's no reason to skip). Retrieve list of statuses for every PR's last
-        commit and interpret them.
+        """Check pull request (if there's no reason to skip).
 
-        Filters out statuses unrelated to nGraph-ONNX Jenkins CI and passes relevant statuses to method
-        that interprets them. If no commit statuses related to Jenkins are available after time defined
-        by **_AWAITING_JENKINS_THRESHOLD** calls appropriate method to check for builds waiting in queue.
+        Retrieve list of statuses for every PR's last commit and interpret them. Filters out statuses
+        unrelated to nGraph-ONNX Jenkins CI and passes relevant statuses to method that interprets them.
+        If no commit statuses related to Jenkins are available after time defined by
+        **_AWAITING_JENKINS_THRESHOLD** calls appropriate method to check for builds waiting in queue.
 
             :param pr:       GitHub Pull Requests
             :type pr:        github.PullRequest.PullRequest
@@ -210,7 +210,7 @@ class Watchdog:
         # and check if CI in Jenkins started
         statuses = last_commit.get_statuses()
         jenk_statuses = [stat for stat in statuses if
-                            'nGraph-ONNX Jenkins CI (IGK)' in stat.context]
+                        'nGraph-ONNX Jenkins CI (IGK)' in stat.context]
 
         # If there's no status after assumed time - check if build is waiting in queue
         if not jenk_statuses:
@@ -239,56 +239,41 @@ class Watchdog:
         """
         pr_number = str(pr.number)
         project_name_full = self._ci_job_name + '/PR-' + pr_number
+        message = ('PR# {}: missing status on GitHub after {} minutes. '
+                        .format(pr_number, pr_time_delta.seconds / 60))
+        severity = 'error'
 
         try:
             # Retrieve console output from last Jenkins build for job corresponding to this PR
             last_build = self._jenkins.get_job_info(project_name_full)['lastBuild']['number']
             console_output = self._jenkins.get_build_console_output(project_name_full, last_build)
-        except Exception:
-            message = ('PR# {}: missing status on GitHub after {} minutes. '
-                    'Jenkins job corresponding to this PR not created!'.format(pr_number, pr_time_delta.seconds / 60))
-            self._queue_message(message, message_severity='error', pr=pr)
+        except NotFoundException:
+            message = message + 'Jenkins job corresponding to this PR not created!'
+            self._queue_message(message, message_severity=severity, pr=pr)
             return
         # Check if CI build was scheduled - commit hash on GH must match hash in last Jenkins build console output
         # Retrieve hash from Jenkins output
         match_string = '(?:Obtained .ci/[a-zA-Z/]+Jenkinsfile from ([a-z0-9]{40}))'
         match_obj = re.search(match_string, console_output)
-        try:
-            retrieved_commit_hash = match_obj.group(1)
-        except Exception:
-            message = ('PR# {}: missing status on GitHub after {} minutes. '
-                'Failed to retrieve commit SHA from Jenkins console output!'.format(pr_number, pr_time_delta.seconds / 60))
-            self._queue_message(message, message_severity='error', pr=pr)
-            return
+        if not match_obj:
+            message = message + 'Failed to retrieve commit SHA from Jenkins console output!'
         # If hash strings don't match then build for that PR's last commit hasn't started yet
-        if retrieved_commit_hash != pr.get_commits().reversed[0].sha:
-            message = ('PR# {}: missing status on GitHub after {} minutes. '
-                    'Jenkins build corresponding to this commit not found!'.format(pr_number, pr_time_delta.seconds / 60))
-            self._queue_message(message, message_severity='error', pr=pr)
-            return
-
-        # If hash strings match - check if build started executing on machine
-        # If it did - Jenkins failed to send status to GitHub
-        if 'Running on' in console_output:
-            message = ('PR# {}: missing status on GitHub after {} minutes. '
-                    'Jenkins build corresponding to this PR is running!'.format(pr_number, pr_time_delta.seconds / 60))
-            self._queue_message(message, message_severity='error', pr=pr)
-            return
-
-        # If no fail has been detected at this point - status is probably missing due to build waiting in queue
+        elif match_obj.group(1) != pr.get_commits().reversed[0].sha:
+            message = message + 'Jenkins build corresponding to this commit not found!'
+        # If build started executing on machine Jenkins failed to send status to GitHub
+        elif 'Running on' in console_output:
+            message = message + 'Jenkins build corresponding to this PR is running!'
         # Check if build is waiting in queue
-        if 'Waiting for next available executor on' in console_output:
+        elif 'Waiting for next available executor on' in console_output:
+            # If no fail has been detected at this point - status is probably missing due to build waiting in queue
             log.info('CI for PR %s: WAITING IN QUEUE', pr_number)
-            if  pr_time_delta > _CI_START_THRESHOLD:
+            if pr_time_delta > _CI_START_THRESHOLD:
                 # Log warning if build waits in queue for too long
-                message = ('Jenkins CI build for PR# {} still waiting in queue after {}' \
-                              ' minutes!'.format(pr_number, pr_time_delta.seconds / 60))
-                self._queue_message(message, message_severity='warning', pr=pr)
-            return
+                message = message + ('Time spent in queue exceeded {} minutes.'
+                                    .format(_CI_START_THRESHOLD.seconds / 60))
+                severity = 'warning'
 
-        # If no reason was found for missing status log fail
-        message = 'PR# {}: missing status on GitHub after {} minutes. '.format(pr_number, pr_time_delta.seconds / 60)
-        self._queue_message(message, message_severity='error', pr=pr)
+        self._queue_message(message, message_severity=severity, pr=pr)
 
     def _interpret_statuses(self, jenk_statuses, pr):
         """
@@ -350,7 +335,7 @@ class Watchdog:
             log.exception('Failed to retrieve build number from url link: %s', url)
             raise
 
-    def _queue_message(self, message, message_severity, pr = None):
+    def _queue_message(self, message, message_severity, pr=None):
         """
         Add a message to message queue in Slack App object.
 
