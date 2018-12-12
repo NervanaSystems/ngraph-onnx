@@ -121,7 +121,7 @@ class Watchdog:
             except Exception as e:
                 log.exception(str(e))
                 self._queue_message(str(e), message_severity='internal')
-        self._update_config(current_prs=self._current_prs)
+        self._update_config()
         self._send_message(quiet=quiet)
 
     def _read_config_file(self):
