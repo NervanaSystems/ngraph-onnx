@@ -211,69 +211,96 @@ class Watchdog:
         statuses = last_commit.get_statuses()
         jenk_statuses = [stat for stat in statuses if
                         'nGraph-ONNX Jenkins CI (IGK)' in stat.context]
-
+        log.info('Read %s CI statuses', str(len(jenk_statuses)))
         # If there's no status after assumed time - check if build is waiting in queue
-        if not jenk_statuses:
+        if pr_time_delta > _CI_START_THRESHOLD and not jenk_statuses:
             log.info('CI for PR %s: NO JENKINS STATUS YET', pr_number)
-            if pr_time_delta > _AWAITING_JENKINS_THRESHOLD:
-                self._check_missing_status(pr, pr_time_delta)
+            _check_missing_status(pr)
         else:
             # Interpret found CI statuses
             self._interpret_statuses(jenk_statuses, pr)
 
-    def _check_missing_status(self, pr, pr_time_delta):
-        """
-        Check if Jenkins build corresponding PR was scheduled.
+    def _check_missing_status(self, pr):
+        """Verify if missing status is expected.
 
-        This method is used in case no status for nGraph-ONNX CI is present on GitHub.
-        Jenkins job corresponding to PR is being searched for CI build. If build is scheduled and waits
-        in a queue this is expected behaviour. A warning will be raised if time waiting for available
-        executor exceeds treshold. If no appropriate build is present, it's already executing or
-        build does not wait in queue - error is communicated. This means Jenkins did not succesfully
-        pass status to GitHub.
+        This method checks if CI build for last was scheduled and still waits in queue for
+        executor.
 
             :param pr:                  Single PR being currently checked
-            :param pr_time_delta:       Time since last PR update
             :type pr:                   github.PullRequest.PullRequest
-            :type pr_time_delta:        datetime.timedelta
+        """
+
+        build_number = _build_scheduled(pr)
+        if _build_in_queue(pr, build_number):
+            message = ('PR# {}: build waiting in queue after {} minutes.'
+                    .format(pr_number, pr_time_delta.seconds / 60))
+            severity = 'warning'
+        else:
+            message = ('PR# {}: missing status on GitHub after {} minutes.'
+                    .format(pr_number, pr_time_delta.seconds / 60))
+            severity = 'error'
+        self._queue_message(message, message_severity=severity, pr=pr)
+
+    def _build_scheduled(self, pr):
+        """Check if Jenkins build corresponding to PR was scheduled.
+
+        This method takes last Jenkins build for given PR and compares hash from Jenkins console output
+        and sha from PR object to determine if CI build for appropriate commit was scheduled.
+
+            :param pr:                  Single PR being currently checked
+            :type pr:                   github.PullRequest.PullRequest
+
+            :return:            Returns build number or -1 if no build found
+            :rtype:             int
         """
         pr_number = str(pr.number)
         project_name_full = self._ci_job_name + '/PR-' + pr_number
-        message = ('PR# {}: missing status on GitHub after {} minutes. '
-                        .format(pr_number, pr_time_delta.seconds / 60))
-        severity = 'error'
 
         try:
             # Retrieve console output from last Jenkins build for job corresponding to this PR
-            last_build = self._jenkins.get_job_info(project_name_full)['lastBuild']['number']
+            last_build_number = self._jenkins.get_job_info(project_name_full)['lastBuild']['number']
             console_output = self._jenkins.get_build_console_output(project_name_full, last_build)
-        except NotFoundException:
-            message = message + 'Jenkins job corresponding to this PR not created!'
-            self._queue_message(message, message_severity=severity, pr=pr)
-            return
-        # Check if CI build was scheduled - commit hash on GH must match hash in last Jenkins build console output
-        # Retrieve hash from Jenkins output
-        match_string = '(?:Obtained .ci/[a-zA-Z/]+Jenkinsfile from ([a-z0-9]{40}))'
-        match_obj = re.search(match_string, console_output)
-        if not match_obj:
-            message = message + 'Failed to retrieve commit SHA from Jenkins console output!'
-        # If hash strings don't match then build for that PR's last commit hasn't started yet
-        elif match_obj.group(1) != pr.get_commits().reversed[0].sha:
-            message = message + 'Jenkins build corresponding to this commit not found!'
-        # If build started executing on machine Jenkins failed to send status to GitHub
-        elif 'Running on' in console_output:
-            message = message + 'Jenkins build corresponding to this PR is running!'
-        # Check if build is waiting in queue
-        elif 'Waiting for next available executor on' in console_output:
-            # If no fail has been detected at this point - status is probably missing due to build waiting in queue
-            log.info('CI for PR %s: WAITING IN QUEUE', pr_number)
-            if pr_time_delta > _CI_START_THRESHOLD:
-                # Log warning if build waits in queue for too long
-                message = message + ('Time spent in queue exceeded {} minutes.'
-                                    .format(_CI_START_THRESHOLD.seconds / 60))
-                severity = 'warning'
+            # Check if CI build was scheduled - commit hash on GH must match hash in last Jenkins build console output
+            # Retrieve hash from Jenkins output
+            match_string = '(?:Obtained .ci/[a-zA-Z/]+Jenkinsfile from ([a-z0-9]{40}))'
+            retrieved_sha = re.search(match_string, console_output).group(1)
+            if retrieved_sha == pr.get_commits().reversed[0].sha:
+                return last_build_number
+            else:
+                return -1
+        except (NotFoundException, AttributeError):
+            message = ('PR #{}: Jenkins build corresponding to commit {} not found!'
+                                .format(pr_number, pr.get_commits().reversed[0].sha))
+            self._queue_message(message, message_severity='error', pr=pr)
+            return -1
 
-        self._queue_message(message, message_severity=severity, pr=pr)
+    def _build_in_queue(self, pr, build_number)
+        """Check if Jenkins build waits in queue.
+
+        This method verifies if CI build is waiting in queue based on console output.
+
+            :param pr:                  Single PR being currently checked
+            :param build_number:        Jenkins build number to retrieve console output from
+            :type pr:                   github.PullRequest.PullRequest
+            :type build_number:         int
+
+            :return:            Returns True if CI build is waiting in queue
+            :rtype:             Bool
+        """
+        pr_number = str(pr.number)
+        project_name_full = self._ci_job_name + '/PR-' + pr_number
+        # Retrieve console output
+        try:
+            console_output = self._jenkins.get_build_console_output(project_name_full, build_number)
+        except NotFoundException:
+            return False
+        # Check if build is waiting in queue (and not already running on an executor)
+        if 'Waiting for next available executor on' in console_output \
+            and 'Running on' not in console_output:
+            log.info('CI for PR %s: WAITING IN QUEUE', pr_number)
+            return True
+        else:
+            return False
 
     def _interpret_statuses(self, jenk_statuses, pr):
         """
@@ -423,23 +450,15 @@ class Watchdog:
         project_name_full = self._ci_job_name + '/PR-' + pr_number
         build_info = self._jenkins.get_build_info(project_name_full, build_number)
         build_datetime = datetime.datetime.fromtimestamp(build_info['timestamp'] / 1000.0)
-        # If build still waiting in queue
-        queue_item = self._jenkins.get_queue_item(build_info['queueId'])
         build_delta = self._now_time - build_datetime
         log.info('Build %s: IN PROGRESS, started: %s minutes ago', str(build_number),
                  str(build_delta))
-        # 'why' present if job is in queue and doesnt have executor yet
-        if 'why' in queue_item:
-            if build_delta > _CI_START_THRESHOLD:
-                message = 'ONNX CI job build #{}, for PR #{} waiting in queue after {} ' \
-                          'minutes'.format(build_number, pr_number, str(build_delta.seconds / 60))
-                self._queue_message(message, message_severity='warning', pr=pr)
-                if self.jenkins.get_idle_ci_hosts() > 0:
-                    message = 'ONNX CI job build #{}, for PR #{} waiting ' \
-                              'in queue, despite idle executors!'.format(build_number, pr_number)
-                    self._queue_message(message, message_severity='error', pr=pr)
-                return
-        if build_delta > _BUILD_DURATION_THRESHOLD:
+        # If build still waiting in queue
+        if build_delta > _CI_START_THRESHOLD and self._build_in_queue(pr, build_number):
+            message = 'ONNX CI job build #{}, for PR #{} waiting in queue after {} ' \
+                        'minutes'.format(build_number, pr_number, str(build_delta.seconds / 60))
+            self._queue_message(message, message_severity='warning', pr=pr)
+        elif build_delta > _BUILD_DURATION_THRESHOLD:
             # CI job take too long, possibly froze - communicate failure
             message = ('ONNX CI job build #{}, for PR #{} started,'
                        'but did not finish in designated time of {} '
