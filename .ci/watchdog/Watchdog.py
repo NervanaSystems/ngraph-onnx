@@ -210,8 +210,7 @@ class Watchdog:
         # If no criteria for ignoring PR are met - return false
         return False
 
-    @staticmethod
-    def _get_pr_timestamps(pr):
+    def _get_pr_timestamps(self, pr):
         """Get dict containing PR timestamp and last status timestamp.
 
             :param pr:          Single PR being currently checked
@@ -225,7 +224,7 @@ class Watchdog:
         last_status = self._get_last_status(pr)
         status_timestamp = time.mktime(last_status.updated_at.timetuple())
         pr_dict = {"pr_timestamp": pr_timestamp,
-                    "status_timestamp": status_timestamp}
+                   "status_timestamp": status_timestamp}
         return pr_dict
 
     @staticmethod
