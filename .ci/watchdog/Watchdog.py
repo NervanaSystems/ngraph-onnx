@@ -120,8 +120,7 @@ class Watchdog:
                 # Append PRs checked in current run for Watchdog config cleanup
                 current_prs.append(str(pr.number))
                 self._check_pr(pr)
-                pr_timestamp = time.mktime(pr.updated_at.timetuple())
-                self._config[_PR_REPORTS_CONFIG_KEY][str(pr.number)] = pr_timestamp
+                self._config[_PR_REPORTS_CONFIG_KEY][str(pr.number)] = {"pr_timestamp": _get_pr_timestamps(pr) }
             except Exception as e:
                 log.exception(str(e))
                 self._queue_message(str(e), message_severity='internal')
@@ -148,9 +147,38 @@ class Watchdog:
             data = {_PR_REPORTS_CONFIG_KEY: {}}
         return data
 
-    def _should_ignore(self, pr):
+    def _check_pr(self, pr):
+        """Check pull request (if there's no reason to skip).
+
+        Retrieve list of statuses for every PR's last commit and interpret them. Filters out statuses
+        unrelated to nGraph-ONNX Jenkins CI and passes relevant statuses to method that interprets them.
+        If no commit statuses related to Jenkins are available after time defined by
+        **_AWAITING_JENKINS_THRESHOLD** calls appropriate method to check for builds waiting in queue.
+
+            :param pr:       GitHub Pull Requests
+            :type pr:        github.PullRequest.PullRequest
         """
-        Determine if PR should be ignored.
+        log.info('===============================================')
+        log.info('Checking PR#{}'.format(pr.number))
+        if self._should_ignore(pr):
+            log.info('Ignoring PR#{}'.format(pr.number))
+            return
+
+        # Get last Jenkins status
+        last_status = _get_last_status(pr)
+        log.info('Last status: {} at {}'.format(last_status.description, last_status.updated_at))
+        # Calculate time passed since PR update (any commit, merge or comment)
+        pr_time_delta = self._now_time - pr.updated_at
+        # If there's no status after assumed time - check if build is waiting in queue
+        if pr_time_delta > _CI_START_THRESHOLD and not last_status:
+            log.info('CI for PR {}: NO JENKINS STATUS YET'.format(pr.number))
+            self._check_missing_status(pr)
+        else:
+            # Interpret found CI statuses
+            self._interpret_status(last_status, pr)
+
+    def _should_ignore(self, pr):
+        """Determine if PR should be ignored.
 
             :param pr:          Single PR being currently checked
             :type pr:           github.PullRequest.PullRequest
@@ -173,8 +201,8 @@ class Watchdog:
                 return True
 
         # Ignore if PR was already checked and there was no update in meantime
-        pr_timestamp = time.mktime(pr.updated_at.timetuple())
-        if pr_number in self._config[_PR_REPORTS_CONFIG_KEY] and pr_timestamp == \
+        pr_timestamps = _get_pr_timestamps(pr)
+        if pr_number in self._config[_PR_REPORTS_CONFIG_KEY] and pr_timestamps == \
                 self._config[_PR_REPORTS_CONFIG_KEY][pr_number]:
             log.info('PR#{} should be ignored. No update since last check'.format(pr_number))
             return True
@@ -182,43 +210,47 @@ class Watchdog:
         # If no criteria for ignoring PR are met - return false
         return False
 
-    def _check_pr(self, pr):
-        """Check pull request (if there's no reason to skip).
+    @static
+    def _get_pr_timestamps(pr):
+        """Get dict containing PR timestamp and last status timestamp.
 
-        Retrieve list of statuses for every PR's last commit and interpret them. Filters out statuses
-        unrelated to nGraph-ONNX Jenkins CI and passes relevant statuses to method that interprets them.
-        If no commit statuses related to Jenkins are available after time defined by
-        **_AWAITING_JENKINS_THRESHOLD** calls appropriate method to check for builds waiting in queue.
+            :param pr:          Single PR being currently checked
+            :type pr:           github.PullRequest.PullRequest
 
-            :param pr:       GitHub Pull Requests
-            :type pr:        github.PullRequest.PullRequest
+            :return:            Returns dict containing PR timestamp and
+                                last Jenkins status timestamp
+            :rtype:             dict
         """
-        log.info('===============================================')
-        pr_number = str(pr.number)
-        if self._should_ignore(pr):
-            log.info('Ignoring PR#%s', pr_number)
-            return
-        log.info('Checking PR#%s', pr_number)
+        pr_timestamp = time.mktime(pr.updated_at.timetuple())
+        last_status = _get_last_status(pr)
+        status_timestamp = time.mktime(last_status.updated_at.timetuple())
+        pr_dict = { "pr_timestamp" : pr_timestamp,
+                    "status_timestamp" : statis_timestamp}
+        return pr_dict
 
+    @static
+    def _get_last_status(pr):
+        """Get last commit status posted from Jenkins.
+
+            :param pr:          Single PR being currently checked
+            :type pr:           github.PullRequest.PullRequest
+
+            :return:            Returns last PR status posted from Jenkins
+                                or None if PR contains no statuses
+            :rtype:             github.CommitStatus.CommitStatus
+        """
         # Find last commit in PR
         last_commit = pr.get_commits().reversed[0]
-
-        # Calculate time passed since PR update (any commit, merge or comment)
-        pr_time_delta = self._now_time - pr.updated_at
-
         # Get statuses and filter them to contain only those related to Jenkins CI
         # and check if CI in Jenkins started
         statuses = last_commit.get_statuses()
         jenk_statuses = [stat for stat in statuses if
                          'nGraph-ONNX Jenkins CI (IGK)' in stat.context]
-        log.info('Read %s CI statuses', str(len(jenk_statuses)))
-        # If there's no status after assumed time - check if build is waiting in queue
-        if pr_time_delta > _CI_START_THRESHOLD and not jenk_statuses:
-            log.info('CI for PR %s: NO JENKINS STATUS YET', pr_number)
-            self._check_missing_status(pr)
-        else:
-            # Interpret found CI statuses
-            self._interpret_statuses(jenk_statuses, pr)
+        try:
+            last_status = jenk_statuses[0]
+        except AttributeError:
+            last_status = None
+        return last_status
 
     def _check_missing_status(self, pr):
         """Verify if missing status is expected.
@@ -302,7 +334,7 @@ class Watchdog:
         else:
             return False
 
-    def _interpret_statuses(self, jenk_statuses, pr):
+    def _interpret_status(self, jenk_statuses, pr):
         """
         Loop through commit statuses and validates them.
 
@@ -317,31 +349,22 @@ class Watchdog:
                                         github.CommitStatus.CommitStatus
             :type pr:                   github.PullRequest.PullRequest
         """
-        pr_number = str(pr.number)
-        for stat in jenk_statuses:
-            try:
-                # Retrieve build number for Jenkins build related to this PR
-                build_number = self._retrieve_build_number(stat.target_url)
-                # CI build finished - verify if expected output is present
-                finished_statuses = ['Build finished', 'This commit cannot be built', 'This commit looks good']
-                pending_statuses = ['This commit is being built', 'Testing in progress']
-                if any(phrase in stat.description for phrase in finished_statuses):
-                    self._check_finished(pr, build_number)
-                    break
-                # CI build in progress - verify timeouts for build queue and duration
-                elif any(phrase in stat.description for phrase in pending_statuses):
-                    self._check_in_progress(pr, build_number)
-                    break
-                # CI waiting to start for too long
-                elif 'Awaiting Jenkins' in stat.description:
-                    self._check_awaiting(pr, build_number, stat.updated_at)
-                    break
-            except Exception:
-                # Log Watchdog internal error in case any status can't be properly verified
-                message = 'Failed to verify status "' + stat.description + '" for PR ' + pr_number
-                log.exception(message)
-                self._queue_message(message, message_severity='internal', pr=pr)
-                break
+        try:
+            # Retrieve build number for Jenkins build related to this PR
+            build_number = self._retrieve_build_number(stat.target_url)
+            # CI build finished - verify if expected output is present
+            finished_statuses = ['Build finished', 'This commit cannot be built', 'This commit looks good']
+            pending_statuses = ['This commit is being built', 'Testing in progress']
+            if any(phrase in stat.description for phrase in finished_statuses):
+                self._check_finished(pr, build_number)
+            # CI build in progress - verify timeouts for build queue and duration
+            elif any(phrase in stat.description for phrase in pending_statuses):
+                self._check_in_progress(pr, build_number)
+        except Exception:
+            # Log Watchdog internal error in case any status can't be properly verified
+            message = 'Failed to verify status "{}" for PR# {}'.format(stat.descriptio, pr.number)
+            log.exception(message)
+            self._queue_message(message, message_severity='internal', pr=pr)
 
     def _retrieve_build_number(self, url):
         """
@@ -464,25 +487,6 @@ class Watchdog:
                        'but did not finish in designated time of {} '
                        'minutes!'.format(build_number, pr_number,
                                          str(_BUILD_DURATION_THRESHOLD.seconds / 60)))
-            self._queue_message(message, message_severity='error', pr=pr)
-
-    def _check_awaiting(self, pr, build_number, status_updated_at):
-        """
-        Check if CI build doesn't take too long to start.
-
-            :param pr:                  Single PR being currently checked
-            :param build_number:        Jenkins CI job build number
-            :param status_updated_at:   GitHub status update time
-            :type pr:                   github.PullRequest.PullRequest
-            :type build_number:         int
-            :type status_updated_at:    datetime.datetime
-        """
-        # Calculate time passed since last status update
-        delta = self._now_time - status_updated_at
-        log.info('CI for PR %s: AWAITING JENKINS', pr.number)
-        if delta > _CI_START_THRESHOLD:
-            message = 'nGraph-ONNX CI job for PR #{} still awaiting Jenkins after {}' \
-                ' minutes!'.format(pr.number, str(delta.seconds / 60))
             self._queue_message(message, message_severity='error', pr=pr)
 
     def _update_config(self, current_prs):
