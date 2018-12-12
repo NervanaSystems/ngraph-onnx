@@ -113,18 +113,15 @@ class Watchdog:
             message = 'Failed to retrieve Pull Requests!'
             log.exception(message)
             self._queue_message(message, message_severity='internal')
-        current_prs = []
+        self._current_prs = {}
         # Check all pull requests
         for pr in pull_requests:
             try:
-                # Append PRs checked in current run for Watchdog config cleanup
-                current_prs.append(str(pr.number))
                 self._check_pr(pr)
-                self._config[_PR_REPORTS_CONFIG_KEY][str(pr.number)] = {"pr_timestamp": self._get_pr_timestamps(pr)}
             except Exception as e:
                 log.exception(str(e))
                 self._queue_message(str(e), message_severity='internal')
-        self._update_config(current_prs)
+        self._update_config(current_prs=self._current_prs)
         self._send_message(quiet=quiet)
 
     def _read_config_file(self):
@@ -160,12 +157,14 @@ class Watchdog:
         """
         log.info('===============================================')
         log.info('Checking PR#{}'.format(pr.number))
-        if self._should_ignore(pr):
+        # Get last Jenkins status
+        last_status = self._get_last_status(pr)
+        # Append PR checked in current run for Watchdog config
+        self._current_prs[str(pr.number)] = self._get_pr_timestamps(pr, last_status)
+        if self._should_ignore(pr) or self._updated_since_last_run(pr):
             log.info('Ignoring PR#{}'.format(pr.number))
             return
 
-        # Get last Jenkins status
-        last_status = self._get_last_status(pr)
         log.info('Last status: {} at {}'.format(last_status.description, last_status.updated_at))
         # Calculate time passed since PR update (any commit, merge or comment)
         pr_time_delta = self._now_time - pr.updated_at
@@ -177,40 +176,7 @@ class Watchdog:
             # Interpret found CI statuses
             self._interpret_status(last_status, pr)
 
-    def _should_ignore(self, pr):
-        """Determine if PR should be ignored.
-
-            :param pr:          Single PR being currently checked
-            :type pr:           github.PullRequest.PullRequest
-
-            :return:            Returns True if PR should be ignored
-            :rtype:             Bool
-        """
-        pr_number = str(pr.number)
-        # Ignore PR if base ref is not master
-        if 'master' not in pr.base.ref:
-            log.info('PR#{} should be ignored. Base ref is not master'.format(pr_number))
-            return True
-
-        # Ignore PR if mergeable state is 'dirty' or 'behind'.
-        # Practically this ignores PR in case of merge conflicts
-        ignored_mergeable_states = ['behind', 'dirty']
-        for state in ignored_mergeable_states:
-            if state in pr.mergeable_state:
-                log.info('PR#{} should be ignored. Mergeable state is {} '.format(pr_number, state))
-                return True
-
-        # Ignore if PR was already checked and there was no update in meantime
-        pr_timestamps = self._get_pr_timestamps(pr)
-        if pr_number in self._config[_PR_REPORTS_CONFIG_KEY] and pr_timestamps == \
-                self._config[_PR_REPORTS_CONFIG_KEY][pr_number]:
-            log.info('PR#{} should be ignored. No update since last check'.format(pr_number))
-            return True
-
-        # If no criteria for ignoring PR are met - return false
-        return False
-
-    def _get_pr_timestamps(self, pr):
+    def _get_pr_timestamps(self, pr, last_status):
         """Get dict containing PR timestamp and last status timestamp.
 
             :param pr:          Single PR being currently checked
@@ -221,8 +187,10 @@ class Watchdog:
             :rtype:             dict
         """
         pr_timestamp = time.mktime(pr.updated_at.timetuple())
-        last_status = self._get_last_status(pr)
-        status_timestamp = time.mktime(last_status.updated_at.timetuple())
+        if last_status:
+            status_timestamp = time.mktime(last_status.updated_at.timetuple())
+        else:
+            status_timestamp = None
         pr_dict = {"pr_timestamp": pr_timestamp,
                    "status_timestamp": status_timestamp}
         return pr_dict
@@ -250,6 +218,43 @@ class Watchdog:
         except IndexError:
             last_status = None
         return last_status
+
+    @staticmethod
+    def _should_ignore(pr):
+        """Determine if PR should be ignored.
+
+            :param pr:          Single PR being currently checked
+            :type pr:           github.PullRequest.PullRequest
+
+            :return:            Returns True if PR should be ignored
+            :rtype:             Bool
+        """
+        # Ignore PR if base ref is not master
+        if 'master' not in pr.base.ref:
+            log.info('PR#{} should be ignored. Base ref is not master'.format(pr.number))
+            return True
+
+        # Ignore PR if mergeable state is 'dirty' or 'behind'.
+        # Practically this ignores PR in case of merge conflicts
+        ignored_mergeable_states = ['behind', 'dirty']
+        for state in ignored_mergeable_states:
+            if state in pr.mergeable_state:
+                log.info('PR#{} should be ignored. Mergeable state is {} '.format(pr.number, state))
+                return True
+
+        # If no criteria for ignoring PR are met - return false
+        return False
+
+    def _updated_since_last_run(self, pr):
+        # Ignore if PR was already checked and there was no update in meantime
+        pr_number = str(pr.number)
+        current_pr_timestamps = self._current_prs.get(pr_number)
+        last_pr_timestamps = self._config[_PR_REPORTS_CONFIG_KEY].get(pr_number)
+        if current_pr_timestamps == last_pr_timestamps:
+            log.info('PR#{} - No update since last check'.format(pr.number))
+            return True
+        else:
+            return False
 
     def _check_missing_status(self, pr):
         """Verify if missing status is expected.
@@ -488,7 +493,7 @@ class Watchdog:
                                          str(_BUILD_DURATION_THRESHOLD.seconds / 60)))
             self._queue_message(message, message_severity='error', pr=pr)
 
-    def _update_config(self, current_prs):
+    def _update_config(self):
         """
         Update Watchdog config file with PRs checked in current Watchdog run, remove old entries.
 
@@ -496,9 +501,7 @@ class Watchdog:
             :type current_prs:         list of ints
         """
         # Cleanup config of old reports
-        for pr in self._config[_PR_REPORTS_CONFIG_KEY].copy().keys():
-            if pr not in current_prs:
-                self._config[_PR_REPORTS_CONFIG_KEY].pop(pr)
         log.info('Writing to config file at: {}'.format(self._config_path))
+        new_config = {_PR_REPORTS_CONFIG_KEY: self._current_prs}
         file = open(self._config_path, 'w+')
-        json.dump(self._config, file)
+        json.dump(new_config, file)
