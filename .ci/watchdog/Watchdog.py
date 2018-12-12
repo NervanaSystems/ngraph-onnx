@@ -247,7 +247,7 @@ class Watchdog:
                          'nGraph-ONNX Jenkins CI (IGK)' in stat.context]
         try:
             last_status = jenk_statuses[0]
-        except AttributeError:
+        except IndexError:
             last_status = None
         return last_status
 
