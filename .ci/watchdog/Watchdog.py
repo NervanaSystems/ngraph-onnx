@@ -233,11 +233,11 @@ class Watchdog:
         build_number = self._build_scheduled(pr)
         if self._build_in_queue(pr, build_number):
             message = ('PR# {}: build waiting in queue after {} minutes.'
-                        .format(pr.number, pr_time_delta.seconds / 60))
+                       .format(pr.number, pr_time_delta.seconds / 60))
             severity = 'warning'
         else:
             message = ('PR# {}: missing status on GitHub after {} minutes.'
-                        .format(pr.number, pr_time_delta.seconds / 60))
+                       .format(pr.number, pr_time_delta.seconds / 60))
             severity = 'error'
         self._queue_message(message, message_severity=severity, pr=pr)
 
@@ -270,7 +270,7 @@ class Watchdog:
                 return -1
         except (NotFoundException, AttributeError):
             message = ('PR #{}: Jenkins build corresponding to commit {} not found!'
-                        .format(pr_number, pr.get_commits().reversed[0].sha))
+                       .format(pr_number, pr.get_commits().reversed[0].sha))
             self._queue_message(message, message_severity='error', pr=pr)
             return -1
 
@@ -456,7 +456,7 @@ class Watchdog:
         # If build still waiting in queue
         if build_delta > _CI_START_THRESHOLD and self._build_in_queue(pr, build_number):
             message = ('ONNX CI job build #{}, for PR #{} waiting in queue after {} '
-                        'minutes'.format(build_number, pr_number, str(build_delta.seconds / 60)))
+                       'minutes'.format(build_number, pr_number, str(build_delta.seconds / 60)))
             self._queue_message(message, message_severity='warning', pr=pr)
         elif build_delta > _BUILD_DURATION_THRESHOLD:
             # CI job take too long, possibly froze - communicate failure
