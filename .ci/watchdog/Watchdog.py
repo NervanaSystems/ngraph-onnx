@@ -210,12 +210,12 @@ class Watchdog:
         # and check if CI in Jenkins started
         statuses = last_commit.get_statuses()
         jenk_statuses = [stat for stat in statuses if
-                        'nGraph-ONNX Jenkins CI (IGK)' in stat.context]
+                         'nGraph-ONNX Jenkins CI (IGK)' in stat.context]
         log.info('Read %s CI statuses', str(len(jenk_statuses)))
         # If there's no status after assumed time - check if build is waiting in queue
         if pr_time_delta > _CI_START_THRESHOLD and not jenk_statuses:
             log.info('CI for PR %s: NO JENKINS STATUS YET', pr_number)
-            _check_missing_status(pr)
+            self._check_missing_status(pr)
         else:
             # Interpret found CI statuses
             self._interpret_statuses(jenk_statuses, pr)
@@ -229,15 +229,15 @@ class Watchdog:
             :param pr:                  Single PR being currently checked
             :type pr:                   github.PullRequest.PullRequest
         """
-
-        build_number = _build_scheduled(pr)
-        if _build_in_queue(pr, build_number):
+        pr_time_delta = self._now_time - pr.updated_at
+        build_number = self._build_scheduled(pr)
+        if self._build_in_queue(pr, build_number):
             message = ('PR# {}: build waiting in queue after {} minutes.'
-                    .format(pr_number, pr_time_delta.seconds / 60))
+                        .format(pr.number, pr_time_delta.seconds / 60))
             severity = 'warning'
         else:
             message = ('PR# {}: missing status on GitHub after {} minutes.'
-                    .format(pr_number, pr_time_delta.seconds / 60))
+                        .format(pr.number, pr_time_delta.seconds / 60))
             severity = 'error'
         self._queue_message(message, message_severity=severity, pr=pr)
 
@@ -259,7 +259,7 @@ class Watchdog:
         try:
             # Retrieve console output from last Jenkins build for job corresponding to this PR
             last_build_number = self._jenkins.get_job_info(project_name_full)['lastBuild']['number']
-            console_output = self._jenkins.get_build_console_output(project_name_full, last_build)
+            console_output = self._jenkins.get_build_console_output(project_name_full, last_build_number)
             # Check if CI build was scheduled - commit hash on GH must match hash in last Jenkins build console output
             # Retrieve hash from Jenkins output
             match_string = '(?:Obtained .ci/[a-zA-Z/]+Jenkinsfile from ([a-z0-9]{40}))'
@@ -270,11 +270,11 @@ class Watchdog:
                 return -1
         except (NotFoundException, AttributeError):
             message = ('PR #{}: Jenkins build corresponding to commit {} not found!'
-                                .format(pr_number, pr.get_commits().reversed[0].sha))
+                        .format(pr_number, pr.get_commits().reversed[0].sha))
             self._queue_message(message, message_severity='error', pr=pr)
             return -1
 
-    def _build_in_queue(self, pr, build_number)
+    def _build_in_queue(self, pr, build_number):
         """Check if Jenkins build waits in queue.
 
         This method verifies if CI build is waiting in queue based on console output.
@@ -296,7 +296,7 @@ class Watchdog:
             return False
         # Check if build is waiting in queue (and not already running on an executor)
         if 'Waiting for next available executor on' in console_output \
-            and 'Running on' not in console_output:
+                and 'Running on' not in console_output:
             log.info('CI for PR %s: WAITING IN QUEUE', pr_number)
             return True
         else:
@@ -455,8 +455,8 @@ class Watchdog:
                  str(build_delta))
         # If build still waiting in queue
         if build_delta > _CI_START_THRESHOLD and self._build_in_queue(pr, build_number):
-            message = 'ONNX CI job build #{}, for PR #{} waiting in queue after {} ' \
-                        'minutes'.format(build_number, pr_number, str(build_delta.seconds / 60))
+            message = ('ONNX CI job build #{}, for PR #{} waiting in queue after {} '
+                        'minutes'.format(build_number, pr_number, str(build_delta.seconds / 60)))
             self._queue_message(message, message_severity='warning', pr=pr)
         elif build_delta > _BUILD_DURATION_THRESHOLD:
             # CI job take too long, possibly froze - communicate failure
