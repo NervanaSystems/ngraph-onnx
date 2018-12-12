@@ -120,7 +120,7 @@ class Watchdog:
                 # Append PRs checked in current run for Watchdog config cleanup
                 current_prs.append(str(pr.number))
                 self._check_pr(pr)
-                self._config[_PR_REPORTS_CONFIG_KEY][str(pr.number)] = {"pr_timestamp": _get_pr_timestamps(pr) }
+                self._config[_PR_REPORTS_CONFIG_KEY][str(pr.number)] = {"pr_timestamp": self._get_pr_timestamps(pr)}
             except Exception as e:
                 log.exception(str(e))
                 self._queue_message(str(e), message_severity='internal')
@@ -165,7 +165,7 @@ class Watchdog:
             return
 
         # Get last Jenkins status
-        last_status = _get_last_status(pr)
+        last_status = self._get_last_status(pr)
         log.info('Last status: {} at {}'.format(last_status.description, last_status.updated_at))
         # Calculate time passed since PR update (any commit, merge or comment)
         pr_time_delta = self._now_time - pr.updated_at
@@ -201,7 +201,7 @@ class Watchdog:
                 return True
 
         # Ignore if PR was already checked and there was no update in meantime
-        pr_timestamps = _get_pr_timestamps(pr)
+        pr_timestamps = self._get_pr_timestamps(pr)
         if pr_number in self._config[_PR_REPORTS_CONFIG_KEY] and pr_timestamps == \
                 self._config[_PR_REPORTS_CONFIG_KEY][pr_number]:
             log.info('PR#{} should be ignored. No update since last check'.format(pr_number))
@@ -210,7 +210,7 @@ class Watchdog:
         # If no criteria for ignoring PR are met - return false
         return False
 
-    @static
+    @staticmethod
     def _get_pr_timestamps(pr):
         """Get dict containing PR timestamp and last status timestamp.
 
@@ -222,13 +222,13 @@ class Watchdog:
             :rtype:             dict
         """
         pr_timestamp = time.mktime(pr.updated_at.timetuple())
-        last_status = _get_last_status(pr)
+        last_status = self._get_last_status(pr)
         status_timestamp = time.mktime(last_status.updated_at.timetuple())
-        pr_dict = { "pr_timestamp" : pr_timestamp,
-                    "status_timestamp" : statis_timestamp}
+        pr_dict = {"pr_timestamp": pr_timestamp,
+                    "status_timestamp": status_timestamp}
         return pr_dict
 
-    @static
+    @staticmethod
     def _get_last_status(pr):
         """Get last commit status posted from Jenkins.
 
@@ -334,7 +334,7 @@ class Watchdog:
         else:
             return False
 
-    def _interpret_status(self, jenk_statuses, pr):
+    def _interpret_status(self, status, pr):
         """
         Loop through commit statuses and validates them.
 
@@ -342,27 +342,27 @@ class Watchdog:
         build started within designated time threshold, finished within designated threshold and
         with correct output.
 
-            :param jenk_statuses:       Paginated list of commit statuses filtered out to contain
+            :param status:       Paginated list of commit statuses filtered out to contain
                                         only Jenkins statuses
             :param pr:                  Single PR being currently checked
-            :type jenk_statuses:        github.PaginatedList.PaginatedList of
+            :type status:        github.PaginatedList.PaginatedList of
                                         github.CommitStatus.CommitStatus
             :type pr:                   github.PullRequest.PullRequest
         """
         try:
             # Retrieve build number for Jenkins build related to this PR
-            build_number = self._retrieve_build_number(stat.target_url)
+            build_number = self._retrieve_build_number(status.target_url)
             # CI build finished - verify if expected output is present
             finished_statuses = ['Build finished', 'This commit cannot be built', 'This commit looks good']
             pending_statuses = ['This commit is being built', 'Testing in progress']
-            if any(phrase in stat.description for phrase in finished_statuses):
+            if any(phrase in status.description for phrase in finished_statuses):
                 self._check_finished(pr, build_number)
             # CI build in progress - verify timeouts for build queue and duration
-            elif any(phrase in stat.description for phrase in pending_statuses):
+            elif any(phrase in status.description for phrase in pending_statuses):
                 self._check_in_progress(pr, build_number)
         except Exception:
             # Log Watchdog internal error in case any status can't be properly verified
-            message = 'Failed to verify status "{}" for PR# {}'.format(stat.descriptio, pr.number)
+            message = 'Failed to verify status "{}" for PR# {}'.format(status.descriptio, pr.number)
             log.exception(message)
             self._queue_message(message, message_severity='internal', pr=pr)
 
