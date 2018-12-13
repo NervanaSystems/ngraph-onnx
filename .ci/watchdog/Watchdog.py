@@ -176,6 +176,7 @@ class Watchdog:
             # Interpret found CI statuses
             self._interpret_status(last_status, pr)
 
+    @staticmethod
     def _get_pr_timestamps(self, pr, last_status):
         """Get dict containing PR timestamp and last status timestamp.
 
