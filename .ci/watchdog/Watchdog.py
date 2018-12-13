@@ -177,7 +177,7 @@ class Watchdog:
             self._interpret_status(last_status, pr)
 
     @staticmethod
-    def _get_pr_timestamps(self, pr, last_status):
+    def _get_pr_timestamps(pr, last_status):
         """Get dict containing PR timestamp and last status timestamp.
 
         :param pr:          Single PR being currently checked
