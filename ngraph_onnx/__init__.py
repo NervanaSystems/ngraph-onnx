@@ -14,6 +14,9 @@
 # limitations under the License.
 # ******************************************************************************
 
+from pkg_resources import get_distribution
+__version__ = get_distribution('ngraph_onnx').version
+
 try:
     from typing import TYPE_CHECKING
 except ImportError:
