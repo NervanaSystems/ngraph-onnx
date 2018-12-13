@@ -62,23 +62,23 @@ class Watchdog:
     initial response, job queue and execution against time treshold constants. Every fail
     is logged and reported through Slack App on channel **ngraph-onnx-ci-alerts**.
 
-        :param jenkins_token:       Token used for Jenkins
-        :param jenkins_server:      Jenkins server address
-        :param jenkins_user:        Username used to connect to Jenkins
-        :param git_token:           Token used to connect to GitHub
-        :param slack_token:         Token used to connect to Slack App
-        :param ci_job_name:         nGraph-ONNX CI job name used in Jenkins
-        :param watchdog_job_name:   Watchdog job name used in Jenkins
-        :type jenkins_token:        String
-        :type jenkins_server:       String
-        :type jenkins_user:         String
-        :type git_token:            String
-        :type slack_token:          String
-        :type ci_job_name:          String
-        :type watchdog_job_name:    String
+    :param jenkins_token:       Token used for Jenkins
+    :param jenkins_server:      Jenkins server address
+    :param jenkins_user:        Username used to connect to Jenkins
+    :param git_token:           Token used to connect to GitHub
+    :param slack_token:         Token used to connect to Slack App
+    :param ci_job_name:         nGraph-ONNX CI job name used in Jenkins
+    :param watchdog_job_name:   Watchdog job name used in Jenkins
+    :type jenkins_token:        String
+    :type jenkins_server:       String
+    :type jenkins_user:         String
+    :type git_token:            String
+    :type slack_token:          String
+    :type ci_job_name:          String
+    :type watchdog_job_name:    String
 
-        .. note::
-            Watchdog and nGraph-ONNX CI job must be placed on the same Jenkins server.
+    .. note::
+        Watchdog and nGraph-ONNX CI job must be placed on the same Jenkins server.
     """
 
     def __init__(self, jenkins_token, jenkins_server, jenkins_user, git_token, git_org,
@@ -104,8 +104,8 @@ class Watchdog:
 
         Retrieve list of pull requests and pass it to the method responsible for checking them.
 
-            :param quiet:   Flag for disabling sending report through Slack
-            :type quiet:    Boolean
+        :param quiet:   Flag for disabling sending report through Slack
+        :type quiet:    Boolean
         """
         try:
             pull_requests = self._git.get_pull_requests()
@@ -132,8 +132,8 @@ class Watchdog:
         multiple times. In case there's no config under the expected path,
         appropriate data structure is created and returned.
 
-            :return:            Returns dict of dicts with reported fails with their timestamps
-            :rtype:             dict of dicts
+        :return:            Returns dict of dicts with reported fails with their timestamps
+        :rtype:             dict of dicts
         """
         if os.path.isfile(self._config_path):
             log.info('Reading config file in: {}'.format(self._config_path))
@@ -152,8 +152,8 @@ class Watchdog:
         If no commit statuses related to Jenkins are available after time defined by
         **_AWAITING_JENKINS_THRESHOLD** calls appropriate method to check for builds waiting in queue.
 
-            :param pr:       GitHub Pull Requests
-            :type pr:        github.PullRequest.PullRequest
+        :param pr:       GitHub Pull Requests
+        :type pr:        github.PullRequest.PullRequest
         """
         log.info('===============================================')
         log.info('Checking PR#{}'.format(pr.number))
@@ -179,32 +179,30 @@ class Watchdog:
     def _get_pr_timestamps(self, pr, last_status):
         """Get dict containing PR timestamp and last status timestamp.
 
-            :param pr:          Single PR being currently checked
-            :type pr:           github.PullRequest.PullRequest
+        :param pr:          Single PR being currently checked
+        :type pr:           github.PullRequest.PullRequest
 
-            :return:            Returns dict containing PR timestamp and
-                                last Jenkins status timestamp
-            :rtype:             dict
+        :return:            Dictionary with PR and last status update timestamps
+        :rtype:             dict
         """
         pr_timestamp = time.mktime(pr.updated_at.timetuple())
         if last_status:
             status_timestamp = time.mktime(last_status.updated_at.timetuple())
         else:
             status_timestamp = None
-        pr_dict = {"pr_timestamp": pr_timestamp,
-                   "status_timestamp": status_timestamp}
+        pr_dict = {'pr_timestamp': pr_timestamp,
+                   'status_timestamp': status_timestamp}
         return pr_dict
 
     @staticmethod
     def _get_last_status(pr):
         """Get last commit status posted from Jenkins.
 
-            :param pr:          Single PR being currently checked
-            :type pr:           github.PullRequest.PullRequest
+        :param pr:          Single PR being currently checked
+        :type pr:           github.PullRequest.PullRequest
 
-            :return:            Returns last PR status posted from Jenkins
-                                or None if PR contains no statuses
-            :rtype:             github.CommitStatus.CommitStatus
+        :return:            Either last PR status posted from Jenkins or None
+        :rtype:             github.CommitStatus.CommitStatus
         """
         # Find last commit in PR
         last_commit = pr.get_commits().reversed[0]
@@ -223,11 +221,11 @@ class Watchdog:
     def _should_ignore(pr):
         """Determine if PR should be ignored.
 
-            :param pr:          Single PR being currently checked
-            :type pr:           github.PullRequest.PullRequest
+        :param pr:          Single PR being currently checked
+        :type pr:           github.PullRequest.PullRequest
 
-            :return:            Returns True if PR should be ignored
-            :rtype:             Bool
+        :return:            Returns True if PR should be ignored
+        :rtype:             Bool
         """
         # Ignore PR if base ref is not master
         if 'master' not in pr.base.ref:
@@ -262,8 +260,8 @@ class Watchdog:
         This method checks if CI build for last was scheduled and still waits in queue for
         executor.
 
-            :param pr:                  Single PR being currently checked
-            :type pr:                   github.PullRequest.PullRequest
+        :param pr:                  Single PR being currently checked
+        :type pr:                   github.PullRequest.PullRequest
         """
         pr_time_delta = self._now_time - pr.updated_at
         build_number = self._build_scheduled(pr)
@@ -283,11 +281,11 @@ class Watchdog:
         This method takes last Jenkins build for given PR and compares hash from Jenkins console output
         and sha from PR object to determine if CI build for appropriate commit was scheduled.
 
-            :param pr:                  Single PR being currently checked
-            :type pr:                   github.PullRequest.PullRequest
+        :param pr:                  Single PR being currently checked
+        :type pr:                   github.PullRequest.PullRequest
 
-            :return:            Returns build number or -1 if no build found
-            :rtype:             int
+        :return:            Returns build number or -1 if no build found
+        :rtype:             int
         """
         pr_number = str(pr.number)
         project_name_full = self._ci_job_name + '/PR-' + pr_number
@@ -315,13 +313,13 @@ class Watchdog:
 
         This method verifies if CI build is waiting in queue based on console output.
 
-            :param pr:                  Single PR being currently checked
-            :param build_number:        Jenkins build number to retrieve console output from
-            :type pr:                   github.PullRequest.PullRequest
-            :type build_number:         int
+        :param pr:                  Single PR being currently checked
+        :param build_number:        Jenkins build number to retrieve console output from
+        :type pr:                   github.PullRequest.PullRequest
+        :type build_number:         int
 
-            :return:            Returns True if CI build is waiting in queue
-            :rtype:             Bool
+        :return:            Returns True if CI build is waiting in queue
+        :rtype:             Bool
         """
         pr_number = str(pr.number)
         project_name_full = self._ci_job_name + '/PR-' + pr_number
@@ -346,12 +344,12 @@ class Watchdog:
         build started within designated time threshold, finished within designated threshold and
         with correct output.
 
-            :param status:       Paginated list of commit statuses filtered out to contain
-                                        only Jenkins statuses
-            :param pr:                  Single PR being currently checked
-            :type status:        github.PaginatedList.PaginatedList of
-                                        github.CommitStatus.CommitStatus
-            :type pr:                   github.PullRequest.PullRequest
+        :param status:       Paginated list of commit statuses filtered out to contain
+                                    only Jenkins statuses
+        :param pr:                  Single PR being currently checked
+        :type status:        github.PaginatedList.PaginatedList of
+                                    github.CommitStatus.CommitStatus
+        :type pr:                   github.PullRequest.PullRequest
         """
         try:
             # Retrieve build number for Jenkins build related to this PR
@@ -371,14 +369,13 @@ class Watchdog:
             self._queue_message(message, message_severity='internal', pr=pr)
 
     def _retrieve_build_number(self, url):
-        """
-        Retrieve Jenkins CI job build number from URL address coming from GitHub commit status.
+        """Retrieve Jenkins CI job build number from URL address coming from GitHub commit status.
 
-            :param url:         URL address from GitHub commit status
-            :type url:          String
+        :param url:         URL address from GitHub commit status
+        :type url:          String
 
-            :return:            Returns build number
-            :rtype:             int
+        :return:            Returns build number
+        :rtype:             int
         """
         # Retrieve the build number from url string
         match_obj = re.search('(?:/PR-[0-9]+/)([0-9]+)', url)
@@ -390,18 +387,16 @@ class Watchdog:
             raise
 
     def _queue_message(self, message, message_severity, pr=None):
-        """
-        Add a message to message queue in Slack App object.
+        """Add a message to message queue in Slack App object.
 
         The queued message is constructed based on message string passed as
-        a method argument and message header.
+        a method argument and message header. Message header is mapped to message severity
+        also passed as an argument.
 
-        Message header is mapped to message severity also passed as an argument.
-
-            :param message:                 Message content
-            :param message_severity:        Message severity level
-            :type message:                  String
-            :type message_severity:         int
+        :param message:                 Message content
+        :param message_severity:        Message severity level
+        :type message:                  String
+        :type message_severity:         int
         """
         log.info(message)
         if 'internal' in message_severity:
@@ -420,13 +415,12 @@ class Watchdog:
         self._slack_app.queue_message(send)
 
     def _check_finished(self, pr, build_number):
-        """
-        Verify if finished build output contains expected string for either fail or success.
+        """Verify if finished build output contains expected string for either fail or success.
 
-            :param pr:                  Single PR being currently checked
-            :param build_number:        Jenkins CI job build number
-            :type pr:                   github.PullRequest.PullRequest
-            :type build_number:         int
+        :param pr:                  Single PR being currently checked
+        :param build_number:        Jenkins CI job build number
+        :type pr:                   github.PullRequest.PullRequest
+        :type build_number:         int
         """
         pr_number = str(pr.number)
         log.info('CI for PR %s: FINISHED', pr_number)
@@ -442,10 +436,10 @@ class Watchdog:
     def _send_message(self, quiet=False):
         """Send messages queued in Slack App object to designated Slack channel.
 
-            :param quiet:   Flag for disabling sending report through Slack
-            :type quiet:    Boolean
-
         Queued messages are being sent as a single communication.
+
+        :param quiet:   Flag for disabling sending report through Slack
+        :type quiet:    Boolean
         """
         if len(self._slack_app.queued_messages) > 0:
             try:
@@ -467,10 +461,10 @@ class Watchdog:
         Checks if build started within designated time threshold, and job is
         currently running - it didn't cross the time threshold.
 
-            :param pr:                  Single PR being currently checked
-            :param build_number:        Jenkins CI job build number
-            :type pr:                   github.PullRequest.PullRequest
-            :type build_number:         int
+        :param pr:                  Single PR being currently checked
+        :param build_number:        Jenkins CI job build number
+        :type pr:                   github.PullRequest.PullRequest
+        :type build_number:         int
         """
         pr_number = str(pr.number)
         log.info('CI for PR %s: TESTING IN PROGRESS', pr_number)
@@ -494,11 +488,10 @@ class Watchdog:
             self._queue_message(message, message_severity='error', pr=pr)
 
     def _update_config(self):
-        """
-        Update Watchdog config file with PRs checked in current Watchdog run, remove old entries.
+        """Update Watchdog config file with PRs checked in current Watchdog run, remove old entries.
 
-            :param current_prs:        List of PR numbers checked during current Watchdog run
-            :type current_prs:         list of ints
+        :param current_prs:        List of PR numbers checked during current Watchdog run
+        :type current_prs:         list of ints
         """
         # Cleanup config of old reports
         log.info('Writing to config file at: {}'.format(self._config_path))
