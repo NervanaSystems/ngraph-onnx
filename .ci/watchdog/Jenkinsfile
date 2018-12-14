@@ -21,58 +21,60 @@
 // Unless otherwise agreed by Intel in writing, you may not remove or alter
 // this notice or any other notice embedded in Materials by Intel or Intel's
 // suppliers or licensors in any way.
-
-node(LABEL) {
-    try {
-            BUILD_WORKSPACE="$WORKSPACE/$BUILD_NUMBER"
-            stage("Clone repository") {
-                dir ("$BUILD_WORKSPACE") {
-                    checkout([$class: 'GitSCM', branches: [[name: "*/$BRANCH"]], 
-                            doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', timeout: 30]],  submoduleCfg: [],
-                            userRemoteConfigs: [[credentialsId: '6887a177-8c4d-4fe9-9c3b-fcd71b22bfba', url: 'git@github.com:NervanaSystems/ngraph-onnx.git']]])
+timeout(30)
+{
+    node(LABEL) {
+        try {
+                BUILD_WORKSPACE="$WORKSPACE/$BUILD_NUMBER"
+                stage("Clone repository") {
+                    dir ("$BUILD_WORKSPACE") {
+                        checkout([$class: 'GitSCM', branches: [[name: "*/$BRANCH"]], 
+                                doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', timeout: 30]],  submoduleCfg: [],
+                                userRemoteConfigs: [[credentialsId: '6887a177-8c4d-4fe9-9c3b-fcd71b22bfba', url: 'git@github.com:NervanaSystems/ngraph-onnx.git']]])
+                    }
                 }
-            }
-            stage("Prepare environment") {
-                dir ("$BUILD_WORKSPACE") {
-                    sh """#!/bin/bash
-                        virtualenv -p python3 venv
-                        source venv/bin/activate
-                        pip install python-jenkins \
-                                    retrying \
-                                    pygithub \
-                                    slackclient 
+                stage("Prepare environment") {
+                    dir ("$BUILD_WORKSPACE") {
+                        sh """#!/bin/bash
+                            virtualenv -p python3 venv
+                            source venv/bin/activate
+                            pip install python-jenkins \
+                                        retrying \
+                                        pygithub \
+                                        slackclient 
+                        """
+                    }
+                }
+                stage("Run script") {
+                    dir ("$BUILD_WORKSPACE") {
+                        sh """#!/bin/bash
+                            source venv/bin/activate
+                            export PYTHONHTTPSVERIFY=0
+                            python .ci/watchdog/Main.py \
+                                --slack-token=${SLACK_TOKEN_FILE} \
+                                --github-token=${GITHUB_TOKEN_FILE} \
+                                --github-org=${GITHUB_ORG} \
+                                --github-project=${GITHUB_PROJECT} \
+                                --jenkins-token=${JENKINS_TOKEN_FILE} \
+                                --jenkins-server=${JENKINS_SERVER} \
+                                --jenkins-user=${JENKINS_USER} \
+                                --ci-job=${CI_JOB_NAME} \
+                                --watchdog-job=${WATCHDOG_JOB_NAME}
+                        """
+                    }
+                }
+                stage("Cleanup") {
+                    sh """
+                        cd $BUILD_WORKSPACE
+                        rm -rf ..?* .[!.]* *
                     """
                 }
-            }
-            stage("Run script") {
-                dir ("$BUILD_WORKSPACE") {
-                    sh """#!/bin/bash
-                        source venv/bin/activate
-                        export PYTHONHTTPSVERIFY=0
-                        python .ci/watchdog/Main.py \
-                            --slack-token=${SLACK_TOKEN_FILE} \
-                            --github-token=${GITHUB_TOKEN_FILE} \
-                            --github-org=${GITHUB_ORG} \
-                            --github-project=${GITHUB_PROJECT} \
-                            --jenkins-token=${JENKINS_TOKEN_FILE} \
-                            --jenkins-server=${JENKINS_SERVER} \
-                            --jenkins-user=${JENKINS_USER} \
-                            --ci-job=${CI_JOB_NAME} \
-                            --watchdog-job=${WATCHDOG_JOB_NAME}
-                    """
-                }
-            }
-            stage("Cleanup") {
-                sh """
-                    cd $BUILD_WORKSPACE
-                    rm -rf ..?* .[!.]* *
-                """
-            }
 
-    } catch (e) {
-        echo "$e"
-        currentBuild.result = "FAILURE"
-    } finally {
-        deleteDir()
+        } catch (e) {
+            echo "$e"
+            currentBuild.result = "FAILURE"
+        } finally {
+            deleteDir()
+        }
     }
 }
