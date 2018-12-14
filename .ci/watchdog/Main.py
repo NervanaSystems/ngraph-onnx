@@ -56,6 +56,7 @@ def main(args):
     github_project = args.github_project
     ci_job = args.ci_job.strip()
     watchdog_job = args.watchdog_job.strip()
+    quiet = args.quiet
 
     wd = Watchdog(jenkins_token=jenkins_token,
                   jenkins_server=jenkins_server,
@@ -66,7 +67,7 @@ def main(args):
                   slack_token=slack_token,
                   ci_job_name=ci_job,
                   watchdog_job_name=watchdog_job)
-    wd.run()
+    wd.run(quiet=quiet)
 
     return 0
 
@@ -100,6 +101,9 @@ if __name__ == '__main__':
 
     parser.add_argument('--watchdog-job', help='Jenkins CI Watchdog job name.',
                         default=DEFAULT_WATCHDOG_JOB_NAME, action='store', required=False)
+
+    parser.add_argument('--quiet', help='Quiet mode - doesn\'t send message to slack channel.',
+                        action='store_true', required=False)
 
     args = parser.parse_args()
     sys.exit(main(args))
