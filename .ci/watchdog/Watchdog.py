@@ -165,15 +165,15 @@ class Watchdog:
             log.info('Ignoring PR#{}'.format(pr.number))
             return
 
-        log.info('Last status: {} at {}'.format(last_status.description, last_status.updated_at))
         # Calculate time passed since PR update (any commit, merge or comment)
         pr_time_delta = self._now_time - pr.updated_at
         # If there's no status after assumed time - check if build is waiting in queue
-        if pr_time_delta > _CI_START_THRESHOLD and not last_status:
+        if not last_status and pr_time_delta > _CI_START_THRESHOLD:
             log.info('CI for PR {}: NO JENKINS STATUS YET'.format(pr.number))
             self._check_missing_status(pr)
-        else:
+        elif last_status:
             # Interpret found CI statuses
+            log.info('Last status: {} at {}'.format(last_status.description, last_status.updated_at))
             self._interpret_status(last_status, pr)
 
     @staticmethod
