@@ -54,12 +54,14 @@ class SlackCommunicator:
         """
         self.queued_messages.append(message)
 
-    def send_message(self, message):
+    def send_message(self, message, quiet=False):
         """
         Send queued messages as single communication.
 
             :param message:     Final message's content
+            :param quiet:       Flag for disabling sending report through Slack
             :type message:      String
+            :type quiet:        Boolean
         """
         if self.slack_client is None:
             try:
@@ -69,14 +71,16 @@ class SlackCommunicator:
                 raise
         try:
             final_message = message + '\n\n' + '\n'.join(self.queued_messages)
-            self.slack_client.api_call(
-                'chat.postMessage',
-                link_names=1,
-                as_user=False,
-                username='CI_WATCHDOG',
-                channel=self.channel,
-                text=final_message,
-                thread_ts=self.thread_id)
+            print(final_message)
+            if not quiet:
+                self.slack_client.api_call(
+                    'chat.postMessage',
+                    link_names=1,
+                    as_user=False,
+                    username='CI_WATCHDOG',
+                    channel=self.channel,
+                    text=final_message,
+                    thread_ts=self.thread_id)
         except Exception:
             print('!!CRITICAL!! SlackCommunicator: Could not send message')
             raise
