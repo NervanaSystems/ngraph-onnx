@@ -64,7 +64,7 @@ def run_model(onnx_model, data_inputs):
         runtime = get_runtime()
         computations = [runtime.computation(model['output'], *model['inputs']) for
                         model in ng_model]
-        return [computation(*data_inputs) for computation in computations]
+        return [computation(*data_inputs)[0] for computation in computations]
     else:
         raise RuntimeError('The requested nGraph backend <' + NgraphBackend.backend_name
                            + '> is not supported!')
