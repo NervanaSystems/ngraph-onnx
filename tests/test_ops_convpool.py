@@ -56,7 +56,7 @@ def import_and_compute_conv(x, weights, transpose=False, **attributes):
                                              transpose=transpose, **attributes)
     ng_model = import_onnx_model(onnx_model)[0]
     computation = get_runtime().computation(ng_model['output'], *ng_model['inputs'])
-    return computation(x, weights)
+    return computation(x, weights)[0]
 
 
 def test_2d_conv():

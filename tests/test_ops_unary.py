@@ -354,7 +354,7 @@ def test_identity():
     ng_model = import_onnx_model(model)[0]
     runtime = get_runtime()
     computation = runtime.computation(ng_model['output'], *ng_model['inputs'])
-    ng_results = computation(input_data, input_data)
+    ng_results = computation(input_data, input_data)[0]
     expected_result = np.abs(input_data + input_data)
 
     assert np.array_equal(ng_results, expected_result)

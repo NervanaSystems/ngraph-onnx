@@ -157,7 +157,7 @@ class NgraphBackendRep(BackendRep):
 
     def run(self, inputs, **kwargs):  # type: (List[np.ndarray], Dict) -> List[np.ndarray]
         """Execute computation on the backend representation of model."""
-        return [computation(*inputs) for computation in self.computations]
+        return [computation(*inputs)[0] for computation in self.computations]
 
     def _get_ngraph_device_name(self, onnx_device):  # type: (str) -> str
         return 'GPU' if onnx_device == 'CUDA' else onnx_device

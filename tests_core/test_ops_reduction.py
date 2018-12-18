@@ -272,14 +272,14 @@ def test_reduce_log_sum(reduction_axes):
 
     expected = np.log(np.sum(input_data, keepdims=True, axis=reduction_axes))
     node = onnx.helper.make_node('ReduceLogSum', inputs=['x'], outputs=['y'], axes=reduction_axes)
-    ng_result = np.array(run_node(node, [input_data]).pop())
+    ng_result = run_node(node, [input_data]).pop()
     assert np.array_equal(expected.shape, ng_result.shape)
     assert np.allclose(expected, ng_result)
 
     expected = np.log(np.sum(input_data, keepdims=False, axis=reduction_axes))
     node = onnx.helper.make_node('ReduceLogSum', inputs=['x'], outputs=['y'], keepdims=0,
                                  axes=reduction_axes)
-    ng_result = np.array(run_node(node, [input_data]).pop())
+    ng_result = run_node(node, [input_data]).pop()
     assert np.array_equal(expected.shape, ng_result.shape)
     assert np.allclose(expected, ng_result)
 

@@ -61,12 +61,12 @@ def test_reshape_opset5():
 
         model = make_model(graph, producer_name='ngraph ONNX Importer')
         model.opset_import[0].version = 5
-        ng_model_function = import_onnx_model(model)[0]
+        ng_model_function = import_onnx_model(model)
         runtime = get_runtime()
         computation = runtime.computation(ng_model_function)
         ng_results = computation(input_data)
         expected_output = np.reshape(input_data, shape)
-        assert np.array_equal(ng_results, expected_output)
+        assert np.array_equal(ng_results[0], expected_output)
 
 
 @pytest.mark.xfail(reason='Refactoring to nGraph core importer.')
