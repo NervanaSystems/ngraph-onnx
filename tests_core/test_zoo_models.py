@@ -163,9 +163,12 @@ if backend_name != 'INTERPRETER':
     pytest.mark.xfail(test_cases.test_vgg19_opset3_cpu)
     pytest.mark.xfail(test_cases.test_zfnet512_opset3_cpu)
 
-    # RuntimeError: sporadic result mismatch 0.1% -> NC5-346
+    # RuntimeError: sporadic result mismatch 0.1% -> NGONNX-346
     backend_test.exclude('test_resnet50_v2_opset7')
     backend_test.exclude('test_mobilenet_opset7')
+
+    # RuntimeError: sporadic result mismatch 0.4% -> NGONNX-414
+    backend_test.exclude('test_arcface_lresnet100e_opset8_cpu')
 
     # RuntimeError: unknown operation: ImageScaler
     backend_test.exclude('test_tiny_yolov2_opset7')
