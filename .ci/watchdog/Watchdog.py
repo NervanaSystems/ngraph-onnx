@@ -339,7 +339,7 @@ class Watchdog:
 
     def _interpret_status(self, status, pr):
         """
-        Verifies GitHub status passed to the method.
+        Verify GitHub status passed to the method.
 
         This method verifies last commit status for given PR, calling appropriate methods
         to further validate the status.
