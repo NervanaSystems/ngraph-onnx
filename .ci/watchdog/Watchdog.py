@@ -339,17 +339,14 @@ class Watchdog:
 
     def _interpret_status(self, status, pr):
         """
-        Loop through commit statuses and validates them.
+        Verify GitHub status passed to the method.
 
-        This method verifies every commit status for given PR, checking if related Jenkins CI job
-        build started within designated time threshold, finished within designated threshold and
-        with correct output.
+        This method verifies last commit status for given PR, calling appropriate methods
+        to further validate the status.
 
-        :param status:       Paginated list of commit statuses filtered out to contain
-                                    only Jenkins statuses
+        :param status:              GitHub commit status
         :param pr:                  Single PR being currently checked
-        :type status:        github.PaginatedList.PaginatedList of
-                                    github.CommitStatus.CommitStatus
+        :type status:               github.CommitStatus.CommitStatus
         :type pr:                   github.PullRequest.PullRequest
         """
         try:
@@ -365,7 +362,7 @@ class Watchdog:
                 self._check_in_progress(pr, build_number)
         except Exception:
             # Log Watchdog internal error in case any status can't be properly verified
-            message = 'Failed to verify status "{}" for PR# {}'.format(status.descriptio, pr.number)
+            message = 'Failed to verify status "{}" for PR# {}'.format(status.description, pr.number)
             log.exception(message)
             self._queue_message(message, message_severity='internal', pr=pr)
 
