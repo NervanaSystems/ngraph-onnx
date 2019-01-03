@@ -228,6 +228,16 @@ class Watchdog:
         :return:            Returns True if PR should be ignored
         :rtype:             Bool
         """
+        # Ignore PR if it has WIP label or WIP in title
+        if 'WIP' in pr.title:
+            log.info('PR#{} should be ignored. WIP tag in title.'.format(pr.number))
+            return True
+
+        for label in pr.labels:
+            if 'WIP' in label.name:
+                log.info('PR#{} should be ignored. WIP label present.'.format(pr.number))
+                return True
+
         # Ignore PR if base ref is not master
         if 'master' not in pr.base.ref:
             log.info('PR#{} should be ignored. Base ref is not master'.format(pr.number))
