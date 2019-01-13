@@ -41,7 +41,7 @@ Clone nGraph's `v0.10.0` tag, build and install it into `$HOME/ngraph_dist`:
     $ git clone -b 'v0.10.0' --single-branch --depth 1 https://github.com/NervanaSystems/ngraph.git
     $ mkdir ngraph/build
     $ cd ngraph/build
-    $ cmake ../ -DNGRAPH_USE_PREBUILT_LLVM=TRUE -DCMAKE_INSTALL_PREFIX=$HOME/ngraph_dist
+    $ cmake ../ -DNGRAPH_USE_PREBUILT_LLVM=TRUE -DCMAKE_INSTALL_PREFIX=$HOME/ngraph_dist -DNGRAPH_ONNX_IMPORT_ENABLE=TRUE
     $ make
     $ make install
 
