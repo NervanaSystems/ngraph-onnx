@@ -18,12 +18,10 @@
 // Set LABEL variable if empty or not declared
 try{ if(LABEL.trim() == "") {throw new Exception();} }catch(Exception e){LABEL="onnx && ci"}; echo "${LABEL}"
 // CI settings and constants
-PROJECT_NAME = "ngraph-onnx"
+PROJECT_NAME = "ngraph-onnx"            
 CI_ROOT = ".ci/jenkins"
 DOCKER_CONTAINER_NAME = "jenkins_${PROJECT_NAME}_ci"
-REPOSITORY_SOURCE = "NervanaSystems"
-if (env.CHANGE_FORK) {REPOSITORY_SOURCE = env.CHANGE_FORK}
-REPOSITORY_GIT_ADDRESS = "https://www.github.com/${REPOSITORY_SOURCE}/${PROJECT_NAME}.git"
+REPOSITORY_GIT_ADDRESS = "https://www.github.com/NervanaSystems/${PROJECT_NAME}.git"
 JENKINS_GITHUB_CREDENTIAL_ID = "7157091e-bc04-42f0-99fd-dc4da2922a55"
 NGRAPH_DIRECTORY="/home"
 GIT_PR_AUTHOR_EMAIL=""
@@ -40,10 +38,10 @@ def killPreviousRunningJobs() {
 
     def job = Jenkins.instance.getItemByFullName(jobname)
     for (build in job.builds) {
-        if (!build.isBuilding()){
-            continue;
+        if (!build.isBuilding()){ 
+            continue; 
         }
-        if (buildnum == build.getNumber().toInteger()){
+        if (buildnum == build.getNumber().toInteger()){ 
             continue;
         }
         echo "Kill task = ${build}"
@@ -145,7 +143,6 @@ def notifyByEmail() {
                         <tr><td>Status:</td> <td>${currentBuild.result}</td></tr>
                         <tr><td>Pull Request Title:</td> <td>$CHANGE_TITLE</td></tr>
                         <tr><td>Pull Request:</td> <td><a href=$CHANGE_URL>$CHANGE_ID</a> </td></tr>
-                        <tr><td>Repository Source:</td> <td>$REPOSITORY_SOURCE</td></tr>
                         <tr><td>Branch:</td> <td>$CHANGE_BRANCH</td></tr>
                         <tr><td>Commit Hash:</td> <td>$GIT_COMMIT_SUBJECT</td></tr>
                         <tr><td>Commit Subject:</td> <td>$GIT_COMMIT_HASH</td></tr>
@@ -162,7 +159,7 @@ def notifyByEmail() {
 def main(String label, String projectName, String projectRoot, String dockerContainerName, String jenkins_github_credential_id, String repository_git_address) {
     killPreviousRunningJobs()
     node(label) {
-        timeout(activity: true, time: 60) {
+        timeout(activity: true, time: 60) {        
             WORKDIR = "${WORKSPACE}/${BUILD_NUMBER}/${PROJECT_NAME}"
             def configurationMaps;
             try {
