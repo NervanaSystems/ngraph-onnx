@@ -14,8 +14,12 @@
 # limitations under the License.
 # ******************************************************************************
 
-from pkg_resources import get_distribution
-__version__ = get_distribution('ngraph_onnx').version
+from pkg_resources import get_distribution, DistributionNotFound
+
+try:
+    __version__ = get_distribution('ngraph_onnx').version
+except DistributionNotFound:
+    __version__ = '0.0.0-dev'
 
 try:
     from typing import TYPE_CHECKING
