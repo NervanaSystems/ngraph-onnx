@@ -79,7 +79,7 @@ class SlackCommunicator:
         for channel, message_queue in self.queued_messages.items():
             final_message = message + '\n\n' + '\n'.join(message_queue)
             print(final_message)
-            if not quiet:
+            if not quiet and message_queue:
                 try:
                     self.slack_client.api_call(
                         'chat.postMessage',
