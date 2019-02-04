@@ -26,6 +26,8 @@
 
 from slackclient import SlackClient
 
+_CI_ALERTS_CHANNEL = 'ngraph-onnx-ci-alerts'
+_INTERNAL_ERRORS_CHANNEL = 'ci-watchdog-internal'
 
 class SlackCommunicator:
     """Class wrapping SlackClient API.
@@ -39,20 +41,25 @@ class SlackCommunicator:
     """
 
     def __init__(self, slack_token):
-        self.channel = 'ngraph-onnx-ci-alerts'
         self.thread_id = None
-        self.queued_messages = []
+        self.queued_messages = {}
+        self.queued_messages[_CI_ALERTS_CHANNEL] = []
+        self.queued_messages[_INTERNAL_ERRORS_CHANNEL] = []
         self.slack_client = None
         self.slack_token = slack_token
 
-    def queue_message(self, message):
+    def queue_message(self, message, internal_error = False) :
         """
         Queue message to be sent later.
 
             :param message:     Message content
             :type message:      String
         """
-        self.queued_messages.append(message)
+        if internal_error:
+            self.queued_messages[_INTERNAL_ERRORS_CHANNEL].append(message)
+        else:
+            self.queued_messages[_CI_ALERTS_CHANNEL].append(message)
+
 
     def send_message(self, message, quiet=False):
         """
@@ -69,18 +76,19 @@ class SlackCommunicator:
             except Exception:
                 print('!!CRITICAL!! SlackCommunicator::CRITICAL: Could not create client')
                 raise
-        try:
-            final_message = message + '\n\n' + '\n'.join(self.queued_messages)
+        for channel, message_queue in self.queued_messages.items():
+            final_message = message + '\n\n' + '\n'.join(message_queue)
             print(final_message)
             if not quiet:
-                self.slack_client.api_call(
-                    'chat.postMessage',
-                    link_names=1,
-                    as_user=False,
-                    username='CI_WATCHDOG',
-                    channel=self.channel,
-                    text=final_message,
-                    thread_ts=self.thread_id)
-        except Exception:
-            print('!!CRITICAL!! SlackCommunicator: Could not send message')
-            raise
+                try:
+                    self.slack_client.api_call(
+                        'chat.postMessage',
+                        link_names=1,
+                        as_user=False,
+                        username='CI_WATCHDOG',
+                        channel=channel,
+                        text=final_message,
+                        thread_ts=self.thread_id)
+                except Exception:
+                    print('!!CRITICAL!! SlackCommunicator: Could not send message')
+                    raise

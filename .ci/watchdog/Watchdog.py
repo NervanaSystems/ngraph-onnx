@@ -407,8 +407,10 @@ class Watchdog:
         :type message_severity:         int
         """
         log.info(message)
+        internal = False
         if 'internal' in message_severity:
             message_header = '!!! --- !!! INTERNAL WATCHDOG ERROR !!! --- !!!'
+            internal = True
         elif 'error' in message_severity:
             message_header = '!!! nGraph-ONNX CI Error !!!'
         elif 'warning' in message_severity:
@@ -420,7 +422,7 @@ class Watchdog:
             message = message + '\n' + pr.html_url
 
         send = message_header + '\n' + message
-        self._slack_app.queue_message(send)
+        self._slack_app.queue_message(send, internal_error = internal)
 
     def _check_finished(self, pr, build_number):
         """Verify if finished build output contains expected string for either fail or success.
