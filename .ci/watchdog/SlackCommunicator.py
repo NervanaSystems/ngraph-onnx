@@ -62,6 +62,14 @@ class SlackCommunicator:
             self.queued_messages[_CI_ALERTS_CHANNEL].append(message)
 
     def _send_to_channel(self, message, channel):
+        """
+        Send slack message to specified channel.
+
+            :param message:     Message content
+            :type message:      String
+            :param channel:     Channel name
+            :type channel:      String
+        """
         try:
             self.slack_client.api_call(
                 'chat.postMessage',
