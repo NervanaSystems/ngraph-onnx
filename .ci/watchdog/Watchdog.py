@@ -451,7 +451,7 @@ class Watchdog:
         :param quiet:   Flag for disabling sending report through Slack
         :type quiet:    Boolean
         """
-        if len(self._slack_app.queued_messages) > 0:
+        if any(messages for messages in self._slack_app.queued_messages.values())
             try:
                 watchdog_build = self._jenkins.get_job_info(self._watchdog_job_name)['lastBuild']
                 watchdog_build_number = watchdog_build['number']
