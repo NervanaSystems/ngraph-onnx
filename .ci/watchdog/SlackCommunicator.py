@@ -90,5 +90,5 @@ class SlackCommunicator:
                         text=final_message,
                         thread_ts=self.thread_id)
                 except Exception:
-                    print('!!CRITICAL!! SlackCommunicator: Could not send message')
+                    print('!!CRITICAL!! SlackCommunicator: Could not send message to ', channel)
                     raise
