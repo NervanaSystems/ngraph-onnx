@@ -422,7 +422,7 @@ class Watchdog:
             message = message + '\n' + pr.html_url
 
         send = message_header + '\n' + message
-        self._slack_app.queue_message(send, internal_error = internal)
+        self._slack_app.queue_message(send, internal_error=internal)
 
     def _check_finished(self, pr, build_number):
         """Verify if finished build output contains expected string for either fail or success.
