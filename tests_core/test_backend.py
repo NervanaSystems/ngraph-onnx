@@ -58,12 +58,6 @@ backend_test.exclude('test_operator_lstm')
 # GRU -> NC-325
 backend_test.exclude('test_gru')
 
-# Depth to space -> NC-326
-backend_test.exclude('test_depthtospace')
-
-# Top-K -> NC-327
-backend_test.exclude('test_top_k')
-
 # MeanVarianceNormalization -> NC-328
 backend_test.exclude('test_mvn')
 
@@ -71,7 +65,6 @@ backend_test.exclude('test_mvn')
 if selected_backend_name == 'CPU':
     backend_test.exclude('test_Conv3d_dilated')
     backend_test.exclude('test_Conv3d_dilated_strided')
-    backend_test.exclude('test_GLU_dim')
 
 # Big model tests (see test_zoo_models.py):
 backend_test.exclude('test_bvlc_alexnet')
