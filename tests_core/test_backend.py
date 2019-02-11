@@ -58,12 +58,6 @@ backend_test.exclude('test_operator_lstm')
 # GRU -> NC-325
 backend_test.exclude('test_gru')
 
-# Depth to space -> NC-326
-backend_test.exclude('test_depthtospace')
-
-# Top-K -> NC-327
-backend_test.exclude('test_top_k')
-
 # MeanVarianceNormalization -> NC-328
 backend_test.exclude('test_mvn')
 

@@ -394,7 +394,7 @@ class Watchdog:
             log.exception('Failed to retrieve build number from url link: %s', url)
             raise
 
-    def _queue_message(self, message, message_severity, pr=None):
+    def _queue_message(self, message, message_severity='info', pr=None):
         """Add a message to message queue in Slack App object.
 
         The queued message is constructed based on message string passed as
@@ -407,8 +407,10 @@ class Watchdog:
         :type message_severity:         int
         """
         log.info(message)
+        internal = False
         if 'internal' in message_severity:
             message_header = '!!! --- !!! INTERNAL WATCHDOG ERROR !!! --- !!!'
+            internal = True
         elif 'error' in message_severity:
             message_header = '!!! nGraph-ONNX CI Error !!!'
         elif 'warning' in message_severity:
@@ -420,7 +422,7 @@ class Watchdog:
             message = message + '\n' + pr.html_url
 
         send = message_header + '\n' + message
-        self._slack_app.queue_message(send)
+        self._slack_app.queue_message(send, internal_error=internal)
 
     def _check_finished(self, pr, build_number):
         """Verify if finished build output contains expected string for either fail or success.
@@ -449,7 +451,7 @@ class Watchdog:
         :param quiet:   Flag for disabling sending report through Slack
         :type quiet:    Boolean
         """
-        if len(self._slack_app.queued_messages) > 0:
+        if any(messages for messages in self._slack_app.queued_messages.values()):
             try:
                 watchdog_build = self._jenkins.get_job_info(self._watchdog_job_name)['lastBuild']
                 watchdog_build_number = watchdog_build['number']
