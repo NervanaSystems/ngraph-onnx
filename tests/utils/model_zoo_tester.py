@@ -48,6 +48,8 @@ class ModelZooTestRunner(onnx.backend.test.BackendTest):
                 model=None,
                 data_sets=None,
                 kind='OnnxBackendRealModelTest',
+                rtol=0.001,
+                atol=1e-07,
             )
             self._add_model_test(test_case, 'Zoo')
 
