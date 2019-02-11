@@ -312,7 +312,6 @@ def test_split_1d():
     assert all_arrays_equal(ng_results, expected_outputs)
 
 
-@pytest.mark.xfail(reason='Refactoring to nGraph core importer.')
 def test_depth_to_space():
     b, c, h, w = shape = (2, 8, 3, 3)
     blocksize = 2
