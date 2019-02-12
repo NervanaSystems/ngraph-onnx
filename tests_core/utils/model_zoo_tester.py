@@ -29,25 +29,27 @@ from onnx.backend.test.case.test_case import TestCase as OnnxTestCase
 
 class ModelZooTestRunner(onnx.backend.test.BackendTest):
 
-    def __init__(self, backend, models_dict, parent_module=None):
-        # type: (Type[Backend], Dict[str,str], Optional[str]) -> None
+    def __init__(self, backend, zoo_models, parent_module=None):
+        # type: (Type[Backend], List[Dict[str,str]], Optional[str]) -> None
         self.backend = backend
         self._parent_module = parent_module
         self._include_patterns = set()  # type: Set[Pattern[Text]]
         self._exclude_patterns = set()  # type: Set[Pattern[Text]]
         self._test_items = defaultdict(dict)  # type: Dict[Text, Dict[Text, TestItem]]
 
-        for model_name, url in models_dict.items():
-            test_name = "test_{}".format(model_name)
+        for zoo_model in zoo_models:
+            test_name = "test_{}".format(zoo_model['model_name'])
 
             test_case = OnnxTestCase(
                 name=test_name,
-                url=url,
-                model_name=model_name,
+                url=zoo_model['url'],
+                model_name=zoo_model['model_name'],
                 model_dir=None,
                 model=None,
                 data_sets=None,
                 kind='OnnxBackendRealModelTest',
+                rtol=zoo_model.get('rtol', 0.001),
+                atol=zoo_model.get('atol', 1e-07),
             )
             self._add_model_test(test_case, 'Zoo')
 
