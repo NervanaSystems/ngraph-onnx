@@ -16,6 +16,6 @@ setup(name='ngraph-onnx',
       author_email='intelnervana@intel.com',
       url='https://github.com/NervanaSystems/ngraph-onnx',
       license='License :: OSI Approved :: Apache Software License',
-      packages=find_packages(exclude=['tests', 'tests.*', 'tests_core', 'tests_core.*']),
+      packages=find_packages(exclude=['tests', 'tests.*']),
       data_files=[('', ['LICENSE']), ('licenses', glob(path.join(SOURCES_ROOT, 'licenses/*')))],
       install_requires=['cachetools', 'ngraph-core', 'numpy', 'onnx', 'setuptools'])
