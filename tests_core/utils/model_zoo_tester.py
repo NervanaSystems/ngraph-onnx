@@ -24,7 +24,6 @@ import unittest
 
 import numpy as np
 
-from onnx.backend.test.runner import retry_excute
 from six.moves.urllib.request import urlretrieve, urlopen
 
 import onnx.backend.test
