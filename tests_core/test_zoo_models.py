@@ -14,7 +14,6 @@
 # limitations under the License.
 # ******************************************************************************
 
-import onnx
 import pytest
 
 from ngraph_onnx.core_importer.backend import NgraphBackend
@@ -27,64 +26,224 @@ _WINDOWS_NET = 'https://onnxzoo.blob.core.windows.net/models/'
 
 zoo_models = [
     # ArcFace
-    {'model_name': 'arcface_lresnet100e_opset8', 'url': _S3_MODEL_ZOO + 'arcface/resnet100/resnet100.tar.gz'},
+    {
+        'model_name': 'arcface_lresnet100e_opset8',
+        'url': _S3_MODEL_ZOO + 'arcface/resnet100/resnet100.tar.gz',
+    },
 
     # BVLC AlexNet
-    {'model_name': 'bvlc_alexnet_opset3', 'atol': 1e-07, 'rtol': 0.001, 'url': _S3_DOWNLOAD_ONNX + 'opset_3/bvlc_alexnet.tar.gz'},
-    {'model_name': 'bvlc_alexnet_opset6', 'atol': 1e-07, 'rtol': 0.001, 'url': _S3_DOWNLOAD_ONNX + 'opset_6/bvlc_alexnet.tar.gz'},
-    {'model_name': 'bvlc_alexnet_opset7', 'atol': 1e-07, 'rtol': 0.001, 'url': _S3_DOWNLOAD_ONNX + 'opset_7/bvlc_alexnet.tar.gz'},
-    {'model_name': 'bvlc_alexnet_opset8', 'atol': 1e-07, 'rtol': 0.001, 'url': _S3_DOWNLOAD_ONNX + 'opset_8/bvlc_alexnet.tar.gz'},
-    {'model_name': 'bvlc_alexnet_opset9', 'atol': 1e-07, 'rtol': 0.001, 'url': _S3_DOWNLOAD_ONNX + 'opset_9/bvlc_alexnet.tar.gz'},
+    {
+        'model_name': 'bvlc_alexnet_opset3',
+        'atol': 1e-07,
+        'rtol': 0.001,
+        'url': _S3_DOWNLOAD_ONNX + 'opset_3/bvlc_alexnet.tar.gz',
+    },
+    {
+        'model_name': 'bvlc_alexnet_opset6',
+        'atol': 1e-07,
+        'rtol': 0.001,
+        'url': _S3_DOWNLOAD_ONNX + 'opset_6/bvlc_alexnet.tar.gz',
+    },
+    {
+        'model_name': 'bvlc_alexnet_opset7',
+        'atol': 1e-07,
+        'rtol': 0.001,
+        'url': _S3_DOWNLOAD_ONNX + 'opset_7/bvlc_alexnet.tar.gz',
+    },
+    {
+        'model_name': 'bvlc_alexnet_opset8',
+        'atol': 1e-07,
+        'rtol': 0.001,
+        'url': _S3_DOWNLOAD_ONNX + 'opset_8/bvlc_alexnet.tar.gz',
+    },
+    {
+        'model_name': 'bvlc_alexnet_opset9',
+        'atol': 1e-07,
+        'rtol': 0.001,
+        'url': _S3_DOWNLOAD_ONNX + 'opset_9/bvlc_alexnet.tar.gz',
+    },
 
     # BVLC GoogleNet
-    {'model_name': 'bvlc_googlenet_opset3', 'url': _S3_DOWNLOAD_ONNX + 'opset_3/bvlc_googlenet.tar.gz'},
-    {'model_name': 'bvlc_googlenet_opset6', 'url': _S3_DOWNLOAD_ONNX + 'opset_6/bvlc_googlenet.tar.gz'},
-    {'model_name': 'bvlc_googlenet_opset7', 'url': _S3_DOWNLOAD_ONNX + 'opset_7/bvlc_googlenet.tar.gz'},
-    {'model_name': 'bvlc_googlenet_opset8', 'url': _S3_DOWNLOAD_ONNX + 'opset_8/bvlc_googlenet.tar.gz'},
-    {'model_name': 'bvlc_googlenet_opset9', 'url': _S3_DOWNLOAD_ONNX + 'opset_9/bvlc_googlenet.tar.gz'},
+    {
+        'model_name': 'bvlc_googlenet_opset3',
+        'url': _S3_DOWNLOAD_ONNX + 'opset_3/bvlc_googlenet.tar.gz',
+    },
+    {
+        'model_name': 'bvlc_googlenet_opset6',
+        'url': _S3_DOWNLOAD_ONNX + 'opset_6/bvlc_googlenet.tar.gz',
+    },
+    {
+        'model_name': 'bvlc_googlenet_opset7',
+        'url': _S3_DOWNLOAD_ONNX + 'opset_7/bvlc_googlenet.tar.gz',
+    },
+    {
+        'model_name': 'bvlc_googlenet_opset8',
+        'url': _S3_DOWNLOAD_ONNX + 'opset_8/bvlc_googlenet.tar.gz',
+    },
+    {
+        'model_name': 'bvlc_googlenet_opset9',
+        'url': _S3_DOWNLOAD_ONNX + 'opset_9/bvlc_googlenet.tar.gz',
+    },
 
     # BVLC CaffeNet
-    {'model_name': 'bvlc_caffenet_opset3', 'url': _S3_DOWNLOAD_ONNX + 'opset_3/bvlc_reference_caffenet.tar.gz'},
-    {'model_name': 'bvlc_caffenet_opset6', 'url': _S3_DOWNLOAD_ONNX + 'opset_6/bvlc_reference_caffenet.tar.gz'},
-    {'model_name': 'bvlc_caffenet_opset7', 'url': _S3_DOWNLOAD_ONNX + 'opset_7/bvlc_reference_caffenet.tar.gz'},
-    {'model_name': 'bvlc_caffenet_opset8', 'url': _S3_DOWNLOAD_ONNX + 'opset_8/bvlc_reference_caffenet.tar.gz'},
-    {'model_name': 'bvlc_caffenet_opset9', 'url': _S3_DOWNLOAD_ONNX + 'opset_9/bvlc_reference_caffenet.tar.gz'},
+    {
+        'model_name': 'bvlc_caffenet_opset3',
+        'url': _S3_DOWNLOAD_ONNX + 'opset_3/bvlc_reference_caffenet.tar.gz',
+    },
+    {
+        'model_name': 'bvlc_caffenet_opset6',
+        'url': _S3_DOWNLOAD_ONNX + 'opset_6/bvlc_reference_caffenet.tar.gz',
+    },
+    {
+        'model_name': 'bvlc_caffenet_opset7',
+        'url': _S3_DOWNLOAD_ONNX + 'opset_7/bvlc_reference_caffenet.tar.gz',
+    },
+    {
+        'model_name': 'bvlc_caffenet_opset8',
+        'url': _S3_DOWNLOAD_ONNX + 'opset_8/bvlc_reference_caffenet.tar.gz',
+    },
+    {
+        'model_name': 'bvlc_caffenet_opset9',
+        'url': _S3_DOWNLOAD_ONNX + 'opset_9/bvlc_reference_caffenet.tar.gz',
+    },
 
     # BVLC R-CNN ILSVRC13
-    {'model_name': 'bvlc_rcnn_ilsvrc13_opset3', 'url': _S3_DOWNLOAD_ONNX + 'opset_3/bvlc_reference_rcnn_ilsvrc13.tar.gz'},
-    {'model_name': 'bvlc_rcnn_ilsvrc13_opset6', 'url': _S3_DOWNLOAD_ONNX + 'opset_6/bvlc_reference_rcnn_ilsvrc13.tar.gz'},
-    {'model_name': 'bvlc_rcnn_ilsvrc13_opset7', 'url': _S3_DOWNLOAD_ONNX + 'opset_7/bvlc_reference_rcnn_ilsvrc13.tar.gz'},
-    {'model_name': 'bvlc_rcnn_ilsvrc13_opset8', 'url': _S3_DOWNLOAD_ONNX + 'opset_8/bvlc_reference_rcnn_ilsvrc13.tar.gz'},
-    {'model_name': 'bvlc_rcnn_ilsvrc13_opset9', 'url': _S3_DOWNLOAD_ONNX + 'opset_9/bvlc_reference_rcnn_ilsvrc13.tar.gz'},
+    {
+        'model_name': 'bvlc_rcnn_ilsvrc13_opset3',
+        'url': _S3_DOWNLOAD_ONNX + 'opset_3/bvlc_reference_rcnn_ilsvrc13.tar.gz',
+    },
+    {
+        'model_name': 'bvlc_rcnn_ilsvrc13_opset6',
+        'url': _S3_DOWNLOAD_ONNX + 'opset_6/bvlc_reference_rcnn_ilsvrc13.tar.gz',
+    },
+    {
+        'model_name': 'bvlc_rcnn_ilsvrc13_opset7',
+        'url': _S3_DOWNLOAD_ONNX + 'opset_7/bvlc_reference_rcnn_ilsvrc13.tar.gz',
+    },
+    {
+        'model_name': 'bvlc_rcnn_ilsvrc13_opset8',
+        'url': _S3_DOWNLOAD_ONNX + 'opset_8/bvlc_reference_rcnn_ilsvrc13.tar.gz',
+    },
+    {
+        'model_name': 'bvlc_rcnn_ilsvrc13_opset9',
+        'url': _S3_DOWNLOAD_ONNX + 'opset_9/bvlc_reference_rcnn_ilsvrc13.tar.gz',
+    },
 
     # DenseNet-121
-    {'model_name': 'densenet121_opset3', 'atol': 1e-07, 'rtol': 0.002, 'url': _S3_DOWNLOAD_ONNX + 'opset_3/densenet121.tar.gz'},
-    {'model_name': 'densenet121_opset6', 'atol': 1e-07, 'rtol': 0.002, 'url': _S3_DOWNLOAD_ONNX + 'opset_6/densenet121.tar.gz'},
-    {'model_name': 'densenet121_opset7', 'atol': 1e-07, 'rtol': 0.002, 'url': _S3_DOWNLOAD_ONNX + 'opset_7/densenet121.tar.gz'},
-    {'model_name': 'densenet121_opset8', 'atol': 1e-07, 'rtol': 0.002, 'url': _S3_DOWNLOAD_ONNX + 'opset_8/densenet121.tar.gz'},
-    {'model_name': 'densenet121_opset9', 'atol': 1e-07, 'rtol': 0.002, 'url': _S3_DOWNLOAD_ONNX + 'opset_9/densenet121.tar.gz'},
+    {
+        'model_name': 'densenet121_opset3',
+        'atol': 1e-07,
+        'rtol': 0.002,
+        'url': _S3_DOWNLOAD_ONNX + 'opset_3/densenet121.tar.gz',
+    },
+    {
+        'model_name': 'densenet121_opset6',
+        'atol': 1e-07,
+        'rtol': 0.002,
+        'url': _S3_DOWNLOAD_ONNX + 'opset_6/densenet121.tar.gz',
+    },
+    {
+        'model_name': 'densenet121_opset7',
+        'atol': 1e-07,
+        'rtol': 0.002,
+        'url': _S3_DOWNLOAD_ONNX + 'opset_7/densenet121.tar.gz',
+    },
+    {
+        'model_name': 'densenet121_opset8',
+        'atol': 1e-07,
+        'rtol': 0.002,
+        'url': _S3_DOWNLOAD_ONNX + 'opset_8/densenet121.tar.gz',
+    },
+    {
+        'model_name': 'densenet121_opset9',
+        'atol': 1e-07,
+        'rtol': 0.002,
+        'url': _S3_DOWNLOAD_ONNX + 'opset_9/densenet121.tar.gz',
+    },
 
     # DUC
-    {'model_name': 'duc_resnet101_hdc_opset7', 'url': _S3_MODEL_ZOO + 'duc/ResNet101_DUC_HDC.tar.gz'},
+    {
+        'model_name': 'duc_resnet101_hdc_opset7',
+        'url': _S3_MODEL_ZOO + 'duc/ResNet101_DUC_HDC.tar.gz',
+    },
 
     # Emotion-FERPlus
-    {'model_name': 'emotion_ferplus_opset2', 'url': _WINDOWS_NET + 'opset_2/emotion_ferplus/emotion_ferplus.tar.gz'},
-    {'model_name': 'emotion_ferplus_opset7', 'url': _WINDOWS_NET + 'opset_7/emotion_ferplus/emotion_ferplus.tar.gz'},
-    {'model_name': 'emotion_ferplus_opset8', 'url': _WINDOWS_NET + 'opset_8/emotion_ferplus/emotion_ferplus.tar.gz'},
+    {
+        'model_name': 'emotion_ferplus_opset2',
+        'url': _WINDOWS_NET + 'opset_2/emotion_ferplus/emotion_ferplus.tar.gz',
+    },
+    {
+        'model_name': 'emotion_ferplus_opset7',
+        'url': _WINDOWS_NET + 'opset_7/emotion_ferplus/emotion_ferplus.tar.gz',
+    },
+    {
+        'model_name': 'emotion_ferplus_opset8',
+        'url': _WINDOWS_NET + 'opset_8/emotion_ferplus/emotion_ferplus.tar.gz',
+    },
 
     # Inception-v1
-    {'model_name': 'inception_v1_opset3', 'atol': 1e-07, 'rtol': 0.001, 'url': _S3_DOWNLOAD_ONNX + 'opset_3/inception_v1.tar.gz'},
-    {'model_name': 'inception_v1_opset6', 'atol': 1e-07, 'rtol': 0.001, 'url': _S3_DOWNLOAD_ONNX + 'opset_6/inception_v1.tar.gz'},
-    {'model_name': 'inception_v1_opset7', 'atol': 1e-07, 'rtol': 0.001, 'url': _S3_DOWNLOAD_ONNX + 'opset_7/inception_v1.tar.gz'},
-    {'model_name': 'inception_v1_opset8', 'atol': 1e-07, 'rtol': 0.001, 'url': _S3_DOWNLOAD_ONNX + 'opset_8/inception_v1.tar.gz'},
-    {'model_name': 'inception_v1_opset9', 'atol': 1e-07, 'rtol': 0.001, 'url': _S3_DOWNLOAD_ONNX + 'opset_9/inception_v1.tar.gz'},
+    {
+        'model_name': 'inception_v1_opset3',
+        'atol': 1e-07,
+        'rtol': 0.001,
+        'url': _S3_DOWNLOAD_ONNX + 'opset_3/inception_v1.tar.gz',
+    },
+    {
+        'model_name': 'inception_v1_opset6',
+        'atol': 1e-07,
+        'rtol': 0.001,
+        'url': _S3_DOWNLOAD_ONNX + 'opset_6/inception_v1.tar.gz',
+    },
+    {
+        'model_name': 'inception_v1_opset7',
+        'atol': 1e-07,
+        'rtol': 0.001,
+        'url': _S3_DOWNLOAD_ONNX + 'opset_7/inception_v1.tar.gz',
+    },
+    {
+        'model_name': 'inception_v1_opset8',
+        'atol': 1e-07,
+        'rtol': 0.001,
+        'url': _S3_DOWNLOAD_ONNX + 'opset_8/inception_v1.tar.gz',
+    },
+    {
+        'model_name': 'inception_v1_opset9',
+        'atol': 1e-07,
+        'rtol': 0.001,
+        'url': _S3_DOWNLOAD_ONNX + 'opset_9/inception_v1.tar.gz',
+    },
 
     # Inception-v2
-    {'model_name': 'inception_v2_opset3', 'atol': 1e-07, 'rtol': 0.001, 'url': _S3_DOWNLOAD_ONNX + 'opset_3/inception_v2.tar.gz'},
-    {'model_name': 'inception_v2_opset6', 'atol': 1e-07, 'rtol': 0.001, 'url': _S3_DOWNLOAD_ONNX + 'opset_6/inception_v2.tar.gz'},
-    {'model_name': 'inception_v2_opset7', 'atol': 1e-07, 'rtol': 0.001, 'url': _S3_DOWNLOAD_ONNX + 'opset_7/inception_v2.tar.gz'},
-    {'model_name': 'inception_v2_opset8', 'atol': 1e-07, 'rtol': 0.001, 'url': _S3_DOWNLOAD_ONNX + 'opset_8/inception_v2.tar.gz'},
-    {'model_name': 'inception_v2_opset9', 'atol': 1e-07, 'rtol': 0.001, 'url': _S3_DOWNLOAD_ONNX + 'opset_9/inception_v2.tar.gz'},
+    {
+        'model_name': 'inception_v2_opset3',
+        'atol': 1e-07,
+        'rtol': 0.001,
+        'url': _S3_DOWNLOAD_ONNX + 'opset_3/inception_v2.tar.gz',
+    },
+    {
+        'model_name': 'inception_v2_opset6',
+        'atol': 1e-07,
+        'rtol': 0.001,
+        'url': _S3_DOWNLOAD_ONNX + 'opset_6/inception_v2.tar.gz',
+    },
+    {
+        'model_name': 'inception_v2_opset7',
+        'atol': 1e-07,
+        'rtol': 0.001,
+        'url': _S3_DOWNLOAD_ONNX + 'opset_7/inception_v2.tar.gz',
+    },
+    {
+        'model_name': 'inception_v2_opset8',
+        'atol': 1e-07,
+        'rtol': 0.001,
+        'url': _S3_DOWNLOAD_ONNX + 'opset_8/inception_v2.tar.gz',
+    },
+    {
+        'model_name': 'inception_v2_opset9',
+        'atol': 1e-07,
+        'rtol': 0.001,
+        'url': _S3_DOWNLOAD_ONNX + 'opset_9/inception_v2.tar.gz',
+    },
 
     # MNIST
     {'model_name': 'mnist_opset1', 'url': _WINDOWS_NET + 'opset_1/mnist/mnist.tar.gz'},
@@ -92,36 +251,124 @@ zoo_models = [
     {'model_name': 'mnist_opset8', 'url': _WINDOWS_NET + 'opset_8/mnist/mnist.tar.gz'},
 
     # Mobile Net
-    {'model_name': 'mobilenet_opset7', 'url': _S3_MODEL_ZOO + 'mobilenet/mobilenetv2-1.0/mobilenetv2-1.0.tar.gz'},
+    {
+        'model_name': 'mobilenet_opset7',
+        'url': _S3_MODEL_ZOO + 'mobilenet/mobilenetv2-1.0/mobilenetv2-1.0.tar.gz',
+    },
 
     # ResNet-50
-    {'model_name': 'resnet50_opset3', 'atol': 1e-07, 'rtol': 0.001, 'url': _S3_DOWNLOAD_ONNX + 'opset_3/resnet50.tar.gz'},
-    {'model_name': 'resnet50_opset6', 'atol': 1e-07, 'rtol': 0.001, 'url': _S3_DOWNLOAD_ONNX + 'opset_6/resnet50.tar.gz'},
-    {'model_name': 'resnet50_opset7', 'atol': 1e-07, 'rtol': 0.001, 'url': _S3_DOWNLOAD_ONNX + 'opset_7/resnet50.tar.gz'},
-    {'model_name': 'resnet50_opset8', 'atol': 1e-07, 'rtol': 0.001, 'url': _S3_DOWNLOAD_ONNX + 'opset_8/resnet50.tar.gz'},
-    {'model_name': 'resnet50_opset9', 'atol': 1e-07, 'rtol': 0.001, 'url': _S3_DOWNLOAD_ONNX + 'opset_9/resnet50.tar.gz'},
-
-
-    {'model_name': 'resnet50_v2_opset7', 'url': _S3_MODEL_ZOO + 'resnet/resnet50v2/resnet50v2.tar.gz'},
+    {
+        'model_name': 'resnet50_opset3',
+        'atol': 1e-07,
+        'rtol': 0.001,
+        'url': _S3_DOWNLOAD_ONNX + 'opset_3/resnet50.tar.gz',
+    },
+    {
+        'model_name': 'resnet50_opset6',
+        'atol': 1e-07,
+        'rtol': 0.001,
+        'url': _S3_DOWNLOAD_ONNX + 'opset_6/resnet50.tar.gz',
+    },
+    {
+        'model_name': 'resnet50_opset7',
+        'atol': 1e-07,
+        'rtol': 0.001,
+        'url': _S3_DOWNLOAD_ONNX + 'opset_7/resnet50.tar.gz',
+    },
+    {
+        'model_name': 'resnet50_opset8',
+        'atol': 1e-07,
+        'rtol': 0.001,
+        'url': _S3_DOWNLOAD_ONNX + 'opset_8/resnet50.tar.gz',
+    },
+    {
+        'model_name': 'resnet50_opset9',
+        'atol': 1e-07,
+        'rtol': 0.001,
+        'url': _S3_DOWNLOAD_ONNX + 'opset_9/resnet50.tar.gz',
+    },
+    {
+        'model_name': 'resnet50_v2_opset7',
+        'url': _S3_MODEL_ZOO + 'resnet/resnet50v2/resnet50v2.tar.gz',
+    },
 
     # ShuffleNet
-    {'model_name': 'shufflenet_opset3', 'atol': 1e-07, 'rtol': 0.001, 'url': _S3_DOWNLOAD_ONNX + 'opset_3/shufflenet.tar.gz'},
-    {'model_name': 'shufflenet_opset6', 'atol': 1e-07, 'rtol': 0.001, 'url': _S3_DOWNLOAD_ONNX + 'opset_6/shufflenet.tar.gz'},
-    {'model_name': 'shufflenet_opset7', 'atol': 1e-07, 'rtol': 0.001, 'url': _S3_DOWNLOAD_ONNX + 'opset_7/shufflenet.tar.gz'},
-    {'model_name': 'shufflenet_opset8', 'atol': 1e-07, 'rtol': 0.001, 'url': _S3_DOWNLOAD_ONNX + 'opset_8/shufflenet.tar.gz'},
-    {'model_name': 'shufflenet_opset9', 'atol': 1e-07, 'rtol': 0.001, 'url': _S3_DOWNLOAD_ONNX + 'opset_9/shufflenet.tar.gz'},
+    {
+        'model_name': 'shufflenet_opset3',
+        'atol': 1e-07,
+        'rtol': 0.001,
+        'url': _S3_DOWNLOAD_ONNX + 'opset_3/shufflenet.tar.gz',
+    },
+    {
+        'model_name': 'shufflenet_opset6',
+        'atol': 1e-07,
+        'rtol': 0.001,
+        'url': _S3_DOWNLOAD_ONNX + 'opset_6/shufflenet.tar.gz',
+    },
+    {
+        'model_name': 'shufflenet_opset7',
+        'atol': 1e-07,
+        'rtol': 0.001,
+        'url': _S3_DOWNLOAD_ONNX + 'opset_7/shufflenet.tar.gz',
+    },
+    {
+        'model_name': 'shufflenet_opset8',
+        'atol': 1e-07,
+        'rtol': 0.001,
+        'url': _S3_DOWNLOAD_ONNX + 'opset_8/shufflenet.tar.gz',
+    },
+    {
+        'model_name': 'shufflenet_opset9',
+        'atol': 1e-07,
+        'rtol': 0.001,
+        'url': _S3_DOWNLOAD_ONNX + 'opset_9/shufflenet.tar.gz',
+    },
 
     # SqueezeNet
-    {'model_name': 'squeezenet_opset3', 'atol': 1e-07, 'rtol': 0.001, 'url': _S3_DOWNLOAD_ONNX + 'opset_3/squeezenet.tar.gz'},
-    {'model_name': 'squeezenet_opset6', 'atol': 1e-07, 'rtol': 0.001, 'url': _S3_DOWNLOAD_ONNX + 'opset_6/squeezenet.tar.gz'},
-    {'model_name': 'squeezenet_opset7', 'atol': 1e-07, 'rtol': 0.001, 'url': _S3_DOWNLOAD_ONNX + 'opset_7/squeezenet.tar.gz'},
-    {'model_name': 'squeezenet_opset8', 'atol': 1e-07, 'rtol': 0.001, 'url': _S3_DOWNLOAD_ONNX + 'opset_8/squeezenet.tar.gz'},
-    {'model_name': 'squeezenet_opset9', 'atol': 1e-07, 'rtol': 0.001, 'url': _S3_DOWNLOAD_ONNX + 'opset_9/squeezenet.tar.gz'},
+    {
+        'model_name': 'squeezenet_opset3',
+        'atol': 1e-07,
+        'rtol': 0.001,
+        'url': _S3_DOWNLOAD_ONNX + 'opset_3/squeezenet.tar.gz',
+    },
+    {
+        'model_name': 'squeezenet_opset6',
+        'atol': 1e-07,
+        'rtol': 0.001,
+        'url': _S3_DOWNLOAD_ONNX + 'opset_6/squeezenet.tar.gz',
+    },
+    {
+        'model_name': 'squeezenet_opset7',
+        'atol': 1e-07,
+        'rtol': 0.001,
+        'url': _S3_DOWNLOAD_ONNX + 'opset_7/squeezenet.tar.gz',
+    },
+    {
+        'model_name': 'squeezenet_opset8',
+        'atol': 1e-07,
+        'rtol': 0.001,
+        'url': _S3_DOWNLOAD_ONNX + 'opset_8/squeezenet.tar.gz',
+    },
+    {
+        'model_name': 'squeezenet_opset9',
+        'atol': 1e-07,
+        'rtol': 0.001,
+        'url': _S3_DOWNLOAD_ONNX + 'opset_9/squeezenet.tar.gz',
+    },
 
     # Tiny-YOLOv2
-    {'model_name': 'tiny_yolov2_opset1', 'url': _WINDOWS_NET + 'opset_1/tiny_yolov2/tiny_yolov2.tar.gz'},
-    {'model_name': 'tiny_yolov2_opset7', 'url': _WINDOWS_NET + 'opset_7/tiny_yolov2/tiny_yolov2.tar.gz'},
-    {'model_name': 'tiny_yolov2_opset8', 'url': _WINDOWS_NET + 'opset_8/tiny_yolov2/tiny_yolov2.tar.gz'},
+    {
+        'model_name': 'tiny_yolov2_opset1',
+        'url': _WINDOWS_NET + 'opset_1/tiny_yolov2/tiny_yolov2.tar.gz',
+    },
+    {
+        'model_name': 'tiny_yolov2_opset7',
+        'url': _WINDOWS_NET + 'opset_7/tiny_yolov2/tiny_yolov2.tar.gz',
+    },
+    {
+        'model_name': 'tiny_yolov2_opset8',
+        'url': _WINDOWS_NET + 'opset_8/tiny_yolov2/tiny_yolov2.tar.gz',
+    },
 
     # VGG-19
     {'model_name': 'vgg19_opset3', 'url': _S3_DOWNLOAD_ONNX + 'opset_3/vgg19.tar.gz'},
@@ -131,11 +378,26 @@ zoo_models = [
     {'model_name': 'vgg19_opset9', 'url': _S3_DOWNLOAD_ONNX + 'opset_9/vgg19.tar.gz'},
 
     # ZFNet-512
-    {'model_name': 'zfnet512_opset3', 'url': _S3_DOWNLOAD_ONNX + 'opset_3/zfnet512.tar.gz'},
-    {'model_name': 'zfnet512_opset6', 'url': _S3_DOWNLOAD_ONNX + 'opset_6/zfnet512.tar.gz'},
-    {'model_name': 'zfnet512_opset7', 'url': _S3_DOWNLOAD_ONNX + 'opset_7/zfnet512.tar.gz'},
-    {'model_name': 'zfnet512_opset8', 'url': _S3_DOWNLOAD_ONNX + 'opset_8/zfnet512.tar.gz'},
-    {'model_name': 'zfnet512_opset9', 'url': _S3_DOWNLOAD_ONNX + 'opset_9/zfnet512.tar.gz'},
+    {
+        'model_name': 'zfnet512_opset3',
+        'url': _S3_DOWNLOAD_ONNX + 'opset_3/zfnet512.tar.gz',
+    },
+    {
+        'model_name': 'zfnet512_opset6',
+        'url': _S3_DOWNLOAD_ONNX + 'opset_6/zfnet512.tar.gz',
+    },
+    {
+        'model_name': 'zfnet512_opset7',
+        'url': _S3_DOWNLOAD_ONNX + 'opset_7/zfnet512.tar.gz',
+    },
+    {
+        'model_name': 'zfnet512_opset8',
+        'url': _S3_DOWNLOAD_ONNX + 'opset_8/zfnet512.tar.gz',
+    },
+    {
+        'model_name': 'zfnet512_opset9',
+        'url': _S3_DOWNLOAD_ONNX + 'opset_9/zfnet512.tar.gz',
+    },
 ]
 
 

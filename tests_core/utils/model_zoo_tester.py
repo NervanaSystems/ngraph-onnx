@@ -20,11 +20,14 @@ import os
 import shutil
 import tarfile
 import tempfile
+from onnx.backend.base import Backend
+from onnx.backend.test.runner import TestItem
 
 from six.moves.urllib.request import urlretrieve, urlopen
 
 import onnx.backend.test
-from onnx.backend.test.case.test_case import TestCase as OnnxTestCase
+from onnx.backend.test.case.test_case import TestCase as OnnxTestCase, TestCase
+from typing import Type, List, Dict, Optional, Set, Pattern, Text
 
 
 class ModelZooTestRunner(onnx.backend.test.BackendTest):
@@ -38,7 +41,7 @@ class ModelZooTestRunner(onnx.backend.test.BackendTest):
         self._test_items = defaultdict(dict)  # type: Dict[Text, Dict[Text, TestItem]]
 
         for zoo_model in zoo_models:
-            test_name = "test_{}".format(zoo_model['model_name'])
+            test_name = 'test_{}'.format(zoo_model['model_name'])
 
             test_case = OnnxTestCase(
                 name=test_name,

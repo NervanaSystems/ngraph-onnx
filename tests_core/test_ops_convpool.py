@@ -59,7 +59,6 @@ def import_and_compute_conv(x, weights, transpose=False, **attributes):
     return computation(x, weights)[0]
 
 
-
 def test_2d_conv():
     # x should have shape N(batch) x C x H x W
     input_x = np.array([
@@ -123,8 +122,6 @@ def test_2d_conv():
                                       [0, 0, 20, 20, 0],
                                       [0, 0, 20, 20, 0]]]],
                                    dtype=np.float32))
-
-
 
 
 def test_3d_conv():
