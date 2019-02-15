@@ -165,10 +165,9 @@ pytest.mark.xfail(OnnxBackendNodeModelTest.test_scatter_without_axis_cpu)
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_maxunpool_export_with_output_shape_cpu)
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_maxunpool_export_without_output_shape_cpu)
 
-# Sign, Where -> NGONNX-448
+# Sign -> NGONNX-448
 pytest.mark.xfail(OnnxBackendSimpleModelTest.test_sign_model_cpu)
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_sign_cpu)
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_where_example_cpu)
 
 # Shrink -> NGONNX-449
 pytest.mark.xfail(OnnxBackendSimpleModelTest.test_shrink_cpu)
