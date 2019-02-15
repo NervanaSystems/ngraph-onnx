@@ -20,11 +20,14 @@ import os
 import shutil
 import tarfile
 import tempfile
+from onnx.backend.base import Backend
+from onnx.backend.test.runner import TestItem
 
 from six.moves.urllib.request import urlretrieve, urlopen
 
 import onnx.backend.test
-from onnx.backend.test.case.test_case import TestCase as OnnxTestCase
+from onnx.backend.test.case.test_case import TestCase as OnnxTestCase, TestCase
+from typing import Type, Dict, Optional, Set, Pattern, Text
 
 
 class ModelZooTestRunner(onnx.backend.test.BackendTest):
@@ -48,6 +51,8 @@ class ModelZooTestRunner(onnx.backend.test.BackendTest):
                 model=None,
                 data_sets=None,
                 kind='OnnxBackendRealModelTest',
+                rtol=0.001,
+                atol=1e-07,
             )
             self._add_model_test(test_case, 'Zoo')
 

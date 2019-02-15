@@ -59,7 +59,6 @@ def import_and_compute_conv(x, weights, transpose=False, **attributes):
     return computation(x, weights)[0]
 
 
-
 def test_2d_conv():
     # x should have shape N(batch) x C x H x W
     input_x = np.array([
@@ -125,8 +124,6 @@ def test_2d_conv():
                                    dtype=np.float32))
 
 
-
-
 def test_3d_conv():
     # x should have shape N(batch) x C x H x W x D
     input_x = np.array([
@@ -171,7 +168,6 @@ def test_3d_conv():
                                    dtype=np.float32))
 
 
-@pytest.mark.xfail(reason='Refactoring to nGraph core importer.')
 def test_2d_conv_transpose():
     # x should have shape N(batch) x C x H x W
     input_x = np.array(

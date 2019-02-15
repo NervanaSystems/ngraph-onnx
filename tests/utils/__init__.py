@@ -19,13 +19,13 @@ from __future__ import print_function, division
 import onnx
 import numpy as np
 import pytest
-
 import ngraph as ng
 
+from typing import List, Any, Text, Dict, Optional, Iterable
+from string import ascii_uppercase
 from onnx.helper import make_node, make_graph, make_tensor_value_info, make_model
 from ngraph_onnx.onnx_importer.backend import NgraphBackend
 from ngraph_onnx.onnx_importer.importer import import_onnx_model
-from string import ascii_uppercase
 
 
 def get_runtime():
