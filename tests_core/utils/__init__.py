@@ -23,6 +23,8 @@ import pytest
 import ngraph as ng
 
 from onnx.helper import make_node, make_graph, make_tensor_value_info, make_model
+from typing import List, Dict, Text, Any, Optional, Iterable
+
 from ngraph_onnx.core_importer.backend import NgraphBackend
 from ngraph_onnx.core_importer.importer import import_onnx_model
 from string import ascii_uppercase
@@ -45,8 +47,8 @@ def run_node(onnx_node, data_inputs, **kwargs):
     if NgraphBackend.supports_ngraph_device(NgraphBackend.backend_name):
         return NgraphBackend.run_node(onnx_node, data_inputs, **kwargs)
     else:
-        raise RuntimeError('The requested nGraph backend <' + NgraphBackend.backend_name +
-                           '> is not supported!')
+        raise RuntimeError('The requested nGraph backend <'
+                           + NgraphBackend.backend_name + '> is not supported!')
 
 
 def run_model(onnx_model, data_inputs):
@@ -65,8 +67,8 @@ def run_model(onnx_model, data_inputs):
         computation = runtime.computation(ng_model_function)
         return computation(*data_inputs)
     else:
-        raise RuntimeError('The requested nGraph backend <' + NgraphBackend.backend_name +
-                           '> is not supported!')
+        raise RuntimeError('The requested nGraph backend <'
+                           + NgraphBackend.backend_name + '> is not supported!')
 
 
 def get_node_model(op_type, *input_data, opset=1, num_outputs=1, **node_attributes):
