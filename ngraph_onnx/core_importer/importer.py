@@ -16,10 +16,11 @@
 import onnx
 from typing import List
 
+from google.protobuf.message import DecodeError
+
 from ngraph.impl import Function
 from ngraph.impl import onnx_import
 from ngraph.exceptions import UserInputError
-import os.path
 
 def import_onnx_model(onnx_protobuf):  # type: (onnx.ModelProto) -> List[Function]
     """
@@ -41,7 +42,9 @@ def import_onnx_file(filename):  # type: (str) -> List[Function]
     :param filename: path to an ONNX file
     :return: List of imported ngraph Functions (see docs for import_onnx_model).
     """
-    if os.path.isfile(filename):
-        return onnx_import.import_onnx_model_file(filename)
-    else:
-        raise FileNotFoundError('[Errno 2] No such file or directory: ' + filename)
+    try:
+        onnx_protobuf = onnx.load(filename)
+    except DecodeError:
+        raise UserInputError('Input does not seem to be a properly formatted ONNX file.')
+
+    return onnx_import.import_onnx_model(onnx_protobuf.SerializeToString())
