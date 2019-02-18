@@ -18,7 +18,7 @@ from typing import List
 
 from ngraph.impl import Function
 from ngraph.impl import onnx_import
-
+from ngraph.exceptions import UserInputError
 
 def import_onnx_model(onnx_protobuf):  # type: (onnx.ModelProto) -> List[Function]
     """
@@ -27,6 +27,9 @@ def import_onnx_model(onnx_protobuf):  # type: (onnx.ModelProto) -> List[Functio
     :param onnx_protobuf: ONNX Protocol Buffers model (onnx_pb2.ModelProto object)
     :return: list of ngraph Functions representing computations for each output.
     """
+    if not isinstance(onnx_protobuf, onnx.ModelProto):
+        raise UserInputError('Input does not seem to be a properly formatted ONNX file.')
+
     return onnx_import.import_onnx_model(onnx_protobuf.SerializeToString())
 
 
