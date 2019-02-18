@@ -22,6 +22,7 @@ from ngraph.impl import Function
 from ngraph.impl import onnx_import
 from ngraph.exceptions import UserInputError
 
+
 def import_onnx_model(onnx_protobuf):  # type: (onnx.ModelProto) -> List[Function]
     """
     Import an ONNX Protocol Buffers model and convert it into a list of ngraph Functions.
