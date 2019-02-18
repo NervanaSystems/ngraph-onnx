@@ -36,10 +36,10 @@ def test_simple_graph():
                        [make_tensor_value_info('Y', onnx.TensorProto.FLOAT, [1])])
     model = make_model(graph, producer_name='ngraph ONNXImporter')
 
-    ng_model = import_onnx_model(model)[0]
+    ng_model_function = import_onnx_model(model)
 
     runtime = get_runtime()
-    computation = runtime.computation(ng_model['output'], *ng_model['inputs'])
+    computation = runtime.computation(ng_model_function)
     assert np.array_equal(computation(1, 2, 3)[0], np.array([6.0], dtype=np.float32))
     assert np.array_equal(computation(4, 5, 6)[0], np.array([15.0], dtype=np.float32))
 
@@ -51,8 +51,8 @@ def test_missing_op():
                        [make_tensor_value_info('X', onnx.TensorProto.FLOAT, [1])])
     model = make_model(graph, producer_name='ngraph ONNXImporter')
 
-    with pytest.raises(NotImplementedError) as exc_info:
+    with pytest.raises(RuntimeError) as exc_info:
         import_onnx_model(model)
 
     exc_args = exc_info.value.args
-    assert exc_args[0] % exc_args[1:] == 'Unknown operation: FakeOpName'
+    assert 'unknown operations: FakeOpName' in str(exc_args[0] % exc_args[1:])
