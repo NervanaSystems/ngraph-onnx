@@ -14,19 +14,20 @@
 # limitations under the License.
 # ******************************************************************************
 
-from collections import defaultdict
 import glob
 import os
 import shutil
 import tarfile
 import tempfile
 import unittest
+from collections import defaultdict
+from six.moves.urllib.request import urlretrieve, urlopen
+from typing import Type, List, Dict, Optional, Set, Pattern, Text, Union, Any
 
 import numpy as np
-
-from six.moves.urllib.request import urlretrieve, urlopen
-
 import onnx.backend.test
+from onnx.backend.base import Backend
+from onnx.backend.test.runner import TestItem
 from onnx import numpy_helper, NodeProto, ModelProto
 from onnx.backend.test.case.test_case import TestCase as OnnxTestCase
 
@@ -42,7 +43,7 @@ class ModelZooTestRunner(onnx.backend.test.BackendTest):
         self._test_items = defaultdict(dict)  # type: Dict[Text, Dict[Text, TestItem]]
 
         for zoo_model in zoo_models:
-            test_name = "test_{}".format(zoo_model['model_name'])
+            test_name = 'test_{}'.format(zoo_model['model_name'])
 
             test_case = OnnxTestCase(
                 name=test_name,
@@ -86,7 +87,7 @@ class ModelZooTestRunner(onnx.backend.test.BackendTest):
                 break
 
     @staticmethod
-    def _prepare_model_data(model_test):  # type: (TestCase) -> Text
+    def _prepare_model_data(model_test):  # type: (OnnxTestCase) -> Text
         onnx_home = os.path.expanduser(os.getenv('ONNX_HOME', os.path.join('~', '.onnx')))
         models_dir = os.getenv('ONNX_MODELS', os.path.join(onnx_home, 'models'))
         model_dir = os.path.join(models_dir, model_test.model_name)  # type: Text
@@ -142,7 +143,7 @@ class ModelZooTestRunner(onnx.backend.test.BackendTest):
             os.remove(download_file.name)
         return model_dir
 
-    def _add_model_test(self, model_test, kind):  # type: (TestCase, Text) -> None
+    def _add_model_test(self, model_test, kind):  # type: (OnnxTestCase, Text) -> None  # noqa: C901
         # @TODO: Remove _add_model_test if https://github.com/onnx/onnx/pull/1809 is accepted
         # model is loaded at runtime, note sometimes it could even
         # never loaded if the test skipped
@@ -175,7 +176,7 @@ class ModelZooTestRunner(onnx.backend.test.BackendTest):
                                              atol=model_test.atol)
 
             for test_data_dir in glob.glob(
-                    os.path.join(model_dir, "test_data_set*")):
+                    os.path.join(model_dir, 'test_data_set*')):
                 inputs = []
                 inputs_num = len(glob.glob(os.path.join(test_data_dir, 'input_*.pb')))
                 for i in range(inputs_num):

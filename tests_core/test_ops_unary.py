@@ -24,7 +24,6 @@ import numpy as np
 from tests_core.utils import run_model, run_node, get_node_model, get_runtime
 from onnx.helper import make_node, make_graph, make_tensor_value_info, make_model
 from ngraph_onnx.core_importer.importer import import_onnx_model
-from ngraph_onnx.core_importer.utils.types import np_dtype_to_tensor_type_name
 from ngraph.exceptions import NgraphTypeError
 
 
@@ -122,8 +121,8 @@ def test_ceil(input_data):
 ])
 def test_clip(min_value, max_value):
     np.random.seed(133391)
-    data = (np.float32(-100.) +
-            np.random.randn(3, 4, 5).astype(np.float32) * np.float32(200.))
+    data = (np.float32(-100.)
+            + np.random.randn(3, 4, 5).astype(np.float32) * np.float32(200.))
 
     node = onnx.helper.make_node('Clip', inputs=['x'], outputs=['y'],
                                  min=float(min_value), max=float(max_value))

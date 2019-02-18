@@ -145,14 +145,6 @@ pytest.mark.xfail(OnnxBackendNodeModelTest.test_isnan_cpu)
 # Erf -> NGONNX-442
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_erf_cpu)
 
-# Hyperbolic arc's -> NGONNX-444
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_acosh_cpu)
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_acosh_example_cpu)
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_asinh_cpu)
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_asinh_example_cpu)
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_atanh_cpu)
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_atanh_example_cpu)
-
 # Constant of Shape -> NGONNX-445
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_constantofshape_float_ones_cpu)
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_constantofshape_int_zeros_cpu)

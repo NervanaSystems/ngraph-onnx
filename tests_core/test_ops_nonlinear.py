@@ -60,7 +60,6 @@ def test_relu():
     assert_onnx_import_equals_callable('Relu', relu, [[-3, -2, -1], [1, 2, 3]])
 
 
-
 def test_leaky_relu():
     def leaky_relu(x, alpha=0.01):
         return np.maximum(alpha * x, x)
@@ -71,7 +70,6 @@ def test_leaky_relu():
                                        [-0.9, -0.8, -0.7, -0.4, -0.3, -0.2, -0.1], alpha=1.)
     assert_onnx_import_equals_callable('LeakyRelu', leaky_relu, [[1, 2, 3], [4, 5, 6]], alpha=0.2)
     assert_onnx_import_equals_callable('LeakyRelu', leaky_relu, [[-3, -2, -1], [1, 2, 3]])
-
 
 
 @pytest.mark.parametrize('x,slope', [
