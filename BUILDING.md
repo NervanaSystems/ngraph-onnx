@@ -33,25 +33,36 @@ You can follow these instructions to build an nGraph Python wheel containing bot
 Prepare System:
 
     # apt update
-    # apt install python3 python3-pip python3-dev
-    # apt install build-essential cmake curl clang-3.9 git zlib1g zlib1g-dev libtinfo-dev
+    # apt install python3 python3-pip python3-dev python-virtualenv
+    # apt install build-essential cmake curl clang-3.9 git zlib1g zlib1g-dev libtinfo-dev unzip autoconf automake libtool
 
-Clone nGraph's `v0.10.0` tag, build and install it into `$HOME/ngraph_dist`:
+Clone nGraph's `v0.13.0` tag, build and install it into `$HOME/ngraph_dist`:
 
-    $ git clone -b 'v0.10.0' --single-branch --depth 1 https://github.com/NervanaSystems/ngraph.git
+    $ cd # Change directory to where you would like to clone nGraph sources
+    $ git clone -b 'v0.13.0' --single-branch --depth 1 https://github.com/NervanaSystems/ngraph.git
     $ mkdir ngraph/build
     $ cd ngraph/build
-    $ cmake ../ -DNGRAPH_USE_PREBUILT_LLVM=TRUE -DCMAKE_INSTALL_PREFIX=$HOME/ngraph_dist -DNGRAPH_ONNX_IMPORT_ENABLE=TRUE
+    $ cmake ../ -DCMAKE_INSTALL_PREFIX=$HOME/ngraph_dist -DNGRAPH_ONNX_IMPORT_ENABLE=TRUE -DNGRAPH_USE_PREBUILT_LLVM=TRUE 
     $ make
     $ make install
 
+Prepare a Python virtual environment for nGraph (recommended):
+
+    $ mkdir -p ~/.virtualenvs && cd ~/.virtualenvs
+    $ virtualenv -p $(which python3) nGraph
+    $ source nGraph/bin/activate
+    (nGraph) $ 
+
 Build Python package (Binary wheel) for nGraph:
 
-    $ cd ngraph/python
-    $ git clone --recursive -b allow-nonconstructible-holders https://github.com/jagerman/pybind11.git
-    $ export PYBIND_HEADERS_PATH=$PWD/pybind11
-    $ export NGRAPH_CPP_BUILD_PATH=$HOME/ngraph_dist
-    $ python3 setup.py bdist_wheel
+    (nGraph) $ cd # Change directory to where you would like to clone nGraph sources
+    (nGraph) $ cd ngraph/python
+    (nGraph) $ git clone --recursive https://github.com/jagerman/pybind11.git
+    (nGraph) $ export PYBIND_HEADERS_PATH=$PWD/pybind11
+    (nGraph) $ export NGRAPH_CPP_BUILD_PATH=$HOME/ngraph_dist
+    (nGraph) $ export NGRAPH_ONNX_IMPORT_ENABLE=TRUE
+    (nGraph) $ pip install numpy
+    (nGraph) $ python setup.py bdist_wheel
 
 For additional information how to build nGraph Python bindings see:
 
@@ -61,7 +72,7 @@ Once the Python binary wheel file (`ngraph-*.whl`) is prepared you can install i
 
 For example:
 
-    (your_venv) $ pip install -U dist/ngraph-0.10.0-cp35-cp35m-linux_x86_64.whl
+    (nGraph) $ pip install -U dist/ngraph_core-0.0.0.dev0-cp35-cp35m-linux_x86_64.whl
 
 You can check that nGraph is properly installed in your Python shell:
 
@@ -71,6 +82,12 @@ You can check that nGraph is properly installed in your Python shell:
 <Abs: 'Abs_1' ([2, 3])>
 ```
 
+Additionally check that nGraph and nGraph's Python wheel were both build with the `NGRAPH_ONNX_IMPORT_ENABLE` option:
+
+```python
+from ngraph.impl import onnx_import
+```
+
 If you don't see any errors, nGraph should be installed correctly.
 
 
@@ -78,5 +95,4 @@ If you don't see any errors, nGraph should be installed correctly.
 
 You can install ngraph-onnx using pip:
 
-     (your_venv) $ pip install git+https://github.com/NervanaSystems/ngraph-onnx/@v0.10.0
-
+     (nGraph) $ pip install git+https://github.com/NervanaSystems/ngraph-onnx/@v0.13.0
