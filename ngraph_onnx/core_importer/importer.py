@@ -31,7 +31,7 @@ def import_onnx_model(onnx_protobuf):  # type: (onnx.ModelProto) -> List[Functio
     :return: list of ngraph Functions representing computations for each output.
     """
     if not isinstance(onnx_protobuf, onnx.ModelProto):
-        raise UserInputError('Input does not seem to be a properly formatted ONNX file.')
+        raise UserInputError('Input does not seem to be a properly formatted ONNX model.')
 
     return onnx_import.import_onnx_model(onnx_protobuf.SerializeToString())
 
@@ -46,6 +46,6 @@ def import_onnx_file(filename):  # type: (str) -> List[Function]
     try:
         onnx_protobuf = onnx.load(filename)
     except DecodeError:
-        raise UserInputError('Input does not seem to be a properly formatted ONNX file.')
+        raise UserInputError('The provided file doesn\'t contain a properly formatted ONNX model.')
 
     return onnx_import.import_onnx_model(onnx_protobuf.SerializeToString())
