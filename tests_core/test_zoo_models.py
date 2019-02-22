@@ -254,7 +254,7 @@ zoo_models = [
     {
         'model_name': 'mobilenet_opset7',
         'atol': 1e-07,
-        'rtol': 0.0016,
+        'rtol': 0.002,
         'url': _S3_MODEL_ZOO + 'mobilenet/mobilenetv2-1.0/mobilenetv2-1.0.tar.gz',
     },
 
@@ -292,7 +292,7 @@ zoo_models = [
     {
         'model_name': 'resnet50_v2_opset7',
         'atol': 1e-07,
-        'rtol': 0.0015,
+        'rtol': 0.002,
         'url': _S3_MODEL_ZOO + 'resnet/resnet50v2/resnet50v2.tar.gz',
     },
 
