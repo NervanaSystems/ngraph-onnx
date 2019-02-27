@@ -18,12 +18,11 @@ from __future__ import print_function, division
 
 import onnx
 import numpy as np
-import pytest
 
-from tests.utils import get_runtime
+from tests_core.utils import get_runtime
 from onnx.helper import make_node, make_graph, make_tensor_value_info, make_model
 
-from ngraph_onnx.onnx_importer.importer import import_onnx_model
+from ngraph_onnx.core_importer.importer import import_onnx_model
 
 
 def test_simple_graph():
@@ -36,23 +35,9 @@ def test_simple_graph():
                        [make_tensor_value_info('Y', onnx.TensorProto.FLOAT, [1])])
     model = make_model(graph, producer_name='ngraph ONNXImporter')
 
-    ng_model = import_onnx_model(model)[0]
+    ng_model_function = import_onnx_model(model)
 
     runtime = get_runtime()
-    computation = runtime.computation(ng_model['output'], *ng_model['inputs'])
+    computation = runtime.computation(ng_model_function)
     assert np.array_equal(computation(1, 2, 3)[0], np.array([6.0], dtype=np.float32))
     assert np.array_equal(computation(4, 5, 6)[0], np.array([15.0], dtype=np.float32))
-
-
-def test_missing_op():
-    node = make_node('FakeOpName', ['A'], ['X'], name='missing_op_node')
-    graph = make_graph([node], 'test_graph',
-                       [make_tensor_value_info('A', onnx.TensorProto.FLOAT, [1])],
-                       [make_tensor_value_info('X', onnx.TensorProto.FLOAT, [1])])
-    model = make_model(graph, producer_name='ngraph ONNXImporter')
-
-    with pytest.raises(NotImplementedError) as exc_info:
-        import_onnx_model(model)
-
-    exc_args = exc_info.value.args
-    assert exc_args[0] % exc_args[1:] == 'Unknown operation: FakeOpName'

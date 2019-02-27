@@ -19,7 +19,7 @@ import numpy as np
 import onnx
 import pytest
 
-from tests.utils import run_node
+from tests_core.utils import run_node
 
 
 def import_and_compute(op_type, input_data, **node_attrs):

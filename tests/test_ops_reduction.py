@@ -20,7 +20,7 @@ import onnx
 import numpy as np
 import pytest
 
-from tests.utils import run_node
+from tests_core.utils import run_node
 
 
 def import_and_compute(op_type, input_data, **node_attrs):
@@ -272,14 +272,14 @@ def test_reduce_log_sum(reduction_axes):
 
     expected = np.log(np.sum(input_data, keepdims=True, axis=reduction_axes))
     node = onnx.helper.make_node('ReduceLogSum', inputs=['x'], outputs=['y'], axes=reduction_axes)
-    ng_result = np.array(run_node(node, [input_data]).pop())
+    ng_result = run_node(node, [input_data]).pop()
     assert np.array_equal(expected.shape, ng_result.shape)
     assert np.allclose(expected, ng_result)
 
     expected = np.log(np.sum(input_data, keepdims=False, axis=reduction_axes))
     node = onnx.helper.make_node('ReduceLogSum', inputs=['x'], outputs=['y'], keepdims=0,
                                  axes=reduction_axes)
-    ng_result = np.array(run_node(node, [input_data]).pop())
+    ng_result = run_node(node, [input_data]).pop()
     assert np.array_equal(expected.shape, ng_result.shape)
     assert np.allclose(expected, ng_result)
 
@@ -373,8 +373,6 @@ def test_reduce_sum_square_default_axes():
     assert np.allclose(expected, ng_result)
 
 
-# -> NGRAPH-1839
-@pytest.mark.xfail(reason='ngraph does not support argmin yet')
 def test_reduce_argmin():
     def argmin(ndarray, axis, keepdims=False):
         res = np.argmin(ndarray, axis=axis)
@@ -398,8 +396,6 @@ def test_reduce_argmin():
                           argmin(data, keepdims=False, axis=2))
 
 
-# -> NGRAPH-1839
-@pytest.mark.xfail(reason='ngraph dos not support argmax yet')
 def test_reduce_argmax():
     def argmax(ndarray, axis, keepdims=False):
         res = np.argmax(ndarray, axis=axis)

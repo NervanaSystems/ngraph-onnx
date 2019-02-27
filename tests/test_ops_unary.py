@@ -21,10 +21,9 @@ import onnx
 import onnx.mapping
 import numpy as np
 
-from tests.utils import run_model, run_node, get_node_model, get_runtime
+from tests_core.utils import run_model, run_node, get_node_model, get_runtime
 from onnx.helper import make_node, make_graph, make_tensor_value_info, make_model
-from ngraph_onnx.onnx_importer.importer import import_onnx_model
-from ngraph_onnx.onnx_importer.utils.types import np_dtype_to_tensor_type_name
+from ngraph_onnx.core_importer.importer import import_onnx_model
 from ngraph.exceptions import NgraphTypeError
 
 
@@ -122,7 +121,8 @@ def test_ceil(input_data):
 ])
 def test_clip(min_value, max_value):
     np.random.seed(133391)
-    data = np.float32(-100.0) + np.random.randn(3, 4, 5).astype(np.float32) * np.float32(200.0)
+    data = (np.float32(-100.)
+            + np.random.randn(3, 4, 5).astype(np.float32) * np.float32(200.))
 
     node = onnx.helper.make_node('Clip', inputs=['x'], outputs=['y'],
                                  min=float(min_value), max=float(max_value))
@@ -192,11 +192,11 @@ def test_hardmax_special_cases():
     ng_results = run_node(node, [data])
     assert np.allclose(ng_results, [expected])
 
-    with pytest.raises(ValueError):
+    with pytest.raises(RuntimeError):
         node = onnx.helper.make_node('Hardmax', inputs=['x'], outputs=['y'], axis=-1)
         ng_results = run_node(node, [data])
 
-    with pytest.raises(ValueError):
+    with pytest.raises(RuntimeError):
         node = onnx.helper.make_node('Hardmax', inputs=['x'], outputs=['y'], axis=3)
         ng_results = run_node(node, [data])
 
@@ -264,7 +264,7 @@ def test_softmax():
     ng_results = run_node(node, [data])
     assert np.allclose(ng_results, [expected])
 
-    with pytest.raises(ValueError):
+    with pytest.raises(RuntimeError):
         node = onnx.helper.make_node('Softmax', inputs=['x'], outputs=['y'], axis=3)
         ng_results = run_node(node, [data])
 
@@ -298,11 +298,7 @@ def test_logsoftmax():
     ng_results = run_node(node, [data])
     assert np.allclose(ng_results, [expected])
 
-    with pytest.raises(ValueError):
-        node = onnx.helper.make_node('LogSoftmax', inputs=['x'], outputs=['y'], axis=-1)
-        ng_results = run_node(node, [data])
-
-    with pytest.raises(ValueError):
+    with pytest.raises(RuntimeError):
         node = onnx.helper.make_node('LogSoftmax', inputs=['x'], outputs=['y'], axis=3)
         ng_results = run_node(node, [data])
 
@@ -351,13 +347,13 @@ def test_identity():
                         make_tensor_value_info('B', onnx.TensorProto.FLOAT, shape)],
                        [make_tensor_value_info('Y', onnx.TensorProto.FLOAT, shape)])
     model = make_model(graph, producer_name='ngraph ONNX Importer')
-    ng_model = import_onnx_model(model)[0]
+    ng_model_function = import_onnx_model(model)
     runtime = get_runtime()
-    computation = runtime.computation(ng_model['output'], *ng_model['inputs'])
-    ng_results = computation(input_data, input_data)[0]
+    computation = runtime.computation(ng_model_function)
+    ng_results = computation(input_data, input_data)
     expected_result = np.abs(input_data + input_data)
 
-    assert np.array_equal(ng_results, expected_result)
+    assert np.array_equal(ng_results[0], expected_result)
 
 
 @pytest.mark.parametrize('val_type, input_data', [
@@ -368,10 +364,6 @@ def test_cast_to_bool(val_type, input_data):
 
     model = get_node_model('Cast', input_data, opset=6,
                            to=onnx.mapping.NP_TYPE_TO_TENSOR_TYPE[val_type])
-    result = run_model(model, [input_data])
-    assert np.allclose(result, expected)
-
-    model = get_node_model('Cast', input_data, opset=5, to=np_dtype_to_tensor_type_name(val_type))
     result = run_model(model, [input_data])
     assert np.allclose(result, expected)
 
@@ -387,10 +379,6 @@ def test_cast_to_float(val_type, range_start, range_end, in_dtype):
 
     model = get_node_model('Cast', input_data, opset=6,
                            to=onnx.mapping.NP_TYPE_TO_TENSOR_TYPE[val_type])
-    result = run_model(model, [input_data])
-    assert np.allclose(result, expected)
-
-    model = get_node_model('Cast', input_data, opset=5, to=np_dtype_to_tensor_type_name(in_dtype))
     result = run_model(model, [input_data])
     assert np.allclose(result, expected)
 
@@ -411,10 +399,6 @@ def test_cast_to_int(val_type):
     result = run_model(model, [input_data])
     assert np.allclose(result, expected)
 
-    model = get_node_model('Cast', input_data, opset=5, to=np_dtype_to_tensor_type_name(val_type))
-    result = run_model(model, [input_data])
-    assert np.allclose(result, expected)
-
 
 @pytest.mark.parametrize('val_type', [
     np.dtype(np.uint8),
@@ -432,10 +416,6 @@ def test_cast_to_uint(val_type):
     result = run_model(model, [input_data])
     assert np.allclose(result, expected)
 
-    model = get_node_model('Cast', input_data, opset=5, to=np_dtype_to_tensor_type_name(val_type))
-    result = run_model(model, [input_data])
-    assert np.allclose(result, expected)
-
 
 def test_cast_errors():
     np.random.seed(133391)
@@ -450,8 +430,8 @@ def test_cast_errors():
 
     graph = make_graph([node], 'compute_graph', input_tensors, output_tensors)
     model = make_model(graph, producer_name='NgraphBackend')
-    with pytest.raises(ValueError):
-        import_onnx_model(model)[0]
+    with pytest.raises(RuntimeError):
+        import_onnx_model(model)
 
     # unsupported data type representation
     node = onnx.helper.make_node('Cast', inputs=['A'], outputs=['B'], to=1.2345)
@@ -462,8 +442,8 @@ def test_cast_errors():
 
     graph = make_graph([node], 'compute_graph', input_tensors, output_tensors)
     model = make_model(graph, producer_name='NgraphBackend')
-    with pytest.raises(ValueError):
-        import_onnx_model(model)[0]
+    with pytest.raises(RuntimeError):
+        import_onnx_model(model)
 
     # unsupported input tensor data type:
     node = onnx.helper.make_node('Cast', inputs=['A'], outputs=['B'], to=onnx.TensorProto.INT32)
@@ -474,8 +454,8 @@ def test_cast_errors():
 
     graph = make_graph([node], 'compute_graph', input_tensors, output_tensors)
     model = make_model(graph, producer_name='NgraphBackend')
-    with pytest.raises((ValueError, NgraphTypeError)):
-        import_onnx_model(model)[0]
+    with pytest.raises((RuntimeError, NgraphTypeError)):
+        import_onnx_model(model)
 
     # unsupported output tensor data type:
     node = onnx.helper.make_node('Cast', inputs=['A'], outputs=['B'],
@@ -487,8 +467,8 @@ def test_cast_errors():
 
     graph = make_graph([node], 'compute_graph', input_tensors, output_tensors)
     model = make_model(graph, producer_name='NgraphBackend')
-    with pytest.raises(ValueError):
-        import_onnx_model(model)[0]
+    with pytest.raises(RuntimeError):
+        import_onnx_model(model)
 
 
 @pytest.mark.parametrize('value_type', [

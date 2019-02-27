@@ -22,7 +22,7 @@ import numpy as np
 import pytest
 from onnx.helper import make_tensor_value_info, make_graph, make_model
 
-from tests.utils import run_model
+from tests_core.utils import run_model
 
 
 def import_and_compute(op_type, input_data_left, input_data_right, opset=4, **node_attributes):
@@ -41,6 +41,7 @@ def import_and_compute(op_type, input_data_left, input_data_right, opset=4, **no
     return run_model(model, inputs)[0]
 
 
+@pytest.mark.xfail(reason='Refactoring to nGraph core importer.')
 def test_add():
     assert np.array_equal(import_and_compute('Add', 1, 2),
                           np.array(3, dtype=np.float32))
@@ -88,6 +89,7 @@ def test_add():
         left_operand + right_operand.reshape(2, 1, 1, 1))
 
 
+@pytest.mark.xfail(reason='Refactoring to nGraph core importer.')
 @pytest.mark.parametrize('left_shape,right_shape', [
     ((1,), (1,)),
     ((256, 256, 3), (3,)),
@@ -106,6 +108,7 @@ def test_add_opset7(left_shape, right_shape):
                           left_input + right_input)
 
 
+@pytest.mark.xfail(reason='Refactoring to nGraph core importer.')
 def test_sub():
     assert np.array_equal(import_and_compute('Sub', 20, 1),
                           np.array(19, dtype=np.float32))
@@ -120,6 +123,7 @@ def test_sub():
                           np.array([[-6, -6, -6], [-3, -3, -3]], dtype=np.float32))
 
 
+@pytest.mark.xfail(reason='Refactoring to nGraph core importer.')
 def test_mul():
     assert np.array_equal(import_and_compute('Mul', 2, 3),
                           np.array(6, dtype=np.float32))
@@ -134,6 +138,7 @@ def test_mul():
                           np.array([[7, 16, 27], [28, 40, 54]], dtype=np.float32))
 
 
+@pytest.mark.xfail(reason='Refactoring to nGraph core importer.')
 def test_div():
     assert np.array_equal(import_and_compute('Div', 6, 3),
                           np.array(2, dtype=np.float32))

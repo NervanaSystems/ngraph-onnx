@@ -22,8 +22,8 @@ import onnx
 
 import numpy as np
 from onnx.helper import make_node, make_graph, make_tensor_value_info, make_model
-from ngraph_onnx.onnx_importer.importer import import_onnx_model
-from tests.utils import get_runtime
+from ngraph_onnx.core_importer.importer import import_onnx_model
+from tests_core.utils import get_runtime
 
 
 def make_onnx_model_for_matmul_op(input_left, input_right):
@@ -42,8 +42,8 @@ def import_and_compute_matmul(input_left, input_right):
     input_data_right = np.array(input_right)
     onnx_model = make_onnx_model_for_matmul_op(input_data_left, input_data_right)
     transformer = get_runtime()
-    ng_model = import_onnx_model(onnx_model)[0]
-    computation = transformer.computation(ng_model['output'], *ng_model['inputs'])
+    ng_model_function = import_onnx_model(onnx_model)
+    computation = transformer.computation(ng_model_function)
     return computation(input_data_left, input_data_right)[0]
 
 
@@ -90,9 +90,9 @@ def import_and_compute_gemm(input_a, input_b, input_c, **kwargs):
 
     onnx_model = make_onnx_model_for_gemm_op(input_a, input_b, input_c, **kwargs)
     transformer = get_runtime()
-    ng_model = import_onnx_model(onnx_model)[0]
-    computation = transformer.computation(ng_model['output'], *ng_model['inputs'])
-    return computation(input_a, input_b, input_c)[0]
+    ng_model_function = import_onnx_model(onnx_model)
+    computation = transformer.computation(ng_model_function)
+    return computation(input_a, input_b, input_c)
 
 
 def test_op_matmul():
@@ -125,8 +125,6 @@ def test_op_matmul():
     assert np.array_equal(import_and_compute_matmul(*data), np.matmul(*data))
 
 
-# -> NGRAPH-1838
-@pytest.mark.xfail(reason='ngraph ng.dot does not support matmul-style broadcasting')
 def test_op_matmul_3d():
     # 3d tensor @ 3d tensor
     data = ([[[1, 2], [3, 4]], [[1, 2], [3, 4]]], [[[5, 6], [7, 8]], [[5, 6], [7, 8]]])
@@ -136,6 +134,7 @@ def test_op_matmul_3d():
     assert np.array_equal(import_and_compute_matmul(*data), np.matmul(*data))
 
 
+@pytest.mark.xfail(reason='Refactoring to nGraph core importer.')
 def test_gemm():
     data = ([1, 2], [1, 3], [1, 4])
     assert np.array_equal(import_and_compute_gemm(*data), numpy_gemm(*data))
@@ -155,6 +154,7 @@ def test_gemm():
     assert np.array_equal(import_and_compute_gemm(*data, **kwargs), numpy_gemm(*data, **kwargs))
 
 
+@pytest.mark.xfail(reason='Refactoring to nGraph core importer.')
 def test_gemm_transpositions():
     data = ([1, 2], [1, 3], [1, 4])
     kwargs = {'trans_a': True, 'trans_b': True}

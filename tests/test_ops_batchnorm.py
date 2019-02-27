@@ -21,7 +21,7 @@ import pytest
 
 import numpy as np
 
-from tests.utils import run_node
+from tests_core.utils import run_node
 
 
 def make_batch_norm_node(**node_attributes):

@@ -19,13 +19,15 @@ from __future__ import print_function, division
 import onnx
 import numpy as np
 import pytest
+
 import ngraph as ng
 
-from typing import List, Any, Text, Dict, Optional, Iterable
-from string import ascii_uppercase
 from onnx.helper import make_node, make_graph, make_tensor_value_info, make_model
-from ngraph_onnx.onnx_importer.backend import NgraphBackend
-from ngraph_onnx.onnx_importer.importer import import_onnx_model
+from typing import List, Dict, Text, Any, Optional, Iterable
+
+from ngraph_onnx.core_importer.backend import NgraphBackend
+from ngraph_onnx.core_importer.importer import import_onnx_model
+from string import ascii_uppercase
 
 
 def get_runtime():
@@ -45,8 +47,8 @@ def run_node(onnx_node, data_inputs, **kwargs):
     if NgraphBackend.supports_ngraph_device(NgraphBackend.backend_name):
         return NgraphBackend.run_node(onnx_node, data_inputs, **kwargs)
     else:
-        raise RuntimeError('The requested nGraph backend <' + NgraphBackend.backend_name
-                           + '> is not supported!')
+        raise RuntimeError('The requested nGraph backend <'
+                           + NgraphBackend.backend_name + '> is not supported!')
 
 
 def run_model(onnx_model, data_inputs):
@@ -60,14 +62,13 @@ def run_model(onnx_model, data_inputs):
     """
     NgraphBackend.backend_name = pytest.config.getoption('backend', default='CPU')
     if NgraphBackend.supports_ngraph_device(NgraphBackend.backend_name):
-        ng_model = import_onnx_model(onnx_model)
+        ng_model_function = import_onnx_model(onnx_model)
         runtime = get_runtime()
-        computations = [runtime.computation(model['output'], *model['inputs']) for
-                        model in ng_model]
-        return [computation(*data_inputs)[0] for computation in computations]
+        computation = runtime.computation(ng_model_function)
+        return computation(*data_inputs)
     else:
-        raise RuntimeError('The requested nGraph backend <' + NgraphBackend.backend_name
-                           + '> is not supported!')
+        raise RuntimeError('The requested nGraph backend <'
+                           + NgraphBackend.backend_name + '> is not supported!')
 
 
 def get_node_model(op_type, *input_data, opset=1, num_outputs=1, **node_attributes):
@@ -91,11 +92,11 @@ def get_node_model(op_type, *input_data, opset=1, num_outputs=1, **node_attribut
 
     input_tensors = [make_tensor_value_info(name, onnx.TensorProto.FLOAT, value.shape)
                      for name, value in zip(onnx_node.input, node_inputs)]
-    output_tensors = [make_tensor_value_info(name, onnx.TensorProto.FLOAT, value.shape)
-                      for name, value in zip(onnx_node.output, ())]  # type: ignore
+    output_tensors = [make_tensor_value_info(name, onnx.TensorProto.FLOAT, ())
+                      for name in onnx_node.output]  # type: ignore
 
     graph = make_graph([onnx_node], 'compute_graph', input_tensors, output_tensors)
-    model = make_model(graph, producer_name='NgraphBackend')
+    model = make_model(graph, producer_name='Ngraph ONNX Importer')
     model.opset_import[0].version = opset
     return model
 

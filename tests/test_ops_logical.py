@@ -20,7 +20,7 @@ import numpy as np
 import onnx
 import pytest
 
-from tests.utils import run_node
+from tests_core.utils import run_node
 
 
 @pytest.mark.parametrize('onnx_op, numpy_func, data_type', [
@@ -48,7 +48,7 @@ def test_logical(onnx_op, numpy_func, data_type):
 
 
 def test_logical_not():
-    input_data = np.array([[0, 1, -1], [0, 1, -1], [0, 1, -1]])
+    input_data = np.array([[False, True, True], [False, True, False], [False, False, True]])
     expected_output = np.logical_not(input_data)
 
     node = onnx.helper.make_node('Not', inputs=['X'], outputs=['Y'])
