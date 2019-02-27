@@ -35,8 +35,8 @@ from onnx.backend.base import Backend, BackendRep
 from typing import Any, Dict, List, Optional, Sequence, Text, Tuple, Union
 
 from ngraph.impl import Function
-from ngraph_onnx.core_importer.importer import import_onnx_model
-from ngraph_onnx.core_importer.utils.types import np_dtype_to_tensor_type
+from ngraph_onnx.onnx_importer.importer import import_onnx_model
+from ngraph_onnx.onnx_importer.utils.types import np_dtype_to_tensor_type
 
 
 class NgraphBackend(Backend):

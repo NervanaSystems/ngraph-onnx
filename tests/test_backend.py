@@ -22,7 +22,7 @@ from __future__ import unicode_literals
 import onnx.backend.test
 import pytest
 
-from ngraph_onnx.core_importer.backend import NgraphBackend
+from ngraph_onnx.onnx_importer.backend import NgraphBackend
 
 # Set backend device name to be used instead of hardcoded by ONNX BackendTest class ones.
 selected_backend_name = pytest.config.getoption('backend', default='CPU')

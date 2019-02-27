@@ -21,9 +21,9 @@ import onnx
 import onnx.mapping
 import numpy as np
 
-from tests_core.utils import run_model, run_node, get_node_model, get_runtime
+from tests.utils import run_model, run_node, get_node_model, get_runtime
 from onnx.helper import make_node, make_graph, make_tensor_value_info, make_model
-from ngraph_onnx.core_importer.importer import import_onnx_model
+from ngraph_onnx.onnx_importer.importer import import_onnx_model
 from ngraph.exceptions import NgraphTypeError
 
 

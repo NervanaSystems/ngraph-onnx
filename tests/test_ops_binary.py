@@ -22,7 +22,7 @@ import numpy as np
 import pytest
 from onnx.helper import make_tensor_value_info, make_graph, make_model
 
-from tests_core.utils import run_model
+from tests.utils import run_model
 
 
 def import_and_compute(op_type, input_data_left, input_data_right, opset=4, **node_attributes):

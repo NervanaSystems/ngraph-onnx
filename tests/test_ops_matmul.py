@@ -22,8 +22,8 @@ import onnx
 
 import numpy as np
 from onnx.helper import make_node, make_graph, make_tensor_value_info, make_model
-from ngraph_onnx.core_importer.importer import import_onnx_model
-from tests_core.utils import get_runtime
+from ngraph_onnx.onnx_importer.importer import import_onnx_model
+from tests.utils import get_runtime
 
 
 def make_onnx_model_for_matmul_op(input_left, input_right):

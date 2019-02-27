@@ -16,8 +16,8 @@
 
 import pytest
 
-from ngraph_onnx.core_importer.backend import NgraphBackend
-from tests_core.utils.model_zoo_tester import ModelZooTestRunner
+from ngraph_onnx.onnx_importer.backend import NgraphBackend
+from tests.utils.model_zoo_tester import ModelZooTestRunner
 
 _S3_DOWNLOAD_ONNX = 'https://s3.amazonaws.com/download.onnx/models/'
 _S3_MODEL_ZOO = 'https://s3.amazonaws.com/onnx-model-zoo/'

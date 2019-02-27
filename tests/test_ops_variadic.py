@@ -23,7 +23,7 @@ import numpy as np
 import onnx
 
 
-from tests_core.utils import run_node
+from tests.utils import run_node
 
 
 @pytest.mark.parametrize('onnx_op,numpy_func', [

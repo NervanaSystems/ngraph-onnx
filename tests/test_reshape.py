@@ -20,9 +20,9 @@ import numpy as np
 import onnx
 import pytest
 
-from tests_core.utils import all_arrays_equal, run_node, get_runtime
+from tests.utils import all_arrays_equal, run_node, get_runtime
 from onnx.helper import make_node, make_graph, make_tensor_value_info, make_model
-from ngraph_onnx.core_importer.importer import import_onnx_model
+from ngraph_onnx.onnx_importer.importer import import_onnx_model
 
 
 def test_reshape():
