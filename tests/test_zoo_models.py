@@ -16,8 +16,8 @@
 
 import pytest
 
-from ngraph_onnx.core_importer.backend import NgraphBackend
-from tests_core.utils.model_zoo_tester import ModelZooTestRunner
+from ngraph_onnx.onnx_importer.backend import NgraphBackend
+from tests.utils.model_zoo_tester import ModelZooTestRunner
 
 _S3_DOWNLOAD_ONNX = 'https://s3.amazonaws.com/download.onnx/models/'
 _S3_MODEL_ZOO = 'https://s3.amazonaws.com/onnx-model-zoo/'
@@ -253,6 +253,8 @@ zoo_models = [
     # Mobile Net
     {
         'model_name': 'mobilenet_opset7',
+        'atol': 1e-07,
+        'rtol': 0.002,
         'url': _S3_MODEL_ZOO + 'mobilenet/mobilenetv2-1.0/mobilenetv2-1.0.tar.gz',
     },
 
@@ -289,6 +291,8 @@ zoo_models = [
     },
     {
         'model_name': 'resnet50_v2_opset7',
+        'atol': 1e-07,
+        'rtol': 0.002,
         'url': _S3_MODEL_ZOO + 'resnet/resnet50v2/resnet50v2.tar.gz',
     },
 
@@ -412,6 +416,10 @@ if backend_name != 'INTERPRETER':
     test_cases = backend_test.test_cases['OnnxBackendZooModelTest']
 
     # Exclude failing tests...
+    # Temporary dissabled tests
+    pytest.mark.xfail(test_cases.test_resnet50_v2_opset7_cpu)
+    pytest.mark.xfail(test_cases.test_mobilenet_opset7_cpu)
+
     # Too long execution time.
     pytest.mark.skip(test_cases.test_duc_resnet101_hdc_opset7_cpu)
 
@@ -426,10 +434,6 @@ if backend_name != 'INTERPRETER':
     pytest.mark.xfail(test_cases.test_inception_v2_opset3_cpu)
     pytest.mark.xfail(test_cases.test_vgg19_opset3_cpu)
     pytest.mark.xfail(test_cases.test_zfnet512_opset3_cpu)
-
-    # RuntimeError: sporadic result mismatch 0.1% -> NGONNX-346
-    backend_test.exclude('test_resnet50_v2_opset7')
-    backend_test.exclude('test_mobilenet_opset7')
 
     # RuntimeError: sporadic result mismatch 0.4% -> NGONNX-414
     backend_test.exclude('test_arcface_lresnet100e_opset8_cpu')
