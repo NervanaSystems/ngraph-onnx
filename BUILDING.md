@@ -71,7 +71,7 @@ Once the Python binary wheel file (`ngraph-*.whl`) is prepared you can install i
 
 For example:
 
-    (nGraph) $ pip install -U dist/ngraph_core-0.0.0.dev0-cp35-cp35m-linux_x86_64.whl
+    (nGraph) $ pip install -U dist/ngraph_core-0.0.0.dev0-cp36-cp36m-linux_x86_64.whl
 
 You can check that nGraph is properly installed in your Python shell:
 
@@ -103,5 +103,4 @@ You can install ngraph-onnx using the following commands. Clone `ngraph-onnx` so
 #### Running tests
 
     (nGraph) $ pytest tests/ --backend=CPU -v
-    (nGraph) $ pytest tests_core/ --backend=CPU -v
     (nGraph) $ NGRAPH_BACKEND=CPU TOX_INSTALL_NGRAPH_FROM=../ngraph/python tox
