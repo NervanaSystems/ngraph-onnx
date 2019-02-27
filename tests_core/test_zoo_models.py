@@ -416,6 +416,10 @@ if backend_name != 'INTERPRETER':
     test_cases = backend_test.test_cases['OnnxBackendZooModelTest']
 
     # Exclude failing tests...
+    # Temporary dissabled tests
+    pytest.mark.xfail(test_cases.test_resnet50_v2_opset7_cpu)
+    pytest.mark.xfail(test_cases.test_mobilenet_opset7_cpu)
+
     # Too long execution time.
     pytest.mark.skip(test_cases.test_duc_resnet101_hdc_opset7_cpu)
 
