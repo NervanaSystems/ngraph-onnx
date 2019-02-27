@@ -8,7 +8,7 @@ from setuptools import find_packages
 SOURCES_ROOT = path.abspath(path.dirname(__file__))
 
 setup(name='ngraph-onnx',
-      version='0.14.0',
+      version='0.15.0',
       description='nGraph Backend for ONNX',
       long_description=open(path.join(SOURCES_ROOT, 'README.md')).read(),
       long_description_content_type='text/markdown',
