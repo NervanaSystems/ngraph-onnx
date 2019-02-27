@@ -35,197 +35,163 @@ NgraphBackend.backend_name = selected_backend_name
 # import all test cases at global scope to make them visible to python.unittest
 backend_test = onnx.backend.test.BackendTest(NgraphBackend, __name__)
 
-# New tests added in ONNX 1.4
-backend_test.exclude('test_shrink')
-backend_test.exclude('test_sign_model')
-backend_test.exclude('test_acosh')
-backend_test.exclude('test_acosh_example')
-backend_test.exclude('test_asinh')
-backend_test.exclude('test_asinh_example')
-backend_test.exclude('test_atanh')
-backend_test.exclude('test_atanh_example')
-backend_test.exclude('test_cast_FLOAT_to_STRING')
-backend_test.exclude('test_cast_STRING_to_FLOAT')
-backend_test.exclude('test_compress_0')
-backend_test.exclude('test_compress_1')
-backend_test.exclude('test_compress_default_axis')
-backend_test.exclude('test_constantofshape_float_ones')
-backend_test.exclude('test_constantofshape_int_zeros')
-backend_test.exclude('test_dynamic_slice')
-backend_test.exclude('test_dynamic_slice_default_axes')
-backend_test.exclude('test_dynamic_slice_end_out_of_bounds')
-backend_test.exclude('test_dynamic_slice_neg')
-backend_test.exclude('test_dynamic_slice_start_out_of_bounds')
-backend_test.exclude('test_erf')
-backend_test.exclude('test_eyelike_populate_off_main_diagonal')
-backend_test.exclude('test_eyelike_with_dtype')
-backend_test.exclude('test_eyelike_without_dtype')
-backend_test.exclude('test_isnan')
-backend_test.exclude('test_maxunpool_export_with_output_shape')
-backend_test.exclude('test_maxunpool_export_without_output_shape')
-backend_test.exclude('test_nonzero_example')
-backend_test.exclude('test_onehot_with_axis')
-backend_test.exclude('test_onehot_without_axis')
-backend_test.exclude('test_scan9_sum')
-backend_test.exclude('test_scan_sum')
-backend_test.exclude('test_scatter_with_axis')
-backend_test.exclude('test_scatter_without_axis')
-backend_test.exclude('test_shrink_hard')
-backend_test.exclude('test_shrink_soft')
-backend_test.exclude('test_sign')
-backend_test.exclude('test_tfidfvectorizer_tf_batch_onlybigrams_skip0')
-backend_test.exclude('test_tfidfvectorizer_tf_batch_onlybigrams_skip5')
-backend_test.exclude('test_tfidfvectorizer_tf_batch_uniandbigrams_skip5')
-backend_test.exclude('test_tfidfvectorizer_tf_only_bigrams_skip0')
-backend_test.exclude('test_tfidfvectorizer_tf_onlybigrams_levelempty')
-backend_test.exclude('test_tfidfvectorizer_tf_onlybigrams_skip5')
-backend_test.exclude('test_tfidfvectorizer_tf_uniandbigrams_skip5')
-backend_test.exclude('test_where_example')
-backend_test.exclude('test_cosh')
-backend_test.exclude('test_cosh_example')
-backend_test.exclude('test_sinh')
-backend_test.exclude('test_sinh_example')
-
-# New tests added in ONNX 1.3
-backend_test.exclude('test_argmax')
-backend_test.exclude('test_argmin')
-backend_test.exclude('test_convtranspose')
-backend_test.exclude('test_expand_dim')
-backend_test.exclude('test_expand_shape')
-backend_test.exclude('test_instancenorm')
+# MaxPool Indices -> NGRAPH-3131
 backend_test.exclude('test_maxpool_with_argmax')
+
+# Padding modes -> NC-322
+backend_test.exclude('test_ConstantPad2d')
+backend_test.exclude('test_constant_pad')
+backend_test.exclude('test_ZeroPad2d')
+backend_test.exclude('test_ReflectionPad2d')
+backend_test.exclude('test_ReplicationPad2d')
+backend_test.exclude('test_edge_pad')
+backend_test.exclude('test_reflect_pad')
+
+# RNN -> NC-323
+backend_test.exclude('test_simple_rnn')
+backend_test.exclude('test_rnn')
+backend_test.exclude('test_operator_rnn')
+
+# PyTorch LSTM operator -> NGONNX-373
+backend_test.exclude('test_operator_lstm')
+
+# GRU -> NC-325
+backend_test.exclude('test_gru')
+
+# MeanVarianceNormalization -> NC-328
 backend_test.exclude('test_mvn')
 
-# Big model tests
-# Passing
-# backend_test.exclude('test_densenet121_cpu')
-# backend_test.exclude('test_inception_v2_cpu')
-# backend_test.exclude('test_resnet50_cpu')
-# backend_test.exclude('test_squeezenet_cpu')
-# backend_test.exclude('test_vgg19_cpu')
-# backend_test.exclude('test_shufflenet_cpu')
-# backend_test.exclude('test_bvlc_alexnet_cpu')
-# backend_test.exclude('test_inception_v1_cpu')
-# backend_test.exclude('test_zfnet512_cpu')
-
-
-# Ops
-# Missing ops
-# Missing op 'Gather' -> NC5-121
-backend_test.exclude('test_Embedding_cpu')
-backend_test.exclude('test_Embedding_sparse_cpu')
-backend_test.exclude('test_gather_0_cpu')
-backend_test.exclude('test_gather_1_cpu')
-backend_test.exclude('test_operator_lstm_cpu')
-backend_test.exclude('test_operator_rnn_cpu')
-backend_test.exclude('test_operator_rnn_single_layer_cpu')
-
-# Missing op 'GRU' -> NC5-177
-backend_test.exclude('test_gru_defaults_cpu')
-backend_test.exclude('test_gru_seq_length_cpu')
-backend_test.exclude('test_gru_with_initial_bias_cpu')
-
-# Missing op 'Hardmax' -> NGRAPH-1839
-backend_test.exclude('test_hardmax_axis_0_cpu')
-backend_test.exclude('test_hardmax_axis_1_cpu')
-backend_test.exclude('test_hardmax_axis_2_cpu')
-backend_test.exclude('test_hardmax_default_axis_cpu')
-backend_test.exclude('test_hardmax_example_cpu')
-backend_test.exclude('test_hardmax_one_hot_cpu')
-
-# Missing op 'InstanceNormalization' -> NC5-179
-backend_test.exclude('test_operator_symbolic_override_cpu')
-
-# Missing op 'LSTM' -> NC5-180
-backend_test.exclude('test_lstm_defaults_cpu')
-backend_test.exclude('test_lstm_with_initial_bias_cpu')
-backend_test.exclude('test_lstm_with_peepholes_cpu')
-
-# Missing op 'RNN' -> NC5-182
-backend_test.exclude('test_rnn_seq_length_cpu')
-backend_test.exclude('test_simple_rnn_defaults_cpu')
-backend_test.exclude('test_simple_rnn_with_initial_bias_cpu')
-
-# Missing op 'Tile' -> NGRAPH-1909
-backend_test.exclude('test_operator_repeat_cpu')
-backend_test.exclude('test_operator_repeat_dim_overflow_cpu')
-backend_test.exclude('test_tile_cpu')
-backend_test.exclude('test_tile_precomputed_cpu')
-
-# Missing op 'TopK' -> NC5-161 -> NGRAPH-1910
-backend_test.exclude('test_top_k_cpu')
-
-# Missing op 'Upsample' -> NGRAPH-1841
-backend_test.exclude('test_upsample_nearest_cpu')
-
-# Runtime problems
-# NG_TYPE_ERROR msg='Unidentified data type %s' param='float16' -> NC5-229
-backend_test.exclude('test_cast_FLOAT16_to_DOUBLE_cpu')
-backend_test.exclude('test_cast_FLOAT16_to_FLOAT_cpu')
-backend_test.exclude('test_cast_DOUBLE_to_FLOAT16_cpu')
-backend_test.exclude('test_cast_FLOAT_to_FLOAT16_cpu')
-
-# RuntimeError msg='Broadcast arg, shape, and axes are incompatible' -> NC5-232
-backend_test.exclude('test_operator_add_size1_broadcast_cpu')
-backend_test.exclude('test_operator_add_size1_singleton_broadcast_cpu')
-backend_test.exclude('test_prelu_broadcast_cpu')
-
-# RuntimeError msg='Convolution padding-below rank does not match number of spatial dimensions.' -> NC5-233
-backend_test.exclude('test_Conv1d_cpu')
-backend_test.exclude('test_Conv1d_dilated_cpu')
-backend_test.exclude('test_Conv1d_groups_cpu')
-backend_test.exclude('test_Conv1d_pad1_cpu')
-backend_test.exclude('test_Conv1d_pad1size1_cpu')
-backend_test.exclude('test_Conv1d_pad2_cpu')
-backend_test.exclude('test_Conv1d_pad2size1_cpu')
-backend_test.exclude('test_Conv1d_stride_cpu')
-
-# RuntimeError msg='Dot axes do not have same length' -> NGRAPH-1838
-backend_test.exclude('test_matmul_3d_cpu')
-backend_test.exclude('test_matmul_4d_cpu')
-
-# Other problems
-# AssertionError msg='Not equal to tolerance' -> NGRAPH-1733
-backend_test.exclude('test_reshape_extended_dims_cpu')
-backend_test.exclude('test_reshape_negative_dim_cpu')
-backend_test.exclude('test_reshape_one_dim_cpu')
-backend_test.exclude('test_reshape_reduced_dims_cpu')
-backend_test.exclude('test_reshape_reordered_dims_cpu')
-
-# IndexError msg='list assignment index out of range' -> NC5-232
-backend_test.exclude('test_prelu_example_cpu')
-
-# NotImplementedError msg='Pad node (%s): only constant padding is supported.' -> NGRAPH-1505
-backend_test.exclude('test_edge_pad_cpu')
-backend_test.exclude('test_operator_pad_cpu')
-backend_test.exclude('test_reflect_pad_cpu')
-backend_test.exclude('test_ReflectionPad2d_cpu')
-backend_test.exclude('test_ReplicationPad2d_cpu')
-
-# UserInputError msg='Node (%s): provided axes count is different than input tensor rank.' -> NC5-231
-backend_test.exclude('test_PixelShuffle_cpu')
-
-# ValueError msg='LogSoftmax node (%s): provided axis attribute is out of input tensor dimensions range.' -> NC5-230
-backend_test.exclude('test_log_softmax_lastdim_cpu')
-
-# Tests which fail on the CPU backend
+# Tests which fail on the CPU backend -> NC-330
 if selected_backend_name == 'CPU':
     backend_test.exclude('test_Conv3d_dilated')
     backend_test.exclude('test_Conv3d_dilated_strided')
-    backend_test.exclude('test_GLU_dim')
+
+# Big model tests (see test_zoo_models.py):
+backend_test.exclude('test_bvlc_alexnet')
+backend_test.exclude('test_densenet121')
+backend_test.exclude('test_inception_v1')
+backend_test.exclude('test_inception_v2')
+backend_test.exclude('test_resnet50')
+backend_test.exclude('test_shufflenet')
+backend_test.exclude('test_squeezenet')
+backend_test.exclude('test_vgg19')
+backend_test.exclude('test_zfnet512')
 
 # Tests which fail or are very slow on the INTERPRETER backend
 if selected_backend_name == 'INTERPRETER':
-    backend_test.exclude('test_densenet121_cpu')
-    backend_test.exclude('test_inception_v2_cpu')
-    backend_test.exclude('test_resnet50_cpu')
-    backend_test.exclude('test_squeezenet_cpu')
-    backend_test.exclude('test_vgg19_cpu')
-    backend_test.exclude('test_shufflenet_cpu')
-    backend_test.exclude('test_bvlc_alexnet_cpu')
-    backend_test.exclude('test_inception_v1_cpu')
-    backend_test.exclude('test_zfnet512_cpu')
     backend_test.exclude('test_operator_conv_cpu')
     backend_test.exclude('test_slice_start_out_of_bounds_cpu')
 
+OnnxBackendNodeModelTest = None
+OnnxBackendSimpleModelTest = None
+OnnxBackendPyTorchOperatorModelTest = None
+OnnxBackendPyTorchConvertedModelTest = None
 globals().update(backend_test.enable_report().test_cases)
+
+# PyTorch Operator tests -> NC-329
+pytest.mark.xfail(OnnxBackendPyTorchOperatorModelTest.test_operator_pad_cpu)
+pytest.mark.xfail(OnnxBackendPyTorchOperatorModelTest.test_operator_repeat_cpu)
+pytest.mark.xfail(OnnxBackendPyTorchOperatorModelTest.test_operator_repeat_dim_overflow_cpu)
+pytest.mark.xfail(OnnxBackendPyTorchOperatorModelTest.test_operator_symbolic_override_cpu)
+
+# Dynamic Expand -> NGONNX-367
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_expand_dim_changed_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_expand_dim_unchanged_cpu)
+pytest.mark.xfail(OnnxBackendSimpleModelTest.test_expand_shape_model1_cpu)
+pytest.mark.xfail(OnnxBackendSimpleModelTest.test_expand_shape_model2_cpu)
+pytest.mark.xfail(OnnxBackendSimpleModelTest.test_expand_shape_model3_cpu)
+pytest.mark.xfail(OnnxBackendSimpleModelTest.test_expand_shape_model4_cpu)
+
+# Dynamic Reshape -> NGONNX-357
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_reshape_extended_dims_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_reshape_negative_dim_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_reshape_one_dim_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_reshape_reduced_dims_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_reshape_reordered_dims_cpu)
+
+# Dynamic Gather -> NGONNX-369
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_gather_0_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_gather_1_cpu)
+
+# Dynamic Tile -> NGONNX-368
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_tile_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_tile_precomputed_cpu)
+pytest.mark.xfail(OnnxBackendPyTorchConvertedModelTest.test_Embedding_cpu)
+pytest.mark.xfail(OnnxBackendPyTorchConvertedModelTest.test_Embedding_sparse_cpu)
+
+# Cast -> NGONNX-427
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_cast_FLOAT_to_STRING_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_cast_STRING_to_FLOAT_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_cast_DOUBLE_to_FLOAT16_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_cast_FLOAT_to_FLOAT16_cpu)
+
+# Scan -> NGONNX-433
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_scan9_sum_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_scan_sum_cpu)
+
+# Compress -> NGONNX-438
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_compress_default_axis_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_compress_0_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_compress_1_cpu)
+
+# Eyelike -> NGONNX-439
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_eyelike_populate_off_main_diagonal_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_eyelike_with_dtype_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_eyelike_without_dtype_cpu)
+
+# Isnan -> NGONNX-440
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_isnan_cpu)
+
+# Erf -> NGONNX-442
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_erf_cpu)
+
+# Constant of Shape -> NGONNX-445
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_constantofshape_float_ones_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_constantofshape_int_zeros_cpu)
+
+# Scatter -> NGONNX-446
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_scatter_with_axis_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_scatter_without_axis_cpu)
+
+# Max unpool -> NGONNX-447
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_maxunpool_export_with_output_shape_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_maxunpool_export_without_output_shape_cpu)
+
+# Shrink -> NGONNX-449
+pytest.mark.xfail(OnnxBackendSimpleModelTest.test_shrink_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_shrink_hard_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_shrink_soft_cpu)
+
+# OneHot -> NGONNX-453
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_onehot_with_axis_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_onehot_without_axis_cpu)
+
+# TF id vectorizer -> NGONNX-471
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_tfidfvectorizer_tf_batch_onlybigrams_skip0_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_tfidfvectorizer_tf_batch_onlybigrams_skip5_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_tfidfvectorizer_tf_batch_uniandbigrams_skip5_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_tfidfvectorizer_tf_only_bigrams_skip0_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_tfidfvectorizer_tf_onlybigrams_levelempty_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_tfidfvectorizer_tf_onlybigrams_skip5_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_tfidfvectorizer_tf_uniandbigrams_skip5_cpu)
+
+# Non zero -> NGONNX-472
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_nonzero_example_cpu)
+
+# Other tests
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_hardmax_axis_0_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_hardmax_axis_1_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_hardmax_axis_2_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_hardmax_default_axis_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_hardmax_example_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_hardmax_one_hot_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_instancenorm_epsilon_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_instancenorm_example_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_upsample_nearest_cpu)
+
+# Dynamic Slice -> EXPERIMENTAL https://github.com/onnx/onnx/blob/master/docs/Operators.md#DynamicSlice
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_dynamic_slice_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_dynamic_slice_default_axes_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_dynamic_slice_end_out_of_bounds_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_dynamic_slice_neg_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_dynamic_slice_start_out_of_bounds_cpu)
