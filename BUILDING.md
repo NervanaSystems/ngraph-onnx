@@ -22,7 +22,6 @@ You can verify whether you have version `>=2.6.1` installed using the command:
     $ protoc --version
     libprotoc 3.4.0
 
-
 #### nGraph
 
 The other requirement is of course nGraph and nGraph's Python bindings.
@@ -90,9 +89,19 @@ from ngraph.impl import onnx_import
 
 If you don't see any errors, nGraph should be installed correctly.
 
-
 ### Installing ngraph-onnx
 
-You can install ngraph-onnx using pip:
+You can install ngraph-onnx using the following commands. Clone `ngraph-onnx` sources to the same directory where you cloned `ngraph` sources.
 
-     (nGraph) $ pip install git+https://github.com/NervanaSystems/ngraph-onnx/@v0.14.0
+    (nGraph) $ cd # Change directory to where you have cloned nGraph sources
+    (nGraph) $ git clone -b 'v0.14.0' --single-branch --depth 1 https://github.com/NervanaSystems/ngraph-onnx.git
+    (nGraph) $ cd ngraph-onnx
+    (nGraph) $ pip install -r requirement.txt
+    (nGraph) $ pip install -r requirement_test.txt
+    (nGraph) $ pip install -e .
+
+#### Running tests
+
+    (nGraph) $ pytest tests/ --backend=CPU -v
+    (nGraph) $ pytest tests_core/ --backend=CPU -v
+    (nGraph) $ NGRAPH_BACKEND=CPU TOX_INSTALL_NGRAPH_FROM=../ngraph/python tox
