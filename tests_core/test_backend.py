@@ -35,6 +35,17 @@ NgraphBackend.backend_name = selected_backend_name
 # import all test cases at global scope to make them visible to python.unittest
 backend_test = onnx.backend.test.BackendTest(NgraphBackend, __name__)
 
+# Fixed in nGraph after 0.14.0
+backend_test.exclude('test_acosh')
+backend_test.exclude('test_acosh_example')
+backend_test.exclude('test_asinh')
+backend_test.exclude('test_asinh_example')
+backend_test.exclude('test_atanh')
+backend_test.exclude('test_atanh_example')
+backend_test.exclude('test_sign')
+backend_test.exclude('test_where_example')
+backend_test.exclude('test_sign_model')
+
 # MaxPool Indices -> NGRAPH-3131
 backend_test.exclude('test_maxpool_with_argmax')
 
