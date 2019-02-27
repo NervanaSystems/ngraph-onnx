@@ -96,8 +96,8 @@ You can install ngraph-onnx using the following commands. Clone `ngraph-onnx` so
     (nGraph) $ cd # Change directory to where you have cloned nGraph sources
     (nGraph) $ git clone -b 'v0.14.0' --single-branch --depth 1 https://github.com/NervanaSystems/ngraph-onnx.git
     (nGraph) $ cd ngraph-onnx
-    (nGraph) $ pip install -r requirement.txt
-    (nGraph) $ pip install -r requirement_test.txt
+    (nGraph) $ pip install -r requirements.txt
+    (nGraph) $ pip install -r requirements_test.txt
     (nGraph) $ pip install -e .
 
 #### Running tests
