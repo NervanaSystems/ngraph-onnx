@@ -204,7 +204,7 @@ def test_2d_conv_transpose():
                                    dtype=np.float32))
 
 
-@pytest.mark.xfail(reason='Refactoring to nGraph core importer.')
+@pytest.mark.xfail(reason='NGONNX-498')
 def test_pad_opset_1():
     x = np.ones((2, 2), dtype=np.float32)
     y = np.pad(x, pad_width=1, mode='constant')
@@ -223,16 +223,15 @@ def test_pad_opset_1():
     # incorrect paddings rank
     x = np.ones((2, 2), dtype=np.float32)
     model = get_node_model('Pad', x, paddings=[0, 1, 1, 3, 1, 2])
-    with pytest.raises(ValueError):
+    with pytest.raises(RuntimeError):
         run_model(model, [x])
 
     # no paddings arttribute
     model = get_node_model('Pad', x)
-    with pytest.raises(ValueError):
+    with pytest.raises(RuntimeError):
         import_onnx_model(model)
 
 
-@pytest.mark.xfail(reason='Refactoring to nGraph core importer.')
 def test_pad_opset_2():
     x = np.ones((2, 2), dtype=np.float32)
     y = np.pad(x, pad_width=1, mode='constant')
@@ -251,18 +250,37 @@ def test_pad_opset_2():
     # incorrect pads rank
     x = np.ones((2, 2), dtype=np.float32)
     model = get_node_model('Pad', x, opset=2, pads=[0, 1, 1, 3, 1, 2])
-    with pytest.raises(ValueError):
+    with pytest.raises(RuntimeError):
         run_model(model, [x])
 
-    # negative pads values
-    model = get_node_model('Pad', x, opset=2, pads=[0, -1, -1, 3])
-    with pytest.raises(NotImplementedError):
-        run_model(model, [x])
 
-    # no pads attribute
-    model = get_node_model('Pad', x, opset=2)
-    with pytest.raises(ValueError):
-        import_onnx_model(model)
+@pytest.mark.xfail(reason='NGONNX-498')
+def test_pad_negative_values_begin():
+    x = np.ones((2, 2), dtype=np.float32)
+
+    # Axis 1 begin
+    model = get_node_model('Pad', x, opset=2, pads=[-1, 0, 0, 0])
+    ng_result = run_model(model, [x])[0]
+    assert np.array_equal(ng_result, np.array([[1, 1]]))
+
+    # Axis 2 begin
+    model = get_node_model('Pad', x, opset=2, pads=[0, -1, 0, 0])
+    ng_result = run_model(model, [x])[0]
+    assert np.array_equal(ng_result, np.array([[1], [1]]))
+
+
+def test_pad_negative_values_end():
+    x = np.ones((2, 2), dtype=np.float32)
+
+    # Axis 1 end
+    model = get_node_model('Pad', x, opset=2, pads=[0, 0, -1, 0])
+    ng_result = run_model(model, [x])[0]
+    assert np.array_equal(ng_result, np.array([[1., 1.]]))
+
+    # Axis 2 end
+    model = get_node_model('Pad', x, opset=2, pads=[0, 0, 0, -1])
+    ng_result = run_model(model, [x])[0]
+    assert np.array_equal(ng_result, np.array([[1], [1]]))
 
 
 def test_pool_average(ndarray_1x1x4x4):

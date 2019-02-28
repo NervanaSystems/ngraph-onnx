@@ -92,7 +92,7 @@ def import_and_compute_gemm(input_a, input_b, input_c, **kwargs):
     transformer = get_runtime()
     ng_model_function = import_onnx_model(onnx_model)
     computation = transformer.computation(ng_model_function)
-    return computation(input_a, input_b, input_c)
+    return computation(input_a, input_b, input_c)[0]
 
 
 def test_op_matmul():
@@ -134,7 +134,7 @@ def test_op_matmul_3d():
     assert np.array_equal(import_and_compute_matmul(*data), np.matmul(*data))
 
 
-@pytest.mark.xfail(reason='Refactoring to nGraph core importer.')
+@pytest.mark.xfail(reason='NGONNX-494')
 def test_gemm():
     data = ([1, 2], [1, 3], [1, 4])
     assert np.array_equal(import_and_compute_gemm(*data), numpy_gemm(*data))
@@ -154,7 +154,7 @@ def test_gemm():
     assert np.array_equal(import_and_compute_gemm(*data, **kwargs), numpy_gemm(*data, **kwargs))
 
 
-@pytest.mark.xfail(reason='Refactoring to nGraph core importer.')
+@pytest.mark.xfail(reason='NGONNX-494')
 def test_gemm_transpositions():
     data = ([1, 2], [1, 3], [1, 4])
     kwargs = {'trans_a': True, 'trans_b': True}
@@ -173,8 +173,7 @@ def test_gemm_transpositions():
     assert np.array_equal(import_and_compute_gemm(*data, **kwargs), numpy_gemm(*data, **kwargs))
 
 
-# -> NGRAPH-1838
-@pytest.mark.xfail(reason='Need add support for flattening to numpy_gemm')
+@pytest.mark.xfail(reason='NGONNX-494')
 def test_gemm_flatten():
     # input_a.shape is (4,1,1)
     data = ([[[1]], [[2]], [[3]], [[4]]], [1, 3, 5, 7], [1, 4])
