@@ -17,6 +17,8 @@
 import pytest
 
 from ngraph_onnx.onnx_importer.backend import NgraphBackend
+
+import tests.utils
 from tests.utils.model_zoo_tester import ModelZooTestRunner
 
 _S3_DOWNLOAD_ONNX = 'https://s3.amazonaws.com/download.onnx/models/'
@@ -404,12 +406,9 @@ zoo_models = [
     },
 ]
 
-
-backend_name = pytest.config.getoption('backend', default='CPU')
-
-if backend_name != 'INTERPRETER':
+if tests.utils.BACKEND_NAME != 'INTERPRETER':
     # Set backend device name to be used instead of hardcoded by ONNX BackendTest class ones.
-    NgraphBackend.backend_name = backend_name
+    NgraphBackend.backend_name = tests.utils.BACKEND_NAME
 
     # import all test cases at global scope to make them visible to python.unittest
     backend_test = ModelZooTestRunner(NgraphBackend, zoo_models, __name__)

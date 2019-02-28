@@ -24,8 +24,10 @@ import pytest
 
 from ngraph_onnx.onnx_importer.backend import NgraphBackend
 
+import tests.utils
+
 # Set backend device name to be used instead of hardcoded by ONNX BackendTest class ones.
-selected_backend_name = pytest.config.getoption('backend', default='CPU')
+selected_backend_name = tests.utils.BACKEND_NAME
 NgraphBackend.backend_name = selected_backend_name
 
 # This is a pytest magic variable to load extra plugins

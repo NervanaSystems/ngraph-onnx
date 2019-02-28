@@ -15,14 +15,34 @@
 # ******************************************************************************
 import pytest
 
+import tests.utils
+
 
 def pytest_addoption(parser):
     parser.addoption('--backend', default='CPU',
-                     choices=['INTERPRETER', 'CPU', 'GPU', 'ARGON'], help='Select from available backends')
+                     choices=['INTERPRETER', 'CPU', 'GPU', 'NNP'],
+                     help='Select from available backends')
 
 
 def pytest_configure(config):
-    config.gpu_skip = pytest.mark.skipif(config.getvalue('backend') == 'GPU')
-    config.cpu_skip = pytest.mark.skipif(config.getvalue('backend') == 'CPU')
-    config.nnp_skip = pytest.mark.skipif(config.getvalue('backend') == 'NNP')
-    config.interpreter_skip = pytest.mark.skipif(config.getvalue('backend') == 'INTERPRETER')
+    backend_name = config.getvalue('backend')
+    tests.utils.BACKEND_NAME = backend_name
+
+
+def pytest_collection_modifyitems(config, items):
+    backend_name = config.getvalue('backend')
+
+    gpu_skip = pytest.mark.skip(reason='Skipping test on the GPU backend.')
+    cpu_skip = pytest.mark.skip(reason='Skipping test on the CPU backend.')
+    nnp_skip = pytest.mark.skip(reason='Skipping test on the NNP backend.')
+    interpreter_skip = pytest.mark.skip(reason='Skipping test on the INTERPRETER backend.')
+
+    for item in items:
+        if backend_name == 'GPU' and 'skip_on_gpu' in item.keywords:
+            item.add_marker(gpu_skip)
+        if backend_name == 'CPU' and 'skip_on_cpu' in item.keywords:
+            item.add_marker(cpu_skip)
+        if backend_name == 'NNP' and 'skip_on_nnp' in item.keywords:
+            item.add_marker(nnp_skip)
+        if backend_name == 'INTERPRETER' and 'skip_on_interpreter' in item.keywords:
+            item.add_marker(interpreter_skip)

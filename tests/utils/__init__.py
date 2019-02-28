@@ -18,7 +18,6 @@ from __future__ import print_function, division
 
 import onnx
 import numpy as np
-import pytest
 
 import ngraph as ng
 
@@ -30,8 +29,14 @@ from ngraph_onnx.onnx_importer.importer import import_onnx_model
 from string import ascii_uppercase
 
 
+# tests.utils.BACKEND_NAME is a configuration variable determining which
+# nGraph backend tests will use. It's set during pytest configuration time.
+# See `pytest_configure` in `conftest.py` for more details.
+BACKEND_NAME = None
+
+
 def get_runtime():
-    return ng.runtime(backend_name=pytest.config.getoption('backend', default='CPU'))
+    return ng.runtime(backend_name=BACKEND_NAME)
 
 
 def run_node(onnx_node, data_inputs, **kwargs):
@@ -43,7 +48,7 @@ def run_node(onnx_node, data_inputs, **kwargs):
     :param data_inputs: list of numpy ndarrays with input data
     :return: list of numpy ndarrays with computed output
     """
-    NgraphBackend.backend_name = pytest.config.getoption('backend', default='CPU')
+    NgraphBackend.backend_name = BACKEND_NAME
     if NgraphBackend.supports_ngraph_device(NgraphBackend.backend_name):
         return NgraphBackend.run_node(onnx_node, data_inputs, **kwargs)
     else:
@@ -60,7 +65,7 @@ def run_model(onnx_model, data_inputs):
     :param data_inputs: list of numpy ndarrays with input data
     :return: list of numpy ndarrays with computed output
     """
-    NgraphBackend.backend_name = pytest.config.getoption('backend', default='CPU')
+    NgraphBackend.backend_name = BACKEND_NAME
     if NgraphBackend.supports_ngraph_device(NgraphBackend.backend_name):
         ng_model_function = import_onnx_model(onnx_model)
         runtime = get_runtime()
