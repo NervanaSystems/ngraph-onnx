@@ -28,7 +28,11 @@ from ngraph_onnx.onnx_importer.backend import NgraphBackend
 from ngraph_onnx.onnx_importer.importer import import_onnx_model
 from string import ascii_uppercase
 
-BACKEND_NAME = 'CPU'
+
+# tests.utils.BACKEND_NAME is a configuration variable determining which
+# nGraph backend tests will use. It's set during pytest configuration time.
+# See `pytest_configure` in `conftest.py` for more details.
+BACKEND_NAME = None
 
 
 def get_runtime():

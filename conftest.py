@@ -36,7 +36,7 @@ def pytest_collection_modifyitems(config, items):
     cpu_skip = pytest.mark.skip(reason='Skipping test on the CPU backend.')
     nnp_skip = pytest.mark.skip(reason='Skipping test on the NNP backend.')
     interpreter_skip = pytest.mark.skip(reason='Skipping test on the INTERPRETER backend.')
-    
+
     for item in items:
         if backend_name == 'GPU' and 'skip_on_gpu' in item.keywords:
             item.add_marker(gpu_skip)
