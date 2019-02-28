@@ -17,7 +17,6 @@
 import onnx
 
 import numpy as np
-from onnx.helper import make_graph, make_model, make_tensor_value_info
 
 from tests.utils import run_node
 
