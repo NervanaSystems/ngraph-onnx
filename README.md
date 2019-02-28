@@ -55,32 +55,33 @@ Use the following Python commands to convert the downloaded model to an nGraph m
 
 # Convert ONNX model to an ngraph model
 >>> from ngraph_onnx.onnx_importer.importer import import_onnx_model
->>> ng_model = import_onnx_model(onnx_protobuf)
+>>> ng_function = import_onnx_model(onnx_protobuf)
 
 # The importer returns a list of ngraph models for every ONNX graph output:
->>> print(ng_model)
+>>> print(ng_function)
 <Function: 'resnet50' ([1, 1000])>
 ```
 
-The `output` field contains the nGraph node corresponding to the output node in the imported ONNX computational graph.
-The `inputs` list contains all input parameters for the computation which generates the output.
+This creates an nGraph `Function` object, which can be used to execute a computation on a chosen backend.
 
 ### Running a computation
 
-After importing the ONNX model, you can use it to generate and call a computation function.
+After importing an ONNX model, you will have an nGraph `Function` object. 
+Now you can create an nGraph `Runtime` backend and use it to compile your `Function` to a backend-specific `Computation` object.
+Finally, you can execute your model by calling the created `Computation` object with input data.
 
 ```python
-# Using an ngraph runtime (CPU backend) create a callable computation
+# Using an ngraph runtime (CPU backend) create a callable computation object
 >>> import ngraph as ng
 >>> runtime = ng.runtime(backend_name='CPU')
->>> resnet = runtime.computation(ng_model)
+>>> resnet_on_cpu = runtime.computation(ng_function)
 
 # Load an image (or create a mock as in this example)
 >>> import numpy as np
 >>> picture = np.ones([1, 3, 224, 224], dtype=np.float32)
 
 # Run computation on the picture:
->>> resnet(picture)
+>>> resnet_on_cpu(picture)
 [array([[2.16105007e-04, 5.58412226e-04, 9.70510227e-05, 5.76671446e-05,
          7.45318757e-05, 4.80892748e-04, 5.67404088e-04, 9.48728994e-05,
          ...
