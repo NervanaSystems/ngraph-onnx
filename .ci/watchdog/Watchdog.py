@@ -128,7 +128,8 @@ class Watchdog:
         try:
             now_time = self._git.get_git_time()
         except Exception:
-            log.warning('Falling back to system time! This can produce invalid results if system time is not set correctly!')
+            message = 'Falling back to system time! This can produce invalid results if system time is not set correctly!'
+            self._queue_message(message, message_severity='internal')
             now_time = datetime.datetime.now()
         return now_time
 
