@@ -32,6 +32,7 @@ from SlackCommunicator import SlackCommunicator
 from JenkinsWrapper import JenkinsWrapper
 from jenkins import NotFoundException
 from GitWrapper import GitWrapper
+from github import GithubException
 import os
 import json
 
@@ -97,7 +98,7 @@ class Watchdog:
         # Read config file
         self._config = self._read_config_file()
         # Time at Watchdog initiation
-        self._now_time = self._git.get_git_time()
+        self._now_time = self._get_current_time()
 
     def run(self, quiet=False):
         """Run main watchdog logic.
@@ -123,6 +124,15 @@ class Watchdog:
                 self._queue_message(str(e), message_severity='internal')
         self._update_config()
         self._send_message(quiet=quiet)
+
+    def _get_current_time(self):
+        try:
+            now_time = self._git.get_git_time()
+        except (ValueError, GithubException):
+            message = 'Falling back to system time! This can produce invalid results!'
+            self._queue_message(message, message_severity='internal')
+            now_time = datetime.datetime.now()
+        return now_time
 
     def _read_config_file(self):
         """Read Watchdog config file stored on the system.

@@ -27,7 +27,7 @@
 import logging
 from datetime import datetime
 from retrying import retry
-from github import Github
+from github import Github, GithubException
 
 # Logging
 log = logging.getLogger(__name__)
@@ -69,11 +69,14 @@ class GitWrapper:
             :return:                    Datetime object describing current time
             :rtype:                     datetime
         """
-        datetime_string = self.git.get_api_status().raw_headers['date']
         try:
+            datetime_string = self.git.get_api_status().raw_headers.get('date', '')
             datetime_object = datetime.strptime(datetime_string, '%a, %d %b %Y %H:%M:%S %Z')
         except ValueError:
             log.exception('Failed to parse date retrieved from GitHub: %s', str(datetime_string))
+            raise
+        except GithubException as e:
+            log.exception('Exception during API status retrieval. Exception: {}'.format(str(e)))
             raise
         return datetime_object
 
