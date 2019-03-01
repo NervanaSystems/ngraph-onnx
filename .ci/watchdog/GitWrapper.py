@@ -76,7 +76,7 @@ class GitWrapper:
             log.exception('Failed to parse date retrieved from GitHub: %s', str(datetime_string))
             raise
         except Github.GithubException.GithubException as e:
-            log.exception("Exception during API status retrieval. Exception: {}".format(str(e)))
+            log.exception('Exception during API status retrieval. Exception: {}'.format(str(e)))
             raise
         return datetime_object
 
