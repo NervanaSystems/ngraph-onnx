@@ -158,8 +158,7 @@ def test_reciprocal(input_data):
     assert np.allclose(ng_results, [expected_output])
 
 
-# -> NGRAPH-1839
-@pytest.mark.xfail(reason='Need nGraph support for ArgMin/ArgMax')
+@pytest.mark.xfail(reason='NGONNX-431 Enable Hardmax')
 @pytest.mark.parametrize('axis, dim1, dim2', [
     (0, 1, 60),
     (1, 3, 20),
@@ -177,8 +176,7 @@ def test_hardmax(axis, dim1, dim2):
     assert np.allclose(ng_results, [expected])
 
 
-# -> NGRAPH-1839
-@pytest.mark.xfail(reason='Need nGraph support for ArgMin/ArgMax')
+@pytest.mark.xfail(reason='NGONNX-431 Enable Hardmax')
 def test_hardmax_special_cases():
     def hardmax_2d(data):
         return np.eye(data.shape[1], dtype=data.dtype)[np.argmax(data, axis=1)]
@@ -491,9 +489,8 @@ def test_constant(value_type):
     assert np.allclose(ng_results, [values])
 
 
-# https://github.com/onnx/onnx/issues/1190
-@pytest.mark.xfail(reason='/onnx/helper.py:152: TypeError: <value> has type '
-                          'numpy.float16, but expected one of: int, long')
+# See https://github.com/onnx/onnx/issues/1190
+@pytest.mark.xfail(reason='ONNX#1190 numpy.float16 not supported by ONNX make_node.')
 def test_constant_err():
     values = np.random.randn(5, 5).astype(np.float16)
     node = onnx.helper.make_node(

@@ -69,15 +69,14 @@ def test_reshape_opset5():
         assert np.array_equal(ng_results[0], expected_output)
 
 
-@pytest.mark.xfail(reason='Refactoring to nGraph core importer.')
+@pytest.mark.xfail(reason='NGONNX-357 Dynamic reshape not supported.')
 def test_reshape_opset5_param_err():
     original_shape = [2, 3, 4]
     output_shape = np.array([4, 2, 3], dtype=np.int64)
     input_data = np.random.random_sample(original_shape).astype(np.float32)
     reshape_node = onnx.helper.make_node('Reshape', inputs=['x', 'y'], outputs=['z'])
-    # if reshape input is an instance of `Parameter` class then it should raise error
-    with pytest.raises(NotImplementedError):
-        run_node(reshape_node, [input_data, output_shape], opset_version=5)
+    ng_result = run_node(reshape_node, [input_data, output_shape], opset_version=5)
+    assert ng_result[0].shape == output_shape
 
 
 @pytest.mark.parametrize('axis,expected_output', [
@@ -94,12 +93,11 @@ def test_flatten(axis, expected_output):
     assert np.array_equal(ng_results, [expected_output])
 
 
-@pytest.mark.xfail(reason='Refactoring to nGraph core importer.')
 def test_flatten_exception():
     data = np.arange(120).reshape(2, 3, 4, 5)
     node = onnx.helper.make_node('Flatten', inputs=['x'], outputs=['y'], axis=5)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(RuntimeError):
         run_node(node, [data])
 
 
@@ -117,7 +115,6 @@ def test_transpose():
     assert np.array_equal(ng_results, [expected_output])
 
 
-@pytest.mark.skip_on_interpreter
 def test_slice():
     data = np.array([[1, 2, 3, 4], [5, 6, 7, 8]])
 

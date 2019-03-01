@@ -14,10 +14,7 @@
 # limitations under the License.
 # ******************************************************************************
 
-from __future__ import print_function, division
-
 import onnx
-import pytest
 
 import numpy as np
 
@@ -29,9 +26,8 @@ def make_batch_norm_node(**node_attributes):
                                  outputs=['Y'], **node_attributes)
 
 
-@pytest.mark.xfail(reason='ONNX 1.1.2 model checker bug. Already resolved at master')
 def test_batch_norm_test_node():
-    data = np.arange(48).reshape(1, 3, 4, 4)
+    data = np.arange(48).reshape((1, 3, 4, 4)).astype(np.float32)
     scale = np.ones((3,)).astype(np.float32)  # Gamma
     bias = np.zeros((3,)).astype(np.float32)  # Beta
     mean = np.mean(data, axis=(0, 2, 3))
@@ -53,9 +49,9 @@ def test_batch_norm_test_node():
            [0.10846233, 0.32538795, 0.54231358, 0.7592392],
            [0.97616386, 1.19308949, 1.41001511, 1.62694073]]]], dtype=np.float32)
 
-    node = make_batch_norm_node(is_test=1, spatial=1)
-    result = run_node(node, [data, scale, bias, mean, var])
-    assert np.isclose(result, expected_output).all()
+    node = make_batch_norm_node()
+    result = run_node(node, [data, scale, bias, mean, var])[0]
+    assert np.allclose(result, expected_output, rtol=1e-04, atol=1e-08)
 
     scale = np.broadcast_to(0.1, (3,)).astype(np.float32)  # Gamma
     bias = np.broadcast_to(1, (3,)).astype(np.float32)  # Beta
@@ -76,6 +72,6 @@ def test_batch_norm_test_node():
            [1.01084626, 1.03253877, 1.05423141, 1.07592392],
            [1.09761643, 1.11930895, 1.14100146, 1.16269398]]]], dtype=np.float32)
 
-    node = make_batch_norm_node(is_test=1, spatial=1)
-    result = run_node(node, [data, scale, bias, mean, var])
-    assert np.isclose(result, expected_output).all()
+    node = make_batch_norm_node()
+    result = run_node(node, [data, scale, bias, mean, var])[0]
+    assert np.allclose(result, expected_output, rtol=1e-04, atol=1e-08)
