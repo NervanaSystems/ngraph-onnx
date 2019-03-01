@@ -32,6 +32,7 @@ from SlackCommunicator import SlackCommunicator
 from JenkinsWrapper import JenkinsWrapper
 from jenkins import NotFoundException
 from GitWrapper import GitWrapper
+from github import GithubException
 import os
 import json
 
@@ -127,7 +128,7 @@ class Watchdog:
     def _get_current_time(self):
         try:
             now_time = self._git.get_git_time()
-        except Exception:
+        except (ValueError, GithubException):
             message = 'Falling back to system time! This can produce invalid results!'
             self._queue_message(message, message_severity='internal')
             now_time = datetime.datetime.now()
