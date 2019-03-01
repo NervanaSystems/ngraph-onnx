@@ -70,7 +70,7 @@ class GitWrapper:
             :rtype:                     datetime
         """
         try:
-            datetime_string = self.git.get_api_status().raw_headers['date']
+            datetime_string = self.git.get_api_status().raw_headers.get('date', '')
             datetime_object = datetime.strptime(datetime_string, '%a, %d %b %Y %H:%M:%S %Z')
         except ValueError:
             log.exception('Failed to parse date retrieved from GitHub: %s', str(datetime_string))
