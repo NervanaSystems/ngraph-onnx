@@ -28,27 +28,26 @@ timeout(30)
                 BUILD_WORKSPACE="$WORKSPACE/$BUILD_NUMBER"
                 stage("Clone repository") {
                     dir ("$BUILD_WORKSPACE") {
-                        checkout([$class: 'GitSCM', branches: [[name: "*/$BRANCH"]], 
+                        checkout([$class: 'GitSCM', branches: [[name: "*/$BRANCH"]],
                                 doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', timeout: 30]],  submoduleCfg: [],
                                 userRemoteConfigs: [[credentialsId: '6887a177-8c4d-4fe9-9c3b-fcd71b22bfba', url: 'git@github.com:NervanaSystems/ngraph-onnx.git']]])
                     }
                 }
                 stage("Prepare environment") {
-                    dir ("$BUILD_WORKSPACE") {
+                    dir ("${HOME}") {
                         sh """#!/bin/bash
-                            virtualenv -p python3 venv
-                            source venv/bin/activate
-                            pip install python-jenkins \
-                                        retrying \
-                                        pygithub \
-                                        slackclient 
+                            if [ ! -d ".wdvenv" ]; then
+                                python3 -m venv .wdvenv
+                                source .wdvenv/bin/activate
+                                pip install -r requirements.txt
+                            fi
                         """
                     }
                 }
                 stage("Run script") {
                     dir ("$BUILD_WORKSPACE") {
                         sh """#!/bin/bash
-                            source venv/bin/activate
+                            source ${HOME}/.wdvenv/bin/activate
                             export PYTHONHTTPSVERIFY=0
                             python .ci/watchdog/Main.py \
                                 --slack-token=${SLACK_TOKEN_FILE} \
