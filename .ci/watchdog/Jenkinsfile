@@ -20,12 +20,17 @@
 // *Third Party trademarks are the property of their respective owners.
 // Unless otherwise agreed by Intel in writing, you may not remove or alter
 // this notice or any other notice embedded in Materials by Intel or Intel's
+
 // suppliers or licensors in any way.
 timeout(30)
 {
     node(LABEL) {
+
+        BUILD_WORKSPACE = "$WORKSPACE/$BUILD_NUMBER"
+        WATCHDOG_ROOT = "$BUILD_WORKSPACE/.ci/watchdog"
+        VENV_PATH = "${HOME}/.wdvenv"
+
         try {
-                BUILD_WORKSPACE="$WORKSPACE/$BUILD_NUMBER"
                 stage("Clone repository") {
                     dir ("$BUILD_WORKSPACE") {
                         checkout([$class: 'GitSCM', branches: [[name: "*/$BRANCH"]],
@@ -34,22 +39,20 @@ timeout(30)
                     }
                 }
                 stage("Prepare environment") {
-                    dir ("${HOME}") {
-                        sh """#!/bin/bash
-                            if [ ! -d ".wdvenv" ]; then
-                                python3 -m venv .wdvenv
-                                source .wdvenv/bin/activate
-                                pip install -r requirements.txt
-                            fi
-                        """
-                    }
+                    sh """#!/bin/bash
+                        if [ ! -d ${VENV_PATH} ]; then
+                            python3 -m venv ${VENV_PATH}
+                            source ${VENV_PATH}/bin/activate
+                            pip install -r ${WATCHDOG_ROOT}/requirements.txt
+                        fi
+                    """
                 }
                 stage("Run script") {
                     dir ("$BUILD_WORKSPACE") {
                         sh """#!/bin/bash
-                            source ${HOME}/.wdvenv/bin/activate
+                            source ${VENV_PATH}/bin/activate
                             export PYTHONHTTPSVERIFY=0
-                            python .ci/watchdog/Main.py \
+                            python ${WATCHDOG_ROOT}/Main.py \
                                 --slack-token=${SLACK_TOKEN_FILE} \
                                 --github-token=${GITHUB_TOKEN_FILE} \
                                 --github-org=${GITHUB_ORG} \
@@ -62,18 +65,16 @@ timeout(30)
                         """
                     }
                 }
-                stage("Cleanup") {
-                    sh """
-                        cd $BUILD_WORKSPACE
-                        rm -rf ..?* .[!.]* *
-                    """
-                }
-
         } catch (e) {
             echo "$e"
             currentBuild.result = "FAILURE"
         } finally {
-            deleteDir()
+            stage("Cleanup") {
+                sh """
+                    cd $BUILD_WORKSPACE
+                    rm -rf ..?* .[!.]* *
+                """
+            }
         }
     }
 }
