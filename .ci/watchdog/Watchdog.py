@@ -36,11 +36,9 @@ import os
 import json
 
 # Logging
+logging.basicConfig(format='%(name)s - %(levelname)s - %(message)s')
 log = logging.getLogger(__name__)
-ch = logging.StreamHandler()
 log.setLevel(logging.INFO)
-ch.setFormatter(logging.Formatter('%(name)s - %(levelname)s - %(message)s'))
-log.addHandler(ch)
 
 # Watchdog static constant variables
 _SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
