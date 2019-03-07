@@ -49,12 +49,12 @@ class GitWrapper:
     more convenient use. Docs for used API, including wrapped methods can be found at:
     https://pygithub.readthedocs.io/en/latest/introduction.html
 
-        :param git_token:       Token used for GitHub
-        :param repository:      GitHub repository name
-        :param project:         GitHub project name
-        :type git_token:        String
-        :type repository:       String
-        :type project:          String
+    :param git_token:       Token used for GitHub
+    :param repository:      GitHub repository name
+    :param project:         GitHub project name
+    :type git_token:        String
+    :type repository:       String
+    :type project:          String
     """
 
     def __init__(self, git_token, repository, project):
@@ -68,8 +68,8 @@ class GitWrapper:
 
         Used to reliably determine time during Watchdog run.
 
-            :return:                    Datetime object describing current time
-            :rtype:                     datetime
+        :return:                    Datetime object describing current time
+        :rtype:                     datetime
         """
         try:
             datetime_object = self._get_git_time()
@@ -87,8 +87,8 @@ class GitWrapper:
     def get_pull_requests(self):
         """Retrieve paginated list of pull requests from GitHub.
 
-            :return:                    Paginated list of Pull Requests in GitHub repo
-            :rtype:                     github.PaginatedList.PaginatedList of github.PullRequest.PullRequest
+        :return:                    Paginated list of Pull Requests in GitHub repo
+        :rtype:                     github.PaginatedList.PaginatedList of github.PullRequest.PullRequest
         """
         try:
             prs = self._get_pull_requests()
@@ -101,8 +101,8 @@ class GitWrapper:
     def _get_git_time(self):
         """Private method retrieving time from GitHub.
 
-            :return:                    Datetime object describing current time
-            :rtype:                     datetime
+        :return:                    Datetime object describing current time
+        :rtype:                     datetime
         """
         datetime_string = self.git.get_api_status().raw_headers.get('date', '')
         datetime_format = '%a, %d %b %Y %H:%M:%S %Z'
@@ -113,15 +113,16 @@ class GitWrapper:
     def _get_pull_requests(self):
         """Private method retrieving pull requests from GitHub.
 
-            :return:                    Paginated list of Pull Requests in GitHub repo
-            :rtype:                     github.PaginatedList.PaginatedList of github.PullRequest.PullRequest
+        :return:                    Paginated list of Pull Requests in GitHub repo
+        :rtype:                     github.PaginatedList.PaginatedList of github.PullRequest.PullRequest
         """
         return self.git.get_organization(self.repository).get_repo(self.project).get_pulls()
+
 
 class GitWrapperError(Exception):
     """Base class for exceptions raised in GitWrapper.
 
-        :param message                   Explanation of the error
+    :param message                   Explanation of the error
     """
 
     def __init__(self, message):
