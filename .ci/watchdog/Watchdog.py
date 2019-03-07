@@ -31,8 +31,7 @@ import logging
 from SlackCommunicator import SlackCommunicator
 from JenkinsWrapper import JenkinsWrapper
 from jenkins import NotFoundException
-from GitWrapper import GitWrapper
-from github import GithubException
+from GitWrapper import GitWrapper, GitWrapperError
 import os
 import json
 
@@ -99,6 +98,7 @@ class Watchdog:
         self._config = self._read_config_file()
         # Time at Watchdog initiation
         self._now_time = self._get_current_time()
+        self._current_prs = {}
 
     def run(self, quiet=False):
         """Run main watchdog logic.
@@ -110,11 +110,10 @@ class Watchdog:
         """
         try:
             pull_requests = self._git.get_pull_requests()
-        except Exception:
+        except GitWrapperError:
             message = 'Failed to retrieve Pull Requests!'
             log.exception(message)
             self._queue_message(message, message_severity='internal')
-        self._current_prs = {}
         # Check all pull requests
         for pr in pull_requests:
             try:
@@ -128,9 +127,9 @@ class Watchdog:
     def _get_current_time(self):
         try:
             now_time = self._git.get_git_time()
-        except (ValueError, GithubException):
+        except GitWrapperError:
             message = 'Falling back to system time! This can produce invalid results!'
-            self._queue_message(message, message_severity='internal')
+            log.warning(message)
             now_time = datetime.datetime.now()
         return now_time
 
