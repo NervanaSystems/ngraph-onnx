@@ -30,6 +30,7 @@ zoo_models = [
     # ArcFace
     {
         'model_name': 'arcface_lresnet100e_opset8',
+        'rtol': 0.002,
         'url': _S3_MODEL_ZOO + 'arcface/resnet100/resnet100.tar.gz',
     },
 
@@ -433,9 +434,6 @@ if tests.utils.BACKEND_NAME != 'INTERPRETER':
     pytest.mark.xfail(test_cases.test_inception_v2_opset3_cpu)
     pytest.mark.xfail(test_cases.test_vgg19_opset3_cpu)
     pytest.mark.xfail(test_cases.test_zfnet512_opset3_cpu)
-
-    # RuntimeError: sporadic result mismatch 0.4% -> NGONNX-414
-    backend_test.exclude('test_arcface_lresnet100e_opset8_cpu')
 
     # RuntimeError: unknown operation: ImageScaler
     backend_test.exclude('test_tiny_yolov2_opset7')
