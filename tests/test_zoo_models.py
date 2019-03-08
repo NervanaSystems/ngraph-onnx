@@ -435,7 +435,7 @@ if tests.utils.BACKEND_NAME != 'INTERPRETER':
     pytest.mark.xfail(test_cases.test_zfnet512_opset3_cpu)
 
     # RuntimeError: sporadic result mismatch 0.4% -> NGONNX-414
-    backend_test.exclude('test_arcface_lresnet100e_opset8_cpu')
+    #backend_test.exclude('test_arcface_lresnet100e_opset8_cpu')
 
     # RuntimeError: unknown operation: ImageScaler
     backend_test.exclude('test_tiny_yolov2_opset7')
