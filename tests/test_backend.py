@@ -82,7 +82,6 @@ OnnxBackendPyTorchConvertedModelTest = None
 globals().update(backend_test.enable_report().test_cases)
 
 # PyTorch Operator tests -> NC-329
-pytest.mark.xfail(OnnxBackendPyTorchOperatorModelTest.test_operator_pad_cpu)
 pytest.mark.xfail(OnnxBackendPyTorchOperatorModelTest.test_operator_repeat_cpu)
 pytest.mark.xfail(OnnxBackendPyTorchOperatorModelTest.test_operator_repeat_dim_overflow_cpu)
 pytest.mark.xfail(OnnxBackendPyTorchOperatorModelTest.test_operator_symbolic_override_cpu)
