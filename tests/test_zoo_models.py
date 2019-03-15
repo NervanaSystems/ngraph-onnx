@@ -423,18 +423,6 @@ if tests.utils.BACKEND_NAME != 'INTERPRETER':
     # Too long execution time.
     pytest.mark.skip(test_cases.test_duc_resnet101_hdc_opset7_cpu)
 
-    # RuntimeError: 'Dot': Paired axes do not have same length. (OpSet 3) -> NC5-342
-    pytest.mark.xfail(test_cases.test_resnet50_opset3_cpu)
-    pytest.mark.xfail(test_cases.test_shufflenet_opset3_cpu)
-    pytest.mark.xfail(test_cases.test_bvlc_alexnet_opset3_cpu)
-    pytest.mark.xfail(test_cases.test_bvlc_caffenet_opset3_cpu)
-    pytest.mark.xfail(test_cases.test_bvlc_googlenet_opset3_cpu)
-    pytest.mark.xfail(test_cases.test_bvlc_rcnn_ilsvrc13_opset3_cpu)
-    pytest.mark.xfail(test_cases.test_inception_v1_opset3_cpu)
-    pytest.mark.xfail(test_cases.test_inception_v2_opset3_cpu)
-    pytest.mark.xfail(test_cases.test_vgg19_opset3_cpu)
-    pytest.mark.xfail(test_cases.test_zfnet512_opset3_cpu)
-
     # RuntimeError: unknown operation: ImageScaler
     backend_test.exclude('test_tiny_yolov2_opset7')
     backend_test.exclude('test_tiny_yolov2_opset8')
