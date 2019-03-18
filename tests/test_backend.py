@@ -73,7 +73,6 @@ backend_test.exclude('test_zfnet512')
 # Tests which fail or are very slow on the INTERPRETER backend
 if selected_backend_name == 'INTERPRETER':
     backend_test.exclude('test_operator_conv_cpu')
-    backend_test.exclude('test_slice_start_out_of_bounds_cpu')
 
 OnnxBackendNodeModelTest = None
 OnnxBackendSimpleModelTest = None

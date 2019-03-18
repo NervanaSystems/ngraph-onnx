@@ -30,11 +30,9 @@ import logging
 from retrying import retry
 
 # Logging
+logging.basicConfig(format='%(name)s - %(levelname)s - %(message)s')
 log = logging.getLogger(__name__)
-ch = logging.StreamHandler()
 log.setLevel(logging.INFO)
-ch.setFormatter(logging.Formatter('%(name)s - %(levelname)s - %(message)s'))
-log.addHandler(ch)
 
 _RETRY_LIMIT = 3
 _RETRY_COOLDOWN_MS = 5000
