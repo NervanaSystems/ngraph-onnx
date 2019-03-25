@@ -40,15 +40,6 @@ backend_test = onnx.backend.test.BackendTest(NgraphBackend, __name__)
 # MaxPool Indices -> NGRAPH-3131
 backend_test.exclude('test_maxpool_with_argmax')
 
-# Padding modes -> NC-322
-backend_test.exclude('test_ConstantPad2d')
-backend_test.exclude('test_constant_pad')
-backend_test.exclude('test_ZeroPad2d')
-backend_test.exclude('test_ReflectionPad2d')
-backend_test.exclude('test_ReplicationPad2d')
-backend_test.exclude('test_edge_pad')
-backend_test.exclude('test_reflect_pad')
-
 # RNN -> NC-323
 backend_test.exclude('test_simple_rnn')
 backend_test.exclude('test_rnn')
@@ -90,7 +81,6 @@ OnnxBackendPyTorchConvertedModelTest = None
 globals().update(backend_test.enable_report().test_cases)
 
 # PyTorch Operator tests -> NC-329
-pytest.mark.xfail(OnnxBackendPyTorchOperatorModelTest.test_operator_pad_cpu)
 pytest.mark.xfail(OnnxBackendPyTorchOperatorModelTest.test_operator_repeat_cpu)
 pytest.mark.xfail(OnnxBackendPyTorchOperatorModelTest.test_operator_repeat_dim_overflow_cpu)
 pytest.mark.xfail(OnnxBackendPyTorchOperatorModelTest.test_operator_symbolic_override_cpu)
