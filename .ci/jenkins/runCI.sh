@@ -61,7 +61,7 @@ function prepare_environment() {
 
 function run_tox_tests() {
     NGRAPH_WHL=$(docker exec ${DOCKER_CONTAINER} find /root/ngraph/python/dist/ -name 'ngraph*.whl')
-    docker exec -e TOX_INSTALL_NGRAPH_FROM=\${NGRAPH_WHL} ${DOCKER_CONTAINER} tox -c /root
+    docker exec -e TOX_INSTALL_NGRAPH_FROM=${NGRAPH_WHL} ${DOCKER_CONTAINER} tox -c /root
 }
 
 # Function cleanup() removes items created during script execution
