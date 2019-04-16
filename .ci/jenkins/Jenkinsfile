@@ -17,11 +17,13 @@
 
 // Set LABEL variable if empty or not declared
 try{ if(LABEL.trim() == "") {throw new Exception();} }catch(Exception e){LABEL="onnx && ci"}; echo "${LABEL}"
+if(DOCKER_REGISTRY.trim() == "") {throw new Exception("Missing Docker registry url!");}
 // CI settings and constants
-PROJECT_NAME = "ngraph-onnx"            
+PROJECT_NAME = "ngraph_cpp"
 CI_ROOT = ".ci/jenkins"
-DOCKER_CONTAINER_NAME = "jenkins_${PROJECT_NAME}_ci"
-REPOSITORY_GIT_ADDRESS = "https://www.github.com/NervanaSystems/${PROJECT_NAME}.git"
+DOCKER_CONTAINER_NAME = "jenkins_ngraph-onnx_ci"
+NGRAPH_GIT_ADDRESS = "https://github.com/NervanaSystems/ngraph.git"
+ONNX_GIT_ADDRESS = "https://github.com/NervanaSystems/ngraph-onnx.git"
 JENKINS_GITHUB_CREDENTIAL_ID = "7157091e-bc04-42f0-99fd-dc4da2922a55"
 NGRAPH_DIRECTORY="/home"
 GIT_PR_AUTHOR_EMAIL=""
@@ -38,10 +40,10 @@ def killPreviousRunningJobs() {
 
     def job = Jenkins.instance.getItemByFullName(jobname)
     for (build in job.builds) {
-        if (!build.isBuilding()){ 
-            continue; 
+        if (!build.isBuilding()){
+            continue;
         }
-        if (buildnum == build.getNumber().toInteger()){ 
+        if (buildnum == build.getNumber().toInteger()){
             continue;
         }
         echo "Kill task = ${build}"
@@ -49,38 +51,46 @@ def killPreviousRunningJobs() {
     }
 }
 
-def cloneRepository(String jenkins_github_credential_id, String repository_git_address) {
+def cloneRepository(String jenkins_github_credential_id, String ngraph_git_address, String onnx_git_address) {
     stage('Clone Repo') {
         checkout([$class: 'GitSCM',
                 branches: [[name: "$CHANGE_BRANCH"]],
                 doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', timeout: 30]], submoduleCfg: [],
                 userRemoteConfigs: [[credentialsId: "${jenkins_github_credential_id}",
-                url: "${repository_git_address}"]]])
+                url: "${onnx_git_address}"]]])
         GIT_PR_AUTHOR_EMAIL = sh (script: 'git log -1 --pretty="format:%ae" ', returnStdout: true).trim()
         GIT_COMMIT_AUTHOR_EMAIL = sh (script: 'git log -1 --pretty="format:%ce" ', returnStdout: true).trim()
         GIT_COMMIT_HASH = sh (script: 'git log -1 --pretty="format:%H" ', returnStdout: true).trim()
         GIT_COMMIT_SUBJECT = sh (script: 'git log -1 --pretty="format:%s" ', returnStdout: true).trim()
+        dir ("ngraph") {
+            checkout([$class: 'GitSCM',
+                branches: [[name: "master"]],
+                doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', timeout: 30]], submoduleCfg: [],
+                userRemoteConfigs: [[credentialsId: "${jenkins_github_credential_id}",
+                url: "${ngraph_git_address}"]]])
+        }
     }
 }
 
-def buildImage(configurationMaps) {
-    Closure buildMethod = { configMap ->
+def pullImage(configurationMaps) {
+    Closure pullMethod = { configMap ->
         sh """
-            ${CI_ROOT}/utils/docker.sh build \
+            ${CI_ROOT}/utils/docker.sh pull \
+                                --docker_registry=${DOCKER_REGISTRY} \
                                 --name=${configMap["projectName"]} \
-                                --version=${configMap["name"]} \
-                                --dockerfile_path=${configMap["dockerfilePath"]}
+                                --version=${configMap["name"]} || return 1
         """
     }
-    UTILS.createStage("Build_image", buildMethod, configurationMaps)
+    UTILS.createStage("Pull_image", pullMethod, configurationMaps)
 }
 
 def runDockerContainers(configurationMaps) {
     Closure runContainerMethod = { configMap ->
-        UTILS.propagateStatus("Build_image", configMap["name"])
+        UTILS.propagateStatus("Pull_image", configMap["name"])
         sh """
             mkdir -p ${HOME}/ONNX_CI
             ${CI_ROOT}/utils/docker.sh start \
+                                --docker_registry=${DOCKER_REGISTRY} \
                                 --name=${configMap["projectName"]} \
                                 --version=${configMap["name"]} \
                                 --container_name=${configMap["dockerContainerName"]} \
@@ -105,7 +115,7 @@ def runToxTests(configurationMaps) {
     Closure runToxTestsMethod = { configMap ->
         UTILS.propagateStatus("Prepare_environment", configMap["dockerContainerName"])
         sh """
-            NGRAPH_WHL=\$(docker exec ${configMap["dockerContainerName"]} bash -c "find  ${NGRAPH_DIRECTORY}/ngraph/python/dist/ -name 'ngraph*.whl' -printf '%Ts\t%p\n' | sort -nr | cut -f2 | head -n1")
+            NGRAPH_WHL=\$(docker exec ${configMap["dockerContainerName"]} find /root/ngraph/python/dist/ -name 'ngraph*.whl')
             docker exec -e TOX_INSTALL_NGRAPH_FROM=\${NGRAPH_WHL} ${configMap["dockerContainerName"]} tox -c /root
         """
     }
@@ -156,23 +166,23 @@ def notifyByEmail() {
     UTILS.createStage("Notify", notifyMethod, configurationMaps)
 }
 
-def main(String label, String projectName, String projectRoot, String dockerContainerName, String jenkins_github_credential_id, String repository_git_address) {
+def main(String label, String projectName, String projectRoot, String dockerContainerName, String jenkins_github_credential_id, String ngraph_git_address, String onnx_git_address) {
     killPreviousRunningJobs()
     node(label) {
-        timeout(activity: true, time: 60) {        
-            WORKDIR = "${WORKSPACE}/${BUILD_NUMBER}/${PROJECT_NAME}"
+        timeout(activity: true, time: 60) {
+            WORKDIR = "${WORKSPACE}/${BUILD_NUMBER}"
             def configurationMaps;
             try {
                 dir ("${WORKDIR}") {
                     sh "echo WORKAROUND"
-                    cloneRepository(jenkins_github_credential_id, repository_git_address)
+                    cloneRepository(jenkins_github_credential_id, ngraph_git_address, onnx_git_address)
                     // Load CI API
                     UTILS = load "${CI_ROOT}/utils/utils.groovy"
                     result = 'SUCCESS'
                     // Create configuration maps
                     configurationMaps = UTILS.getDockerEnvList(projectName, dockerContainerName, projectRoot)
                     // Execute CI steps
-                    buildImage(configurationMaps)
+                    pullImage(configurationMaps)
                     runDockerContainers(configurationMaps)
                     prepareEnvironment(configurationMaps)
                     runToxTests(configurationMaps)
@@ -194,4 +204,4 @@ def main(String label, String projectName, String projectRoot, String dockerCont
     }
 }
 
-main(LABEL, PROJECT_NAME, CI_ROOT, DOCKER_CONTAINER_NAME, JENKINS_GITHUB_CREDENTIAL_ID, REPOSITORY_GIT_ADDRESS)
+main(LABEL, PROJECT_NAME, CI_ROOT, DOCKER_CONTAINER_NAME, JENKINS_GITHUB_CREDENTIAL_ID, NGRAPH_GIT_ADDRESS, ONNX_GIT_ADDRESS)
