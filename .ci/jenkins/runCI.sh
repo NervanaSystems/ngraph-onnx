@@ -26,7 +26,11 @@ function clone_ngraph() {
 
     set -x
     cd "${REPO_ROOT}"
-    git clone https://github.com/NervanaSystems/ngraph
+    if [ -d "./ngraph" ]; then
+        echo "[WARNING!] nGraph repo found! Skip cloning!"
+    else
+        git clone https://github.com/NervanaSystems/ngraph
+    fi
     if [ -n "${sha}" ]; then
         cd ./ngraph
         git reset --hard "${sha}"
@@ -39,16 +43,15 @@ function build_image() {
     cd "${CI_PATH}"
     ./utils/docker.sh build \
                     --image_name="${image_name}" \
-                    --dockerfile_path="../dockerfiles/ubuntu-16_04.dockerfile" || return 1
+                    --dockerfile_path="${CI_ROOT}/dockerfiles/ubuntu-16_04.dockerfile"
 }
 
 function start_container() {
     local image_name="$1"
 
-    ${CI_ROOT}/utils/docker.sh start \
-                            --image_name="${image_name}" \
-                            --container_name=${DOCKER_CONTAINER} \
-                            --volumes="-v ${CI_PATH}:/home -v ${REPO_ROOT}:/root"
+    docker run -h "$(hostname)-dkr" --privileged --name "${DOCKER_CONTAINER}" -i -t \
+                "-v ${CI_PATH}:/home -v ${REPO_ROOT}:/root" \
+                "${image_name}" /bin/bash
 }
 
 function prepare_environment() {
@@ -57,7 +60,7 @@ function prepare_environment() {
 }
 
 function run_tox_tests() {
-    NGRAPH_WHL=\$(docker exec ${DOCKER_CONTAINER} find /root/ngraph/python/dist/ -name 'ngraph*.whl')
+    NGRAPH_WHL=$(docker exec ${DOCKER_CONTAINER} find /root/ngraph/python/dist/ -name 'ngraph*.whl')
     docker exec -e TOX_INSTALL_NGRAPH_FROM=\${NGRAPH_WHL} ${DOCKER_CONTAINER} tox -c /root
 }
 
@@ -79,8 +82,7 @@ function print_help() {
             --cleanup               - removes docker image, container and files created during script execution
             --docker-image          - Docker image name used in CI (script will build image with provided name if not already present)
             [--rebuild-image]       - forces image rebuild
-            [--ngraph-commit]       - nGraph commit SHA to run tox tests on
-            "
+            [--ngraph-commit]       - nGraph commit SHA to run tox tests on\n\n"
 }
 
 function main() {
@@ -110,7 +112,7 @@ function main() {
         esac
     done
 
-    if [ -z $(docker ps -a | grep -o "^[a-z0-9]\+\s\+${DOCKER_CONTAINER}\s\+") ]; then
+    if [ ! -z $(docker ps -a | grep -o "^[a-z0-9]\+\s\+${DOCKER_CONTAINER}\s\+") ]; then
         RERUN="TRUE"
         echo "=========================== !!! ATTENTION !!! ============================"
         echo "Docker container ${DOCKER_CONTAINER} is present (may be stopped)."
