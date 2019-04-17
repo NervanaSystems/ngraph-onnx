@@ -44,12 +44,13 @@ RUN pip3 install tox
 ARG NGRAPH_CACHE_DIR=/cache
 
 WORKDIR /root
-RUN git clone https://github.com/NervanaSystems/ngraph.git
-WORKDIR /root/ngraph
-RUN mkdir -p ./build && \
+
+RUN git clone https://github.com/NervanaSystems/ngraph.git && \
+    cd ngraph && \
+    mkdir -p ./build && \
     cd ./build && \
     cmake ../ -DNGRAPH_TOOLS_ENABLE=FALSE -DNGRAPH_UNIT_TEST_ENABLE=FALSE -DNGRAPH_USE_PREBUILT_LLVM=TRUE -DNGRAPH_ONNX_IMPORT_ENABLE=TRUE && \
-    make -j "$(lscpu --parse=CORE | grep -v '#' | sort | uniq | wc -l)"
+    make -j $(lscpu --parse=CORE | grep -v '#' | sort | uniq | wc -l)
 
 # Store built nGraph
 RUN mkdir -p ${NGRAPH_CACHE_DIR} && \
