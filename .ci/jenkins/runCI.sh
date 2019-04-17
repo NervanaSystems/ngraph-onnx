@@ -101,13 +101,13 @@ function main() {
                 exit 0
             ;;
             --docker-image=*)
-                DOCKER_IMAGE=`echo $i | sed "s/${PATTERN}//"`
+                DOCKER_IMAGE="${i//PATTERN/}"
             ;;
             --rebuild-image)
                 REBUILD_IMAGE="TRUE"
             ;;
             --ngraph-commit=*)
-                SHA=`echo $i | sed "s/${PATTERN}//"`
+                SHA="${i//PATTERN/}"
             ;;
         esac
     done
