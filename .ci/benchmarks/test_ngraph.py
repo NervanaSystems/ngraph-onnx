@@ -38,9 +38,9 @@ WARM_UP_SIZE = 10
 
 
 def evaluate(backend_name, model_path, dataset):
-    ng_model = import_onnx_file(model_path)[0]
+    ng_model = import_onnx_file(model_path)
     runtime = ng.runtime(backend_name=backend_name)
-    computation = runtime.computation(ng_model['output'], *ng_model['inputs'])
+    computation = runtime.computation(ng_model)
 
     batch_sys_time = AverageMeter()
     batch_proc_time = AverageMeter()
