@@ -21,7 +21,7 @@ RUN apt-get update && apt-get -y --no-install-recommends install \
         automake \
         libtool && \
   apt-get clean autoclean && \
-  apt-get autoremove -y && \
+  apt-get autoremove -y
 
 # Python dependencies
 RUN apt-get -y --no-install-recommends install \
@@ -30,13 +30,14 @@ RUN apt-get -y --no-install-recommends install \
         python3-dev \
         python-virtualenv && \
     apt-get clean autoclean && \
-    apt-get autoremove -y && \
+    apt-get autoremove -y
 
 RUN pip3 install --upgrade pip setuptools wheel
 
 # ONNX dependencies
 RUN apt-get -y --no-install-recommends install \
-        protobuf-compiler libprotobuf-dev && \
+        protobuf-compiler \
+        libprotobuf-dev && \
     apt-get clean autoclean && \
     apt-get autoremove -y && \
     rm -rf /var/lib/apt/lists/*
