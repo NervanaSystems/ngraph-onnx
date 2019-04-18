@@ -254,7 +254,6 @@ def test_pad_opset_2():
         run_model(model, [x])
 
 
-@pytest.mark.xfail(reason='NGONNX-498')
 def test_pad_negative_values_begin():
     x = np.ones((2, 2), dtype=np.float32)
 
