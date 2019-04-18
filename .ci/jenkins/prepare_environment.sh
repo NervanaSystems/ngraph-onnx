@@ -16,78 +16,53 @@
 # otherwise. Any license under such intellectual property rights must be express
 # and approved by Intel in writing.
 
-
-REBUILD_NGRAPH="FALSE"
-
-PATTERN='[-a-zA-Z0-9_]*='
-for i in "$@"
-do
-    case $i in
-        --help*)
-            printf "Following parameters are available:
-    
-            --help  displays this message
-            --rebuild-ngraph rebuild nGraph 
-            "
-            exit 0
-        ;;
-        --rebuild-ngraph)
-            REBUILD_NGRAPH="TRUE"
-        ;;
-        --ngraph-commit=*)
-            REBUILD_NGRAPH="TRUE"
-            SHA=`echo $i | sed "s/${PATTERN}//"`
-        ;;
-    esac
-done
-
 set -x
+set -e
+
+NGRAPH_CACHE_DIR="/cache"
 
 function build_ngraph() {
+    set -x
     # directory containing ngraph repo
     local ngraph_directory="$1"
+    local func_parameters="$2"
+    cd "${ngraph_directory}/ngraph"
+    for parameter in $func_parameters
+    do
+        case $parameter in
+            REBUILD)
+                rm -rf "${ngraph_directory}/ngraph/build"
+                rm -rf "${ngraph_directory}/ngraph_dist"
+            ;;
+            USE_CACHED)
+                cp -Rf "${NGRAPH_CACHE_DIR}/build" "${ngraph_directory}/ngraph/" || return 1
+            ;;
+        esac
+    done
     cd "${ngraph_directory}/ngraph"
     mkdir -p ./build
     cd ./build
-    cmake ../ -DNGRAPH_USE_PREBUILT_LLVM=TRUE -DNGRAPH_ONNX_IMPORT_ENABLE=TRUE -DCMAKE_INSTALL_PREFIX="${ngraph_directory}/ngraph_dist"
-    make -j $(lscpu --parse=CORE | grep -v '#' | sort | uniq | wc -l)
-    make install
+    cmake ../ -DNGRAPH_TOOLS_ENABLE=FALSE -DNGRAPH_UNIT_TEST_ENABLE=FALSE -DNGRAPH_USE_PREBUILT_LLVM=TRUE -DNGRAPH_ONNX_IMPORT_ENABLE=TRUE -DCMAKE_INSTALL_PREFIX="${ngraph_directory}/ngraph_dist" || return 1
+    make -j $(lscpu --parse=CORE | grep -v '#' | sort | uniq | wc -l) || return 1
+    make install || return 1
     cd "${ngraph_directory}/ngraph/python"
     if [ ! -d ./pybind11 ]; then
-        git clone --recursive -b allow-nonconstructible-holders https://github.com/jagerman/pybind11.git
+        git clone --recursive https://github.com/pybind/pybind11.git
     fi
-    # Clean artifacts from previous build
     rm -f "${ngraph_directory}"/ngraph/python/dist/ngraph*.whl
     rm -rf "${ngraph_directory}/ngraph/python/*.so ${ngraph_directory}/ngraph/python/build"
     export PYBIND_HEADERS_PATH="${ngraph_directory}/ngraph/python/pybind11"
     export NGRAPH_CPP_BUILD_PATH="${ngraph_directory}/ngraph_dist"
     export NGRAPH_ONNX_IMPORT_ENABLE="TRUE"
-    python3 setup.py bdist_wheel
-    # Clean artifacts after building wheel
+    python3 setup.py bdist_wheel || return 1
+    # Clean build artifacts
     rm -rf "${ngraph_directory}/ngraph_dist"
+    return 0
 }
 
 # Link Onnx models
 mkdir -p /home/onnx_models/.onnx
 ln -s /home/onnx_models/.onnx /root/.onnx
 
-# If REBUILD_NGRAPH is FALSE - reuse stored ngraph
-if [[ "${REBUILD_NGRAPH}" == "TRUE" ]]; then
-    git clone https://github.com/NervanaSystems/ngraph.git -b master /root/ngraph
-    # If commit hash was provided - use this commit
-    if [ ! -z "${SHA}" ]; then
-        cd /root/ngraph
-        git reset --hard "${SHA}"
-    fi
-    build_ngraph "/root"
-else
-    # Update and build nGraph in /home/ngraph
-    cd /home
-    if [ -e ./ngraph ]; then
-        cd ./ngraph
-        git pull
-    else
-        git clone https://github.com/NervanaSystems/ngraph.git
-    fi
-    build_ngraph "/home"
-fi
+# Copy stored nGraph master and use it to build PR branch
+build_ngraph "/root" "USE_CACHED" || build_ngraph "/root" "REBUILD"
