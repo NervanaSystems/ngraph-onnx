@@ -51,8 +51,8 @@ ARG NGRAPH_CACHE_DIR=/cache
 WORKDIR /root
 RUN git clone https://github.com/NervanaSystems/ngraph.git
 WORKDIR /root/ngraph
-RUN mkdir -p ./Build
-WORKDIR /root/ngraph/Build
+RUN mkdir -p ./build
+WORKDIR /root/ngraph/build
 RUN cmake ../ -DNGRAPH_TOOLS_ENABLE=FALSE -DNGRAPH_UNIT_TEST_ENABLE=FALSE -DNGRAPH_USE_PREBUILT_LLVM=TRUE -DNGRAPH_ONNX_IMPORT_ENABLE=TRUE && \
     make -j "$(lscpu --parse=CORE | grep -v '#' | sort | uniq | wc -l)"
 
