@@ -49,9 +49,9 @@ function build_image() {
 function start_container() {
     local image_name="$1"
 
-    docker run -h "$(hostname)-dkr" --privileged --name "${DOCKER_CONTAINER}" -i -t \
-                "-v ${CI_PATH}:/home -v ${REPO_ROOT}:/root" \
-                "${image_name}" /bin/bash
+    docker run -h "$(hostname)-dkr" --privileged --name "${DOCKER_CONTAINER}" -id \
+                -v "${CI_PATH}:/home" -v "${REPO_ROOT}:/root" \
+                "${image_name}" tail -f /dev/null
 }
 
 function prepare_environment() {
