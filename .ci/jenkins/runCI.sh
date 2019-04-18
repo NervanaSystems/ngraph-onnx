@@ -50,12 +50,11 @@ function start_container() {
     local image_name="$1"
 
     docker run -h "$(hostname)-dkr" --privileged --name "${DOCKER_CONTAINER}" -id \
-                -v "${CI_PATH}:/home" -v "${REPO_ROOT}:/root" \
+                -v "${REPO_ROOT}:/home" -v "${REPO_ROOT}:/root" \
                 "${image_name}" tail -f /dev/null
 }
 
 function prepare_environment() {
-    docker cp ${CI_PATH}/utils/docker.sh ${DOCKER_CONTAINER}:/home
     docker exec ${DOCKER_CONTAINER} bash -c "/root/${CI_ROOT}/prepare_environment.sh"
 }
 
@@ -68,7 +67,7 @@ function run_tox_tests() {
 function cleanup() {
     set -x
 
-    docker exec "${DOCKER_CONTAINER}" bash -c "rm -rf /home"
+    docker exec "${DOCKER_CONTAINER}" bash -c "rm -rf /home/onnx_models"
     docker exec "${DOCKER_CONTAINER}" bash -c "rm -rf /root/ngraph /root/ngraph_dist /root/.tox /root/.onnx /root/__pycache__ /root/ngraph_onnx.egg-info /root/cpu_codegen"
     docker exec "${DOCKER_CONTAINER}" bash -c 'rm -rf $(find /root/ -user root)'
     docker rm -f "${DOCKER_CONTAINER}"
