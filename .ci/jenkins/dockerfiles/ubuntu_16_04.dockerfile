@@ -22,7 +22,6 @@ RUN apt-get update && apt-get -y --no-install-recommends install \
         libtool && \
   apt-get clean autoclean && \
   apt-get autoremove -y && \
-  rm -rf /var/lib/apt/lists/*
 
 # Python dependencies
 RUN apt-get -y --no-install-recommends install \
@@ -32,7 +31,6 @@ RUN apt-get -y --no-install-recommends install \
         python-virtualenv && \
     apt-get clean autoclean && \
     apt-get autoremove -y && \
-    rm -rf /var/lib/apt/lists/*
 
 RUN pip3 install --upgrade pip setuptools wheel
 
