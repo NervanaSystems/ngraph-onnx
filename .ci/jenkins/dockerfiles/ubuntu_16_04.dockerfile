@@ -7,35 +7,41 @@ ENV http_proxy ${http_proxy}
 ENV https_proxy ${https_proxy}
 
 # nGraph dependencies
-RUN apt-get update && apt-get install -y \
-  build-essential \
-  cmake \
-  clang-3.9 \
-  git \
-  curl \
-  zlib1g \
-  zlib1g-dev \
-  libtinfo-dev \
-  unzip \
-  autoconf \
-  automake \
-  libtool && \
-  apt-get clean autoclean && apt-get autoremove -y
+RUN apt-get update && apt-get -y --no-install-recommends install \
+        build-essential \
+        cmake \
+        clang-3.9 \
+        git \
+        curl \
+        zlib1g \
+        zlib1g-dev \
+        libtinfo-dev \
+        unzip \
+        autoconf \
+        automake \
+        libtool && \
+  apt-get clean autoclean && \
+  apt-get autoremove -y && \
+  rm -rf /var/lib/apt/lists/*
 
 # Python dependencies
-RUN apt-get -y install python3 \
-                       python3-pip \
-                       python3-dev \
-                       python-virtualenv && \
+RUN apt-get -y --no-install-recommends install \
+        python3 \
+        python3-pip \
+        python3-dev \
+        python-virtualenv && \
     apt-get clean autoclean && \
-    apt-get autoremove -y
+    apt-get autoremove -y && \
+    rm -rf /var/lib/apt/lists/*
 
 RUN pip3 install --upgrade pip setuptools wheel
 
 # ONNX dependencies
-RUN apt-get -y install protobuf-compiler libprotobuf-dev && \
+RUN apt-get -y --no-install-recommends install \
+        protobuf-compiler libprotobuf-dev && \
     apt-get clean autoclean && \
-    apt-get autoremove -y
+    apt-get autoremove -y && \
+    rm -rf /var/lib/apt/lists/*
 
 # Install tox
 RUN pip3 install tox
@@ -44,13 +50,12 @@ RUN pip3 install tox
 ARG NGRAPH_CACHE_DIR=/cache
 
 WORKDIR /root
-
-RUN git clone https://github.com/NervanaSystems/ngraph.git && \
-    cd ngraph && \
-    mkdir -p ./build && \
-    cd ./build && \
-    cmake ../ -DNGRAPH_TOOLS_ENABLE=FALSE -DNGRAPH_UNIT_TEST_ENABLE=FALSE -DNGRAPH_USE_PREBUILT_LLVM=TRUE -DNGRAPH_ONNX_IMPORT_ENABLE=TRUE && \
-    make -j $(lscpu --parse=CORE | grep -v '#' | sort | uniq | wc -l)
+RUN git clone https://github.com/NervanaSystems/ngraph.git
+WORKDIR /root/ngraph
+RUN mkdir -p ./Build
+WORKDIR /root/ngraph/Build
+RUN cmake ../ -DNGRAPH_TOOLS_ENABLE=FALSE -DNGRAPH_UNIT_TEST_ENABLE=FALSE -DNGRAPH_USE_PREBUILT_LLVM=TRUE -DNGRAPH_ONNX_IMPORT_ENABLE=TRUE && \
+    make -j "$(lscpu --parse=CORE | grep -v '#' | sort | uniq | wc -l)"
 
 # Store built nGraph
 RUN mkdir -p ${NGRAPH_CACHE_DIR} && \
