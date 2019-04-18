@@ -43,7 +43,7 @@ function build_image() {
     cd "${CI_PATH}"
     ./utils/docker.sh build \
                     --image_name="${image_name}" \
-                    --dockerfile_path="${CI_ROOT}/dockerfiles/ubuntu-16_04.dockerfile"
+                    --dockerfile_path="${CI_ROOT}/dockerfiles/ubuntu_16_04.dockerfile"
 }
 
 function start_container() {
