@@ -41,7 +41,6 @@ def import_and_compute(op_type, input_data_left, input_data_right, opset=7, **no
     return run_model(model, inputs)[0]
 
 
-@pytest.mark.xfail(reason='NGONNX-496. Legacy broadcasting rules not supported.')
 def test_add_opset4():
     assert np.array_equal(import_and_compute('Add', 1, 2, opset=4),
                           np.array(3, dtype=np.float32))

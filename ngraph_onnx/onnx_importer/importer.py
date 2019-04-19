@@ -46,6 +46,6 @@ def import_onnx_file(filename):  # type: (str) -> List[Function]
     try:
         onnx_protobuf = onnx.load(filename)
     except DecodeError:
-        raise UserInputError('The provided file doesn\'t contain a properly formatted ONNX model.')
+        raise UserInputError("The provided file doesn't contain a properly formatted ONNX model.")
 
     return onnx_import.import_onnx_model(onnx_protobuf.SerializeToString())
