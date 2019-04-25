@@ -133,9 +133,6 @@ pytest.mark.xfail(OnnxBackendNodeModelTest.test_eyelike_without_dtype_cpu)
 # Isnan -> NGONNX-440
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_isnan_cpu)
 
-# Erf -> NGONNX-442
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_erf_cpu)
-
 # Constant of Shape -> NGONNX-445
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_constantofshape_float_ones_cpu)
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_constantofshape_int_zeros_cpu)
