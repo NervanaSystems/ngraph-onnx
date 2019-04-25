@@ -111,7 +111,7 @@ def main():
                             image_width=model_width)
     dataset = [(img, 0) for img in dataset]
 
-    perf_metrics = evaluate(backend, ng_model, dataset)
+    perf_metrics = evaluate(backend_name, ng_model, dataset, batch_size, print_freq)
     save_results('results/', args.output_file, {key: val.data for key, val in perf_metrics.items()})
 
 
