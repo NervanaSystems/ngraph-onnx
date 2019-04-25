@@ -26,7 +26,7 @@ def save_results(dest_dir, filename, kwargs):
     np.savez(os.path.join(dest_dir, filename), **kwargs)
 
 
-def generate_data(count, image_height=224, image_width=224, image_channels=3, batch_size=1):
+def generate_data(count, batch_size=1, image_channels=3, image_height=224, image_width=224):
     """Return a list of numpy ndarrays each containing randomly generated data.
 
 
@@ -37,7 +37,7 @@ def generate_data(count, image_height=224, image_width=224, image_channels=3, ba
     :param batch_size:
     :return: A list of torch tensors.
     """
-    np.random.seed(133391)
+
     return [np.random.rand(batch_size, image_channels, image_height, image_width).astype(np.float32)
             for k in range(count)]
 

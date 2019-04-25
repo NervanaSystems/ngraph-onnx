@@ -19,7 +19,8 @@ import time
 import os
 
 from utils import AverageMeter, save_results, generate_data
-from ngraph_onnx.onnx_importer.importer import import_onnx_file
+import onnx
+from ngraph_onnx.onnx_importer.importer import import_onnx_model
 import ngraph as ng
 
 import logging
@@ -37,8 +38,7 @@ parser.add_argument('--output_file', help='Results output file name.')
 WARM_UP_SIZE = 10
 
 
-def evaluate(backend_name, model_path, dataset):
-    ng_model = import_onnx_file(model_path)
+def evaluate(backend_name, ng_model, dataset, batch_size, print_freq):
     runtime = ng.runtime(backend_name=backend_name)
     computation = runtime.computation(ng_model)
 
@@ -69,13 +69,13 @@ def evaluate(backend_name, model_path, dataset):
         batch_proc_time.update(time.process_time() - clock_proc_start)
         batch_perf_time.update(time.perf_counter() - clock_perf_start)
 
-        if i % args.print_freq == 0:
+        if i % print_freq == 0:
             print('Test: [{0}/{1}]\t'
                   'Time (sys) {batch_sys_time.val:.3f}s ({batch_sys_time.avg:.3f}s)\t'
                   'Time (proc) {batch_proc_time.val:.3f}s ({batch_proc_time.avg:.3f}s)\t'
                   'Time (perf) {batch_perf_time.val:.3f}s ({batch_perf_time.avg:.3f}s)\t'
                   ''.format(
-                   i * args.batch_size, len(dataset) * args.batch_size,
+                   i * batch_size, len(dataset) * batch_size,
                    batch_sys_time=batch_sys_time, batch_proc_time=batch_proc_time,
                    batch_perf_time=batch_perf_time))
 
@@ -86,18 +86,34 @@ def evaluate(backend_name, model_path, dataset):
     return {'sys_time': batch_sys_time, 'proc_time': batch_proc_time, 'perf_time': batch_perf_time}
 
 
-
 def main():
     global args
     args = parser.parse_args()
+    model_path = args.model
+    dataset_size = args.size
+    batch_size = args.batch_size
+    backend_name = args.backend
+    print_freq = args.print_freq
 
-    dataset = generate_data(args.size)
+    # Load ONNX model
+    onnx_protobuf = onnx.load(model_path)
+    # Change batch size defined in model to value passed by user as argument
+    onnx_protobuf.graph.input[0].type.tensor_type.shape.dim[0].dim_value = batch_size
+
+    ng_model = import_onnx_model(onnx_protobuf)
+    model_batch, model_channels, model_height, model_width = ng_model.get_parameters()[0].shape
+
+    # Generate synthetic dataset filled with random values
+    dataset = generate_data(count=dataset_size,
+                            batch_size=model_batch,
+                            image_channels=model_channels,
+                            image_height=model_height,
+                            image_width=model_width)
     dataset = [(img, 0) for img in dataset]
 
-    perf_metrics = evaluate(args.backend, args.model, dataset)
+    perf_metrics = evaluate(backend, ng_model, dataset)
     save_results('results/', args.output_file, {key: val.data for key, val in perf_metrics.items()})
 
 
 if __name__ == '__main__':
     main()
-
