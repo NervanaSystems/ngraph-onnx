@@ -16,7 +16,6 @@
 
 import argparse
 import time
-import os
 
 from utils import AverageMeter, save_results, generate_data
 import onnx
@@ -74,10 +73,9 @@ def evaluate(backend_name, ng_model, dataset, batch_size, print_freq):
                   'Time (sys) {batch_sys_time.val:.3f}s ({batch_sys_time.avg:.3f}s)\t'
                   'Time (proc) {batch_proc_time.val:.3f}s ({batch_proc_time.avg:.3f}s)\t'
                   'Time (perf) {batch_perf_time.val:.3f}s ({batch_perf_time.avg:.3f}s)\t'
-                  ''.format(
-                   i * batch_size, len(dataset) * batch_size,
-                   batch_sys_time=batch_sys_time, batch_proc_time=batch_proc_time,
-                   batch_perf_time=batch_perf_time))
+                  ''.format(i * batch_size, len(dataset) * batch_size,
+                            batch_sys_time=batch_sys_time, batch_proc_time=batch_proc_time,
+                            batch_perf_time=batch_perf_time))
 
         clock_sys_start = time.time()
         clock_proc_start = time.process_time()
