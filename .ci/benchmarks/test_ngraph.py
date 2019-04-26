@@ -85,7 +85,6 @@ def evaluate(backend_name, ng_model, dataset, batch_size, print_freq):
 
 
 def main():
-    global args
     args = parser.parse_args()
     model_path = args.model
     dataset_size = args.size
