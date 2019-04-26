@@ -100,10 +100,6 @@ pytest.mark.xfail(OnnxBackendNodeModelTest.test_reshape_one_dim_cpu)
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_reshape_reduced_dims_cpu)
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_reshape_reordered_dims_cpu)
 
-# Dynamic Gather -> NGONNX-369
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_gather_0_cpu)
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_gather_1_cpu)
-
 # Dynamic Tile -> NGONNX-368
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_tile_cpu)
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_tile_precomputed_cpu)
