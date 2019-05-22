@@ -161,12 +161,6 @@ pytest.mark.xfail(OnnxBackendNodeModelTest.test_tfidfvectorizer_tf_uniandbigrams
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_nonzero_example_cpu)
 
 # Other tests
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_hardmax_axis_0_cpu)
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_hardmax_axis_1_cpu)
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_hardmax_axis_2_cpu)
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_hardmax_default_axis_cpu)
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_hardmax_example_cpu)
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_hardmax_one_hot_cpu)
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_instancenorm_epsilon_cpu)
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_instancenorm_example_cpu)
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_upsample_nearest_cpu)

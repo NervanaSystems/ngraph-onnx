@@ -158,7 +158,6 @@ def test_reciprocal(input_data):
     assert np.allclose(ng_results, [expected_output])
 
 
-@pytest.mark.xfail(reason='NGONNX-431 Enable Hardmax')
 @pytest.mark.parametrize('axis, dim1, dim2', [
     (0, 1, 60),
     (1, 3, 20),
@@ -176,7 +175,6 @@ def test_hardmax(axis, dim1, dim2):
     assert np.allclose(ng_results, [expected])
 
 
-@pytest.mark.xfail(reason='NGONNX-431 Enable Hardmax')
 def test_hardmax_special_cases():
     def hardmax_2d(data):
         return np.eye(data.shape[1], dtype=data.dtype)[np.argmax(data, axis=1)]
