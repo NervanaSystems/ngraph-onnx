@@ -30,7 +30,7 @@ zoo_models = [
     # ArcFace
     {
         'model_name': 'arcface_lresnet100e_opset8',
-        'rtol': 0.002,
+        'rtol': 0.004,  # Change made after update to MKL-DNN v0.19 (2019.0.5.20190502)
         'url': _S3_MODEL_ZOO + 'arcface/resnet100/resnet100.tar.gz',
     },
 
