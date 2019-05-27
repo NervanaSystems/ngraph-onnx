@@ -193,4 +193,3 @@ if selected_backend_name == 'INTELGPU':
     pytest.mark.xfail(OnnxBackendPyTorchConvertedModelTest.test_ReflectionPad2d_cpu)
     pytest.mark.xfail(OnnxBackendPyTorchConvertedModelTest.test_ReplicationPad2d_cpu)
     pytest.mark.xfail(OnnxBackendPyTorchOperatorModelTest.test_operator_pad_cpu)
-
