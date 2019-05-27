@@ -20,7 +20,7 @@ import tests.utils
 
 def pytest_addoption(parser):
     parser.addoption('--backend', default='CPU',
-                     choices=['INTERPRETER', 'CPU', 'GPU', 'NNP', 'PlaidML'],
+                     choices=['INTERPRETER', 'CPU', 'GPU', 'NNP', 'PlaidML', 'INTELGPU'],
                      help='Select from available backends')
 
 
@@ -37,6 +37,7 @@ def pytest_collection_modifyitems(config, items):
     nnp_skip = pytest.mark.skip(reason='Skipping test on the NNP backend.')
     interpreter_skip = pytest.mark.skip(reason='Skipping test on the INTERPRETER backend.')
     plaidml_skip = pytest.mark.skip(reason='Skipping test on the PlaidML backend.')
+    igpu_skip = pytest.mark.skip(reason='Skipping test on the INTELGPU backend.')
 
     for item in items:
         if backend_name == 'GPU' and 'skip_on_gpu' in item.keywords:
@@ -49,3 +50,5 @@ def pytest_collection_modifyitems(config, items):
             item.add_marker(interpreter_skip)
         if backend_name == 'PlaidML' and 'skip_on_plaidml' in item.keywords:
             item.add_marker(plaidml_skip)
+        if backend_name == 'INTELGPU' and 'skip_on_intelgpu' in item.keywords:
+            item.add_marker(igpu_skip)
