@@ -432,7 +432,7 @@ if tests.utils.BACKEND_NAME != 'INTERPRETER':
     backend_test.exclude('test_tiny_yolov2_opset1')
 
     # Tests which fail on the INTELGPU backend
-    if selected_backend_name == 'INTELGPU':
+    if tests.utils.BACKEND_NAME == 'INTELGPU':
         pytest.mark.xfail(test_cases.test_arcface_lresnet100e_opset8_cpu)
         pytest.mark.xfail(test_cases.test_densenet121_opset3_cpu)
         pytest.mark.xfail(test_cases.test_densenet121_opset6_cpu)
