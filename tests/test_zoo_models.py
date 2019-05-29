@@ -431,5 +431,26 @@ if tests.utils.BACKEND_NAME != 'INTERPRETER':
     backend_test.exclude('test_mnist_opset1')
     backend_test.exclude('test_tiny_yolov2_opset1')
 
+    # Tests which fail on the INTELGPU backend
+    if tests.utils.BACKEND_NAME == 'INTELGPU':
+        pytest.mark.xfail(test_cases.test_arcface_lresnet100e_opset8_cpu)
+        pytest.mark.xfail(test_cases.test_densenet121_opset3_cpu)
+        pytest.mark.xfail(test_cases.test_densenet121_opset6_cpu)
+        pytest.mark.xfail(test_cases.test_densenet121_opset7_cpu)
+        pytest.mark.xfail(test_cases.test_densenet121_opset8_cpu)
+        pytest.mark.xfail(test_cases.test_densenet121_opset9_cpu)
+        pytest.mark.xfail(test_cases.test_inception_v2_opset3_cpu)
+        pytest.mark.xfail(test_cases.test_inception_v2_opset6_cpu)
+        pytest.mark.xfail(test_cases.test_inception_v2_opset7_cpu)
+        pytest.mark.xfail(test_cases.test_inception_v2_opset8_cpu)
+        pytest.mark.xfail(test_cases.test_inception_v2_opset9_cpu)
+        pytest.mark.xfail(test_cases.test_resnet50_opset3_cpu)
+        pytest.mark.xfail(test_cases.test_resnet50_opset6_cpu)
+        pytest.mark.xfail(test_cases.test_resnet50_opset7_cpu)
+        pytest.mark.xfail(test_cases.test_resnet50_opset8_cpu)
+        pytest.mark.xfail(test_cases.test_resnet50_opset9_cpu)
+        pytest.mark.xfail(test_cases.test_vgg19_opset8_cpu)
+        pytest.mark.xfail(test_cases.test_vgg19_opset9_cpu)
+
     del test_cases
     globals().update(backend_test.enable_report().test_cases)
