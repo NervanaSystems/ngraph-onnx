@@ -100,10 +100,6 @@ pytest.mark.xfail(OnnxBackendNodeModelTest.test_reshape_one_dim_cpu)
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_reshape_reduced_dims_cpu)
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_reshape_reordered_dims_cpu)
 
-# Dynamic Tile -> NGONNX-368
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_tile_cpu)
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_tile_precomputed_cpu)
-
 # Cast -> NGONNX-427
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_cast_FLOAT_to_STRING_cpu)
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_cast_STRING_to_FLOAT_cpu)
