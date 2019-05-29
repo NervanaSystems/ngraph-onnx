@@ -49,6 +49,7 @@ class NgraphBackend(Backend):
         # (<ngraph_backend_name>, <onnx_device_name>)
         ('CPU', 'CPU'),
         ('GPU', 'CUDA'),
+        ('INTELGPU', 'CPU'),
         ('INTERPRETER', 'CPU'),
         ('ARGON', 'CPU'),
         ('NNP', 'CPU'),
