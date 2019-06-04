@@ -89,6 +89,7 @@ def test_supports_ngraph_device_gpu():
 
 @pytest.mark.skip_on_nnp
 @pytest.mark.skip_on_cpu
+@pytest.mark.skip_on_intelgpu
 @pytest.mark.skip_on_interpreter
 def test_supports_device_gpu():
     assert NgraphBackend.supports_device('CUDA')
