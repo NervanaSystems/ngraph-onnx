@@ -20,7 +20,7 @@ import numpy as np
 import onnx
 import pytest
 
-from tests.utils import all_arrays_equal, run_node, get_runtime
+from tests.utils import all_arrays_equal, run_model, run_node, get_node_model, get_runtime
 from onnx.helper import make_node, make_graph, make_tensor_value_info, make_model
 from ngraph_onnx.onnx_importer.importer import import_onnx_model
 
@@ -115,58 +115,51 @@ def test_transpose():
     assert np.array_equal(ng_results, [expected_output])
 
 
-def test_slice():
+def test_slice_opset1():
     data = np.array([[1, 2, 3, 4], [5, 6, 7, 8]])
 
     expected_output = np.array([[5, 6, 7]])
-    node = onnx.helper.make_node('Slice', inputs=['x'], outputs=['y'],
-                                 axes=[0, 1], starts=[1, 0], ends=[2, 3])
-    ng_results = run_node(node, [data])
+    model = get_node_model('Slice', data, axes=[0, 1], starts=[1, 0], ends=[2, 3])
+    ng_results = run_model(model, [data])
     assert np.array_equal(ng_results, [expected_output])
 
     expected_output = np.array([[2, 3, 4]])
-    node = onnx.helper.make_node('Slice', inputs=['x'], outputs=['y'], starts=[0, 1],
-                                 ends=[-1, 1000])
-    ng_results = run_node(node, [data])
+    model = get_node_model('Slice', data, starts=[0, 1], ends=[-1, 1000])
+    ng_results = run_model(model, [data])
     assert np.array_equal(ng_results, [expected_output])
 
-    node = onnx.helper.make_node('Slice', inputs=['x'], outputs=['y'], axes=[0, 1],
-                                 starts=[0, 0], ends=[3, 10])
     data = np.random.randn(20, 10, 5).astype(np.float32)
     expected_output = data[0:3, 0:10]
-    ng_results = run_node(node, [data])
+    model = get_node_model('Slice', data, axes=[0, 1], starts=[0, 0], ends=[3, 10])
+    ng_results = run_model(model, [data])
     assert np.array_equal(ng_results, [expected_output])
 
     # default axes
-    node = onnx.helper.make_node('Slice', inputs=['x'], outputs=['y'], starts=[0, 0, 3],
-                                 ends=[20, 10, 4])
     data = np.random.randn(20, 10, 5).astype(np.float32)
     expected_output = data[:, :, 3:4]
-    ng_results = run_node(node, [data])
+    model = get_node_model('Slice', data, starts=[0, 0, 3], ends=[20, 10, 4])
+    ng_results = run_model(model, [data])
     assert np.array_equal(ng_results, [expected_output])
 
     # end out of bounds
-    node = onnx.helper.make_node('Slice', inputs=['x'], outputs=['y'], axes=[1], starts=[1],
-                                 ends=[1000])
     data = np.random.randn(20, 10, 5).astype(np.float32)
     expected_output = data[:, 1:1000]
-    ng_results = run_node(node, [data])
+    model = get_node_model('Slice', data, axes=[1], starts=[1], ends=[1000])
+    ng_results = run_model(model, [data])
     assert np.array_equal(ng_results, [expected_output])
 
     # negative value
-    node = onnx.helper.make_node('Slice', inputs=['x'], outputs=['y'], axes=[1], starts=[0],
-                                 ends=[-1])
     data = np.random.randn(20, 10, 5).astype(np.float32)
     expected_output = data[:, 0:-1]
-    ng_results = run_node(node, [data])
+    model = get_node_model('Slice', data, axes=[1], starts=[0], ends=[-1])
+    ng_results = run_model(model, [data])
     assert np.array_equal(ng_results, [expected_output])
 
     # start ouf of bounds
-    node = onnx.helper.make_node('Slice', inputs=['x'], outputs=['y'], axes=[1], starts=[1000],
-                                 ends=[1000])
     data = np.random.randn(20, 10, 5).astype(np.float32)
     expected_output = data[:, 1000:1000]
-    ng_results = run_node(node, [data])
+    model = get_node_model('Slice', data, axes=[1], starts=[1000], ends=[1000])
+    ng_results = run_model(model, [data])
     assert np.array_equal(ng_results, [expected_output])
 
 
