@@ -461,6 +461,10 @@ if tests.utils.BACKEND_NAME != 'INTERPRETER':
     # ONNX ValidationError
     backend_test.exclude('test_mnist_opset1')
     backend_test.exclude('test_tiny_yolov2_opset1')
+    backend_test.exclude('test_yolov3_opset10')
+
+    # Use of unsupported domain: ai.onnx.ml
+    pytest.mark.skip(test_cases.test_bidaf_opset9_cpu)
 
     # Not yet supported
     backend_test.exclude('test_ssd_opset10')
