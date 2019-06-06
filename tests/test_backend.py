@@ -160,17 +160,92 @@ pytest.mark.xfail(OnnxBackendNodeModelTest.test_tfidfvectorizer_tf_uniandbigrams
 # Non zero -> NGONNX-472
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_nonzero_example_cpu)
 
+# ConvInteger NGONNX-410
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_basic_convinteger_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_convinteger_with_padding_cpu)
+
+# Quantized NGONNX-595
+# Scale / zero point not a scalar
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_dequantizelinear_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_qlinearconv_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_qlinearmatmul_2D_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_qlinearmatmul_3D_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_quantizelinear_cpu)
+
+# MatmulInteger NGONNX-410
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_matmulinteger_cpu)
+
+# IsInf - NGONNX-528
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_isinf_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_isinf_negative_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_isinf_positive_cpu)
+
+# Pooling ops NGONNX-597
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_maxpool_2d_ceil_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_maxpool_2d_dilations_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_averagepool_2d_ceil_cpu)
+
+# Modulus - NGONNX-527
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_mod_bcast_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_mod_float_mixed_sign_example_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_mod_fmod_mixed_sign_example_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_mod_int64_mixed_sign_example_cpu)
+
+# NonMaxSuppression - NGONNX-526
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_nonmaxsuppression_center_point_box_format_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_nonmaxsuppression_flipped_coordinates_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_nonmaxsuppression_identical_boxes_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_nonmaxsuppression_limit_output_size_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_nonmaxsuppression_single_box_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_nonmaxsuppression_suppress_by_IOU_and_scores_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_nonmaxsuppression_suppress_by_IOU_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_nonmaxsuppression_two_batches_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_nonmaxsuppression_two_classes_cpu)
+
+# Resize NGONNX-598
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_resize_downsample_linear_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_resize_downsample_nearest_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_resize_nearest_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_resize_upsample_linear_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_resize_upsample_nearest_cpu)
+
+# ReverseSequence - NGONNX-525
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_reversesequence_batch_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_reversesequence_time_cpu)
+
+# Dynamic Slice NGONNX-522, 599
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_slice_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_slice_default_axes_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_slice_default_steps_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_slice_end_out_of_bounds_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_slice_neg_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_slice_neg_steps_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_slice_start_out_of_bounds_cpu)
+
+# StrNormalizer NGONNX-600
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_strnormalizer_export_monday_casesensintive_lower_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_strnormalizer_export_monday_casesensintive_nochangecase_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_strnormalizer_export_monday_casesensintive_upper_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_strnormalizer_export_monday_empty_output_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_strnormalizer_export_monday_insensintive_upper_twodim_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_strnormalizer_nostopwords_nochangecase_cpu)
+pytest.mark.xfail(OnnxBackendSimpleModelTest.test_strnorm_model_monday_casesensintive_lower_cpu)
+pytest.mark.xfail(OnnxBackendSimpleModelTest.test_strnorm_model_monday_casesensintive_nochangecase_cpu)
+pytest.mark.xfail(OnnxBackendSimpleModelTest.test_strnorm_model_monday_casesensintive_upper_cpu)
+pytest.mark.xfail(OnnxBackendSimpleModelTest.test_strnorm_model_monday_empty_output_cpu)
+pytest.mark.xfail(OnnxBackendSimpleModelTest.test_strnorm_model_monday_insensintive_upper_twodim_cpu)
+pytest.mark.xfail(OnnxBackendSimpleModelTest.test_strnorm_model_nostopwords_nochangecase_cpu)
+
+# RoiAlign NGONNX-601
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_roialign_cpu)
+
+# NGONNX-521
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_top_k_cpu)
+
 # Other tests
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_instancenorm_epsilon_cpu)
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_instancenorm_example_cpu)
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_upsample_nearest_cpu)
-
-# Dynamic Slice -> EXPERIMENTAL https://github.com/onnx/onnx/blob/master/docs/Operators.md#DynamicSlice
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_dynamic_slice_cpu)
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_dynamic_slice_default_axes_cpu)
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_dynamic_slice_end_out_of_bounds_cpu)
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_dynamic_slice_neg_cpu)
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_dynamic_slice_start_out_of_bounds_cpu)
 
 # Tests which fail on the INTELGPU backend
 if selected_backend_name == 'INTELGPU':

@@ -171,9 +171,9 @@ class ModelZooTestRunner(onnx.backend.test.BackendTest):
                 inputs = list(test_data['inputs'])
                 outputs = list(prepared_model.run(inputs))
                 ref_outputs = test_data['outputs']
-                self._assert_similar_outputs(ref_outputs, outputs,
-                                             rtol=model_test.rtol,
-                                             atol=model_test.atol)
+                self.assert_similar_outputs(ref_outputs, outputs,
+                                            rtol=model_test.rtol,
+                                            atol=model_test.atol)
 
             for test_data_dir in glob.glob(
                     os.path.join(model_dir, 'test_data_set*')):
@@ -194,8 +194,8 @@ class ModelZooTestRunner(onnx.backend.test.BackendTest):
                         tensor.ParseFromString(f.read())
                     ref_outputs.append(numpy_helper.to_array(tensor))
                 outputs = list(prepared_model.run(inputs))
-                self._assert_similar_outputs(ref_outputs, outputs,
-                                             rtol=model_test.rtol,
-                                             atol=model_test.atol)
+                self.assert_similar_outputs(ref_outputs, outputs,
+                                            rtol=model_test.rtol,
+                                            atol=model_test.atol)
 
         self._add_test(kind + 'Model', model_test.name, run, model_marker)
