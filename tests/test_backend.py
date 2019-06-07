@@ -139,11 +139,6 @@ pytest.mark.xfail(OnnxBackendNodeModelTest.test_scatter_without_axis_cpu)
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_maxunpool_export_with_output_shape_cpu)
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_maxunpool_export_without_output_shape_cpu)
 
-# Shrink -> NGONNX-449
-pytest.mark.xfail(OnnxBackendSimpleModelTest.test_shrink_cpu)
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_shrink_hard_cpu)
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_shrink_soft_cpu)
-
 # OneHot -> NGONNX-453
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_onehot_with_axis_cpu)
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_onehot_without_axis_cpu)
