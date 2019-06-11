@@ -34,6 +34,14 @@ zoo_models = [
         'url': _S3_MODEL_ZOO + 'arcface/resnet100/resnet100.tar.gz',
     },
 
+    # BiDAF
+    {
+        'model_name': 'bidaf_opset9',
+        'atol': 1e-07,
+        'rtol': 0.001,
+        'url': _WINDOWS_NET + 'opset_9/bidaf/bidaf.tar.gz',
+    },
+
     # BVLC AlexNet
     {
         'model_name': 'bvlc_alexnet_opset3',
@@ -362,6 +370,21 @@ zoo_models = [
         'rtol': 0.001,
         'url': _S3_DOWNLOAD_ONNX + 'opset_9/squeezenet.tar.gz',
     },
+    {
+        'model_name': 'squeezenet1.1_opset7',
+        'atol': 1e-07,
+        'rtol': 0.001,
+        'url': _S3_MODEL_ZOO + 'squeezenet/squeezenet1.1/squeezenet1.1.tar.gz',
+
+    },
+
+    # SSD
+    {
+        'model_name': 'ssd_opset10',
+        'atol': 1e-07,
+        'rtol': 0.001,
+        'url': _WINDOWS_NET + 'opset_10/ssd/ssd.tar.gz',
+    },
 
     # Tiny-YOLOv2
     {
@@ -383,6 +406,14 @@ zoo_models = [
     {'model_name': 'vgg19_opset7', 'url': _S3_DOWNLOAD_ONNX + 'opset_7/vgg19.tar.gz'},
     {'model_name': 'vgg19_opset8', 'url': _S3_DOWNLOAD_ONNX + 'opset_8/vgg19.tar.gz'},
     {'model_name': 'vgg19_opset9', 'url': _S3_DOWNLOAD_ONNX + 'opset_9/vgg19.tar.gz'},
+
+    # YOLOv3
+    {
+        'model_name': 'yolov3_opset10',
+        'atol': 1e-07,
+        'rtol': 0.001,
+        'url': _WINDOWS_NET + 'opset_10/yolov3/yolov3.tar.gz',
+    },
 
     # ZFNet-512
     {
@@ -430,6 +461,13 @@ if tests.utils.BACKEND_NAME != 'INTERPRETER':
     # ONNX ValidationError
     backend_test.exclude('test_mnist_opset1')
     backend_test.exclude('test_tiny_yolov2_opset1')
+    backend_test.exclude('test_yolov3_opset10')
+
+    # Use of unsupported domain: ai.onnx.ml
+    pytest.mark.skip(test_cases.test_bidaf_opset9_cpu)
+
+    # Not yet supported
+    backend_test.exclude('test_ssd_opset10')
 
     # Tests which fail on the INTELGPU backend
     if tests.utils.BACKEND_NAME == 'INTELGPU':
