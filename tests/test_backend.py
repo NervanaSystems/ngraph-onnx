@@ -119,11 +119,6 @@ pytest.mark.xfail(OnnxBackendNodeModelTest.test_compress_default_axis_cpu)
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_compress_0_cpu)
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_compress_1_cpu)
 
-# Eyelike -> NGONNX-439
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_eyelike_populate_off_main_diagonal_cpu)
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_eyelike_with_dtype_cpu)
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_eyelike_without_dtype_cpu)
-
 # Isnan -> NGONNX-440
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_isnan_cpu)
 
