@@ -109,6 +109,8 @@ pytest.mark.xfail(OnnxBackendNodeModelTest.test_cast_FLOAT_to_STRING_cpu)
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_cast_STRING_to_FLOAT_cpu)
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_cast_DOUBLE_to_FLOAT16_cpu)
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_cast_FLOAT_to_FLOAT16_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_cast_FLOAT16_to_DOUBLE_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_cast_FLOAT16_to_FLOAT_cpu)
 
 # Scan -> NGONNX-433
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_scan9_sum_cpu)
