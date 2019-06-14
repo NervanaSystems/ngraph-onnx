@@ -51,9 +51,6 @@ backend_test.exclude('test_operator_lstm')
 # GRU -> NC-325
 backend_test.exclude('test_gru')
 
-# MeanVarianceNormalization -> NC-328
-backend_test.exclude('test_mvn')
-
 # Tests which fail on the CPU backend -> NC-330
 if selected_backend_name == 'CPU':
     backend_test.exclude('test_Conv3d_dilated')
