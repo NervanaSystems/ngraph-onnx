@@ -249,7 +249,6 @@ pytest.mark.xfail(OnnxBackendNodeModelTest.test_upsample_nearest_cpu)
 
 # Tests which fail on the INTELGPU backend
 if selected_backend_name == 'INTELGPU':
-    pytest.mark.xfail(OnnxBackendNodeModelTest.test_dynamic_slice_start_out_of_bounds_cpu)
     pytest.mark.xfail(OnnxBackendNodeModelTest.test_edge_pad_cpu)
     pytest.mark.xfail(OnnxBackendNodeModelTest.test_erf_cpu)
     pytest.mark.xfail(OnnxBackendNodeModelTest.test_gather_0_cpu)
