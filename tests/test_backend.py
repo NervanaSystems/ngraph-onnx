@@ -83,7 +83,6 @@ globals().update(backend_test.enable_report().test_cases)
 # PyTorch Operator tests -> NC-329
 pytest.mark.xfail(OnnxBackendPyTorchOperatorModelTest.test_operator_repeat_cpu)
 pytest.mark.xfail(OnnxBackendPyTorchOperatorModelTest.test_operator_repeat_dim_overflow_cpu)
-pytest.mark.xfail(OnnxBackendPyTorchOperatorModelTest.test_operator_symbolic_override_cpu)
 
 # Dynamic Expand -> NGONNX-367
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_expand_dim_changed_cpu)
@@ -138,11 +137,6 @@ pytest.mark.xfail(OnnxBackendNodeModelTest.test_scatter_without_axis_cpu)
 # Max unpool -> NGONNX-447
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_maxunpool_export_with_output_shape_cpu)
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_maxunpool_export_without_output_shape_cpu)
-
-# Shrink -> NGONNX-449
-pytest.mark.xfail(OnnxBackendSimpleModelTest.test_shrink_cpu)
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_shrink_hard_cpu)
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_shrink_soft_cpu)
 
 # OneHot -> NGONNX-453
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_onehot_with_axis_cpu)
@@ -243,8 +237,6 @@ pytest.mark.xfail(OnnxBackendNodeModelTest.test_roialign_cpu)
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_top_k_cpu)
 
 # Other tests
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_instancenorm_epsilon_cpu)
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_instancenorm_example_cpu)
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_upsample_nearest_cpu)
 
 # Tests which fail on the INTELGPU backend
