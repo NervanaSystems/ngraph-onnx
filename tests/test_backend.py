@@ -108,6 +108,8 @@ pytest.mark.xfail(OnnxBackendNodeModelTest.test_cast_FLOAT_to_STRING_cpu)
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_cast_STRING_to_FLOAT_cpu)
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_cast_DOUBLE_to_FLOAT16_cpu)
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_cast_FLOAT_to_FLOAT16_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_cast_FLOAT16_to_DOUBLE_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_cast_FLOAT16_to_FLOAT_cpu)
 
 # Scan -> NGONNX-433
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_scan9_sum_cpu)
@@ -117,11 +119,6 @@ pytest.mark.xfail(OnnxBackendNodeModelTest.test_scan_sum_cpu)
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_compress_default_axis_cpu)
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_compress_0_cpu)
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_compress_1_cpu)
-
-# Eyelike -> NGONNX-439
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_eyelike_populate_off_main_diagonal_cpu)
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_eyelike_with_dtype_cpu)
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_eyelike_without_dtype_cpu)
 
 # Isnan -> NGONNX-440
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_isnan_cpu)
