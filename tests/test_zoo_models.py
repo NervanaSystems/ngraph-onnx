@@ -490,5 +490,12 @@ if tests.utils.BACKEND_NAME != 'INTERPRETER':
         pytest.mark.xfail(test_cases.test_vgg19_opset8_cpu)
         pytest.mark.xfail(test_cases.test_vgg19_opset9_cpu)
 
+    if tests.utils.BACKEND_NAME == 'PlaidML':
+        pytest.mark.xfail(test_cases.test_densenet121_opset3_cpu)
+        pytest.mark.xfail(test_cases.test_densenet121_opset6_cpu)
+        pytest.mark.xfail(test_cases.test_densenet121_opset7_cpu)
+        pytest.mark.xfail(test_cases.test_densenet121_opset8_cpu)
+        pytest.mark.xfail(test_cases.test_densenet121_opset9_cpu)
+
     del test_cases
     globals().update(backend_test.enable_report().test_cases)
