@@ -7,22 +7,24 @@ Learn how to use nGraph to accelerate inference on ONNX workloads.
 This Get Started tutorial is divided into two parts: a) installation and b)
 examples of how to use nGraph with ONNX.
 
-* [Installation](#installation)
-    * [Software requirements](#software-requirements)
-    * [Use pre-built packages](#install-pre-built-packages)
-    * [Build nGraph from source](#build-from-source)
-* [Examples](#examples)
-    * [Run inference on a model](#run-inference-on-a-model)
-    * [Add a GPU backend](#add-a-gpu-backend)
-* [Debugging](#debugging)
-* [Support](#support)
-* [How to contribute](#how-to-contribute)
+*   [Installation](#installation)
+    *   [Software requirements](#software-requirements)
+    *   [Use pre-built packages](#install-pre-built-packages)
+    *   [Build nGraph from source](#build-from-source)
+
+*   [Examples](#examples)
+    *   [Run inference on a model](#run-inference-on-a-model)
+    *   [Add a GPU backend](#add-a-gpu-backend)
+
+*   [Debugging](#debugging)
+*   [Support](#support)
+*   [How to contribute](#how-to-contribute)
 
 ## Installation
 ### Software requirements
 
-* Python 3.4 or higher
-* Protocol Buffers (protobuf) `v.2.6.1` or higher 
+*   Python 3.4 or higher
+*   Protocol Buffers (protobuf) `v.2.6.1` or higher 
 
 Install protobuf for Ubuntu:
 
@@ -44,68 +46,65 @@ Install `ngraph-onnx`:
 
     pip install ngraph-onnx 
  
-
 ### Build from source
 
 Complete the following steps to build nGraph with Python bindings from source.
 
 These steps have been tested on Ubuntu 18.04.
 
-1. Prepare your system:
+1.  Prepare your system:
 
- ```
-# apt update
-# apt install python3 python3-pip python3-dev python-virtualenv
-# apt install build-essential cmake curl clang-3.9 git zlib1g zlib1g-dev libtinfo-dev unzip autoconf automake libtool
- ```
 
-2. Clone nGraph's `master` branch. Build and install it into
+        # apt update
+        # apt install python3 python3-pip python3-dev python-virtualenv
+        # apt install build-essential cmake curl clang-3.9 git zlib1g zlib1g-dev libtinfo-dev unzip autoconf automake libtool
+ 
+
+2.  Clone nGraph's `master` branch. Build and install it into
 `$HOME/ngraph_dist`:
  
- ```
-$ cd # Change directory to where you would like to clone nGraph sources
-$ git clone -b master --single-branch --depth 1 https://github.com/NervanaSystems/ngraph.git
-$ mkdir ngraph/build && cd ngraph/build
-$ cmake ../ -DCMAKE_INSTALL_PREFIX=$HOME/ngraph_dist -DNGRAPH_ONNX_IMPORT_ENABLE=TRUE -DNGRAPH_USE_PREBUILT_LLVM=TRUE 
-$ make
-$ make install
- ```
-
-3. Prepare a Python virtual environment for nGraph (recommended):
  
- ```
-$ mkdir -p ~/.virtualenvs && cd ~/.virtualenvs
-$ virtualenv -p $(which python3) nGraph
-$ source nGraph/bin/activate
-(nGraph) $ 
- ```
+        $ cd # Change directory to where you would like to clone nGraph sources
+        $ git clone -b master --single-branch --depth 1 https://github.com/NervanaSystems/ngraph.git
+        $ mkdir ngraph/build && cd ngraph/build
+        $ cmake ../ -DCMAKE_INSTALL_PREFIX=$HOME/ngraph_dist -DNGRAPH_ONNX_IMPORT_ENABLE=TRUE -DNGRAPH_USE_PREBUILT_LLVM=TRUE 
+        $ make
+        $ make install
+
+3.  Prepare a Python virtual environment for nGraph (recommended):
+ 
+ 
+        $ mkdir -p ~/.virtualenvs && cd ~/.virtualenvs
+        $ virtualenv -p $(which python3) nGraph
+        $ source nGraph/bin/activate
+        (nGraph) $ 
 
  `(nGraph)` indicates that you have created and activated a Python virtual 
  environment called `nGraph`.
 
-4. Build a Python package (Binary wheel) for nGraph:
- 
- ```
-(nGraph) $ cd # Change directory to where you have cloned nGraph sources
-(nGraph) $ cd ngraph/python
-(nGraph) $ git clone --recursive https://github.com/jagerman/pybind11.git
-(nGraph) $ export PYBIND_HEADERS_PATH=$PWD/pybind11
-(nGraph) $ export NGRAPH_CPP_BUILD_PATH=$HOME/ngraph_dist
-(nGraph) $ export NGRAPH_ONNX_IMPORT_ENABLE=TRUE
-(nGraph) $ pip install numpy
-(nGraph) $ python setup.py bdist_wheel
- ```
+4.  Build a Python package (Binary wheel) for nGraph:
+
+
+        (nGraph) $ cd # Change directory to where you have cloned nGraph sources
+        (nGraph) $ cd ngraph/python
+        (nGraph) $ git clone --recursive https://github.com/jagerman/pybind11.git
+        (nGraph) $ export PYBIND_HEADERS_PATH=$PWD/pybind11
+        (nGraph) $ export NGRAPH_CPP_BUILD_PATH=$HOME/ngraph_dist
+        (nGraph) $ export NGRAPH_ONNX_IMPORT_ENABLE=TRUE
+        (nGraph) $ pip install numpy
+        (nGraph) $ python setup.py bdist_wheel
+
 For additional information on how to build nGraph Python bindings see:
 
 https://github.com/NervanaSystems/ngraph/blob/master/python/README.md
 
-4. Once the Python binary wheel file `ngraph-*.whl` is prepared, install it
+4.  Once the Python binary wheel file `ngraph-*.whl` is prepared, install it
 using pip. For example:
 
- ```
-(nGraph) $ pip install -U dist/ngraph_core-0.0.0.dev0-cp36-cp36m-linux_x86_64.whl
- ```
-5. Check that nGraph is properly installed in your Python shell:
+ 
+        (nGraph) $ pip install -U dist/ngraph_core-0.0.0.dev0-cp36-cp36m-linux_x86_64.whl
+ 
+5.  Check that nGraph is properly installed in your Python shell:
 
 ```python
 >>> import ngraph as ng
@@ -113,7 +112,7 @@ using pip. For example:
 <Abs: 'Abs_1' ([2, 3])>
 ```
 
-6. Additionally, check that nGraph and nGraph's Python wheel were
+6.  Additionally, check that nGraph and nGraph's Python wheel were
 both built with  the `NGRAPH_ONNX_IMPORT_ENABLE` option:
 
 ```python
@@ -219,7 +218,5 @@ Execute your model by calling the created `Computation` object with input data.
 
 ## How to contribute
 
-[onnx]: http://onnx.ai/
 [onnx_model_zoo]: https://github.com/onnx/models
 [ngraph_github]: https://github.com/NervanaSystems/ngraph
-[building]: https://github.com/NervanaSystems/ngraph-onnx/blob/master/BUILDING.md
