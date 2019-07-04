@@ -5,28 +5,24 @@ Learn how to use nGraph to accelerate inference on ONNX workloads.
 ## Overview
 
 This Get Started tutorial is divided into two parts: a) installation and b)
-examples of how to use nGraph with ONNX.
+an example of how to use nGraph to accelerate inference on an ONNX workload.
 
 *   [Installation](#installation)
     *   [Software requirements](#software-requirements)
     *   [Use pre-built packages](#install-pre-built-packages)
     *   [Build nGraph from source](#build-from-source)
-
-*   [Examples](#examples)
-    *   [Run inference on a model](#run-inference-on-a-model)
-    *   [Add a GPU backend](#add-a-gpu-backend)
-
-*   [Debugging](#debugging)
+*   [Run inference on a model](#run-inference-on-a-model)
 *   [Support](#support)
-*   [How to contribute](#how-to-contribute)
 
 ## Installation
+
 ### Software requirements
 
 *   Python 3.4 or higher
-*   Protocol Buffers (protobuf) `v.2.6.1` or higher 
+*   Protocol Buffers (protobuf) `v.2.6.1` or higher
+*   [OpenCL runtime][opencl-drivers] (required only if you plan to use nGraph     with an Intel GPU backend)
 
-Install protobuf for Ubuntu:
+#### Install protobuf for Ubuntu
 
     # apt update
     # apt install protobuf-compiler libprotobuf-dev
@@ -34,7 +30,7 @@ Install protobuf for Ubuntu:
 ### Install pre-built packages
 
 The easiest way to install `ngraph` and `ngraph-onnx` is to use our pre-built
-packages from PyPI.
+packages from PyPI. Pre-built packages include the CPU backend and Intel GPU backend. 
 
 **Note**: Currently, we do not have pre-built packages (binaries) for macOS.
 
@@ -48,63 +44,58 @@ Install `ngraph-onnx`:
  
 ### Build from source
 
-Complete the following steps to build nGraph with Python bindings from source.
+Complete the following steps to build nGraph with Python bindings from source. These steps have been tested on Ubuntu 18.04.
 
-These steps have been tested on Ubuntu 18.04.
+Prepare your system:
 
-1.  Prepare your system:
-
-
-        # apt update
-        # apt install python3 python3-pip python3-dev python-virtualenv
-        # apt install build-essential cmake curl clang-3.9 git zlib1g zlib1g-dev libtinfo-dev unzip autoconf automake libtool
+    # apt update
+    # apt install python3 python3-pip python3-dev python-virtualenv
+    # apt install build-essential cmake curl clang-3.9 git zlib1g zlib1g-dev libtinfo-dev unzip autoconf automake libtool
  
-
-2.  Clone nGraph's `master` branch. Build and install it into
+Clone nGraph's `master` branch. Build and install it into
 `$HOME/ngraph_dist`:
  
+    $ cd # Change directory to where you would like to clone nGraph sources
+    $ git clone -b master --single-branch --depth 1 https://github.com/NervanaSystems/ngraph.git
+    $ mkdir ngraph/build && cd ngraph/build
+    $ cmake ../ -DCMAKE_INSTALL_PREFIX=$HOME/ngraph_dist -DNGRAPH_ONNX_IMPORT_ENABLE=TRUE -DNGRAPH_USE_PREBUILT_LLVM=TRUE 
+    $ make
+    $ make install
+
+To build nGraph with an Intel GPU backend, add `-DNGRAPH_INTELGPU_ENABLE=TRUE` to the cmake command. For example: 
+
+    $ cmake ../ -DCMAKE_INSTALL_PREFIX=$HOME/ngraph_dist -DNGRAPH_ONNX_IMPORT_ENABLE=TRUE -DNGRAPH_USE_PREBUILT_LLVM=TRUE -DNGRAPH_INTELGPU_ENABLE=TRUE
+
+Prepare a Python virtual environment for nGraph (recommended):
  
-        $ cd # Change directory to where you would like to clone nGraph sources
-        $ git clone -b master --single-branch --depth 1 https://github.com/NervanaSystems/ngraph.git
-        $ mkdir ngraph/build && cd ngraph/build
-        $ cmake ../ -DCMAKE_INSTALL_PREFIX=$HOME/ngraph_dist -DNGRAPH_ONNX_IMPORT_ENABLE=TRUE -DNGRAPH_USE_PREBUILT_LLVM=TRUE 
-        $ make
-        $ make install
+    $ mkdir -p ~/.virtualenvs && cd ~/.virtualenvs
+    $ virtualenv -p $(which python3) nGraph
+    $ source nGraph/bin/activate
+    (nGraph) $ 
+    
+`(nGraph)` indicates that you have created and activated a Python virtual 
+environment called `nGraph`.
 
-3.  Prepare a Python virtual environment for nGraph (recommended):
+Build a Python package (Binary wheel) for nGraph:
+
+    (nGraph) $ cd # Change directory to where you have cloned nGraph sources
+    (nGraph) $ cd ngraph/python
+    (nGraph) $ git clone --recursive https://github.com/jagerman/pybind11.git
+    (nGraph) $ export PYBIND_HEADERS_PATH=$PWD/pybind11
+    (nGraph) $ export NGRAPH_CPP_BUILD_PATH=$HOME/ngraph_dist
+    (nGraph) $ export NGRAPH_ONNX_IMPORT_ENABLE=TRUE
+    (nGraph) $ pip install numpy
+    (nGraph) $ python setup.py bdist_wheel
+
+For additional information on how to build nGraph Python bindings see the
+[Python API documentation][python_api].
+
+Once the Python binary wheel file `ngraph-*.whl` is prepared, install it using
+pip. For example:
+
+    (nGraph) $ pip install -U dist/ngraph_core-0.0.0.dev0-cp36-cp36m-linux_x86_64.whl
  
- 
-        $ mkdir -p ~/.virtualenvs && cd ~/.virtualenvs
-        $ virtualenv -p $(which python3) nGraph
-        $ source nGraph/bin/activate
-        (nGraph) $ 
-
- `(nGraph)` indicates that you have created and activated a Python virtual 
- environment called `nGraph`.
-
-4.  Build a Python package (Binary wheel) for nGraph:
-
-
-        (nGraph) $ cd # Change directory to where you have cloned nGraph sources
-        (nGraph) $ cd ngraph/python
-        (nGraph) $ git clone --recursive https://github.com/jagerman/pybind11.git
-        (nGraph) $ export PYBIND_HEADERS_PATH=$PWD/pybind11
-        (nGraph) $ export NGRAPH_CPP_BUILD_PATH=$HOME/ngraph_dist
-        (nGraph) $ export NGRAPH_ONNX_IMPORT_ENABLE=TRUE
-        (nGraph) $ pip install numpy
-        (nGraph) $ python setup.py bdist_wheel
-
-For additional information on how to build nGraph Python bindings see:
-
-https://github.com/NervanaSystems/ngraph/blob/master/python/README.md
-
-4.  Once the Python binary wheel file `ngraph-*.whl` is prepared, install it
-using pip. For example:
-
- 
-        (nGraph) $ pip install -U dist/ngraph_core-0.0.0.dev0-cp36-cp36m-linux_x86_64.whl
- 
-5.  Check that nGraph is properly installed in your Python shell:
+Check that nGraph is properly installed in your Python shell:
 
 ```python
 >>> import ngraph as ng
@@ -112,7 +103,7 @@ using pip. For example:
 <Abs: 'Abs_1' ([2, 3])>
 ```
 
-6.  Additionally, check that nGraph and nGraph's Python wheel were
+Additionally, check that nGraph and nGraph's Python wheel were
 both built with  the `NGRAPH_ONNX_IMPORT_ENABLE` option:
 
 ```python
@@ -123,9 +114,9 @@ If you don't see any errors, nGraph should be installed correctly.
 
 #### Install ngraph-onnx
 
-`ngraph-onnx` is an additional Python library that provides a Python API for
-running ONNX models using nGraph.  You can install `ngraph-onnx` using the
-following commands.
+`ngraph-onnx` is an additional Python library that provides a Python API to run ONNX models using nGraph. 
+
+To install `ngraph-onnx`:
 
 Clone `ngraph-onnx` sources to the same directory where you cloned `ngraph` 
 sources.
@@ -141,21 +132,18 @@ In your Python virtual environment, install the required packages and
     (nGraph) $ pip install -r requirements_test.txt
     (nGraph) $ pip install -e .
 
-To verify that `ngraph-onnx` installed correctly, you can run our test suite
-using:
+To verify that `ngraph-onnx` installed correctly, you can run our test suite using:
 
     (nGraph) $ pytest tests/ --backend=CPU -v
     (nGraph) $ NGRAPH_BACKEND=CPU TOX_INSTALL_NGRAPH_FROM=../ngraph/python tox
 
-### Examples
-
-#### Run inference on a model
+### Run inference on a model
 
 After installing `ngraph-onnx` from source, you can run inference on an
 ONNX model. The model is a file which contains a graph representing a
 mathematical formula (e.g., a function such as y = f(x)). 
 
-##### Import an ONNX model
+#### Import an ONNX model
 
 Download models from the [ONNX model zoo][onnx_model_zoo]. For example,
 ResNet-50:
@@ -163,8 +151,8 @@ ResNet-50:
     $ wget https://s3.amazonaws.com/download.onnx/models/opset_8/resnet50.tar.gz
     $ tar -xzvf resnet50.tar.gz
 
-Use the following Python commands to convert the downloaded model to an nGraph
-model:
+Use the following Python commands to convert the downloaded model to an
+nGraph model:
 
 ```python
 # Import ONNX and load an ONNX file from disk
@@ -183,14 +171,14 @@ model:
 This creates an nGraph `Function` object, which can be used to execute a
 computation on a chosen backend.
 
-##### Run a computation
+#### Run the computation
 
 An ONNX model usually contains a trained neural network. To run inference on
 this model, you execute the computation contained within the model.
 
-After importing an ONNX model, you will have an nGraph `Function` object.  Now
-you can create an nGraph `Runtime` backend and use it to compile your `Function`
-to a backend-specific `Computation` object.
+After importing an ONNX model, you will have an nGraph `Function` object.
+Now you can create an nGraph `Runtime` backend and use it to compile your
+`Function` to a backend-specific `Computation` object.
 
 Execute your model by calling the created `Computation` object with input data.
 
@@ -210,13 +198,16 @@ Execute your model by calling the created `Computation` object with input data.
          7.45318757e-05, 4.80892748e-04, 5.67404088e-04, 9.48728994e-05,
          ...
 ```
-#### Add a GPU backend
 
-## Debugging
+For running the computation on an Intel GPU, use the following line to create the runtime: 
+```python
+runtime = ng.runtime(backend_name='INTELGPU')
+```
 
 ## Support
-
-## How to contribute
+If you encounter any problems with this tutorial, please submit a ticket to our [issues][issues] page on GitHub.
 
 [onnx_model_zoo]: https://github.com/onnx/models
-[ngraph_github]: https://github.com/NervanaSystems/ngraph
+[python_api]: https://github.com/NervanaSystems/ngraph/blob/master/python/README.md
+[opencl-drivers]: https://software.intel.com/en-us/articles/opencl-drivers
+[issues]: https://github.com/NervanaSystems/ngraph/issues
