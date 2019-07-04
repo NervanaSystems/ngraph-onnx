@@ -5,7 +5,7 @@ Learn how to use nGraph to accelerate inference on ONNX workloads.
 ## Overview
 
 This Get Started tutorial is divided into two parts: a) installation and b)
-an example of how to use nGraph to accelerate inference on an ONNX workload.
+an example of how to use nGraph to accelerate inference on an ONNX model.
 
 *   [Installation](#installation)
     *   [Software requirements](#software-requirements)
@@ -20,7 +20,8 @@ an example of how to use nGraph to accelerate inference on an ONNX workload.
 
 *   Python 3.4 or higher
 *   Protocol Buffers (protobuf) `v.2.6.1` or higher
-*   [OpenCL runtime][opencl-drivers] (required only if you plan to use nGraph     with an Intel GPU backend)
+*   [OpenCL runtime][opencl-drivers] (required only if you plan to use nGraph with
+    an Intel GPU backend)
 
 #### Install protobuf for Ubuntu
 
@@ -30,7 +31,8 @@ an example of how to use nGraph to accelerate inference on an ONNX workload.
 ### Install pre-built packages
 
 The easiest way to install `ngraph` and `ngraph-onnx` is to use our pre-built
-packages from PyPI. Pre-built packages include the CPU backend and Intel GPU backend. 
+packages from PyPI. Pre-built packages include the CPU backend and Intel GPU
+backend. 
 
 **Note**: Currently, we do not have pre-built packages (binaries) for macOS.
 
@@ -44,7 +46,8 @@ Install `ngraph-onnx`:
  
 ### Build from source
 
-Complete the following steps to build nGraph with Python bindings from source. These steps have been tested on Ubuntu 18.04.
+Complete the following steps to build nGraph with Python bindings from source.
+These steps have been tested on Ubuntu 18.04.
 
 Prepare your system:
 
@@ -62,7 +65,8 @@ Clone nGraph's `master` branch. Build and install it into
     $ make
     $ make install
 
-To build nGraph with an Intel GPU backend, add `-DNGRAPH_INTELGPU_ENABLE=TRUE` to the cmake command. For example: 
+To build nGraph with an Intel GPU backend, add `-DNGRAPH_INTELGPU_ENABLE=TRUE`
+to the cmake command. For example: 
 
     $ cmake ../ -DCMAKE_INSTALL_PREFIX=$HOME/ngraph_dist -DNGRAPH_ONNX_IMPORT_ENABLE=TRUE -DNGRAPH_USE_PREBUILT_LLVM=TRUE -DNGRAPH_INTELGPU_ENABLE=TRUE
 
@@ -114,7 +118,8 @@ If you don't see any errors, nGraph should be installed correctly.
 
 #### Install ngraph-onnx
 
-`ngraph-onnx` is an additional Python library that provides a Python API to run ONNX models using nGraph. 
+`ngraph-onnx` is an additional Python library that provides a Python API to run
+ONNX models using nGraph. 
 
 To install `ngraph-onnx`:
 
@@ -132,7 +137,8 @@ In your Python virtual environment, install the required packages and
     (nGraph) $ pip install -r requirements_test.txt
     (nGraph) $ pip install -e .
 
-To verify that `ngraph-onnx` installed correctly, you can run our test suite using:
+To verify that `ngraph-onnx` installed correctly, you can run our test suite
+using:
 
     (nGraph) $ pytest tests/ --backend=CPU -v
     (nGraph) $ NGRAPH_BACKEND=CPU TOX_INSTALL_NGRAPH_FROM=../ngraph/python tox
@@ -199,13 +205,16 @@ Execute your model by calling the created `Computation` object with input data.
          ...
 ```
 
-For running the computation on an Intel GPU, use the following line to create the runtime: 
+For running the computation on an Intel GPU, use the following line to create
+the runtime:  
+
 ```python
 runtime = ng.runtime(backend_name='INTELGPU')
 ```
 
 ## Support
-If you encounter any problems with this tutorial, please submit a ticket to our [issues][issues] page on GitHub.
+If you encounter any problems with this tutorial, please submit a ticket to our
+[issues][issues] page on GitHub.
 
 [onnx_model_zoo]: https://github.com/onnx/models
 [python_api]: https://github.com/NervanaSystems/ngraph/blob/master/python/README.md
