@@ -255,7 +255,7 @@ zoo_models = [
         'rtol': 0.001,
         'url': _S3_DOWNLOAD_ONNX + 'opset_9/inception_v2.tar.gz',
     },
-    
+
     # Mask R-CNN
     {'model_name': 'mask_rcnn_opset10', 'url': _WINDOWS_NET + 'opset_10/mask_rcnn/mask_rcnn_R_50_FPN_1x.tar.gz'},
 
