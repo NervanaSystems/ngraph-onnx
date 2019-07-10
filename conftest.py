@@ -22,10 +22,15 @@ def pytest_addoption(parser):
     parser.addoption('--backend', default='CPU',
                      choices=['INTERPRETER', 'CPU', 'GPU', 'NNP', 'PlaidML', 'INTELGPU'],
                      help='Select from available backends')
+    parser.addoption('--config', default=None,
+                     help='Supplies a backend configuration string')
 
 
 def pytest_configure(config):
     backend_name = config.getvalue('backend')
+    backend_config = config.getvalue('config')
+    if backend_config:
+        backend_name = '{}:{}'.format(backend_name, backend_config)
     tests.utils.BACKEND_NAME = backend_name
 
 

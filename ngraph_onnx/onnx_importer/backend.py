@@ -53,6 +53,7 @@ class NgraphBackend(Backend):
         ('INTERPRETER', 'CPU'),
         ('ARGON', 'CPU'),
         ('NNP', 'CPU'),
+        ('PLAIDML', 'GPU'),
     ]
 
     @classmethod

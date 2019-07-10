@@ -373,6 +373,7 @@ def test_reduce_sum_square_default_axes():
     assert np.allclose(expected, ng_result)
 
 
+@pytest.mark.skip_on_plaidml(reason='Incorrect results; to be debugged')
 def test_reduce_argmin():
     def argmin(ndarray, axis, keepdims=False):
         res = np.argmin(ndarray, axis=axis)
@@ -396,6 +397,7 @@ def test_reduce_argmin():
                           argmin(data, keepdims=False, axis=2))
 
 
+@pytest.mark.skip_on_plaidml(reason='Incorrect results; to be debugged')
 def test_reduce_argmax():
     def argmax(ndarray, axis, keepdims=False):
         res = np.argmax(ndarray, axis=axis)

@@ -60,6 +60,7 @@ def _get_input_data(*inputs):
 @pytest.mark.skip_on_gpu
 @pytest.mark.skip_on_cpu
 @pytest.mark.skip_on_intelgpu
+@pytest.mark.skip_on_plaidml
 def test_supports_ngraph_device_interpreter():
     assert NgraphBackend.supports_ngraph_device('INTERPRETER')
 
@@ -67,6 +68,7 @@ def test_supports_ngraph_device_interpreter():
 @pytest.mark.skip_on_nnp
 @pytest.mark.skip_on_gpu
 @pytest.mark.skip_on_interpreter
+@pytest.mark.skip_on_plaidml
 def test_supports_ngraph_device_cpu():
     assert NgraphBackend.supports_ngraph_device('CPU')
 
@@ -75,6 +77,7 @@ def test_supports_ngraph_device_cpu():
 @pytest.mark.skip_on_gpu
 @pytest.mark.skip_on_intelgpu
 @pytest.mark.skip_on_interpreter
+@pytest.mark.skip_on_plaidml
 def test_supports_ngraph_device_nnp():
     assert NgraphBackend.supports_ngraph_device('NNP')
 
@@ -83,6 +86,7 @@ def test_supports_ngraph_device_nnp():
 @pytest.mark.skip_on_cpu
 @pytest.mark.skip_on_intelgpu
 @pytest.mark.skip_on_interpreter
+@pytest.mark.skip_on_plaidml
 def test_supports_ngraph_device_gpu():
     assert NgraphBackend.supports_ngraph_device('GPU')
 
@@ -91,6 +95,7 @@ def test_supports_ngraph_device_gpu():
 @pytest.mark.skip_on_cpu
 @pytest.mark.skip_on_intelgpu
 @pytest.mark.skip_on_interpreter
+@pytest.mark.skip_on_plaidml
 def test_supports_device_gpu():
     assert NgraphBackend.supports_device('CUDA')
 
