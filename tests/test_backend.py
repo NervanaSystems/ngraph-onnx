@@ -65,10 +65,6 @@ backend_test.exclude('test_squeezenet')
 backend_test.exclude('test_vgg19')
 backend_test.exclude('test_zfnet512')
 
-# Tests which fail or are very slow on the INTERPRETER backend
-if selected_backend_name == 'INTERPRETER':
-    backend_test.exclude('test_operator_conv_cpu')
-
 OnnxBackendNodeModelTest = None
 OnnxBackendSimpleModelTest = None
 OnnxBackendPyTorchOperatorModelTest = None
@@ -248,6 +244,15 @@ if selected_backend_name == 'INTELGPU':
     pytest.mark.xfail(OnnxBackendPyTorchConvertedModelTest.test_ReflectionPad2d_cpu)
     pytest.mark.xfail(OnnxBackendPyTorchConvertedModelTest.test_ReplicationPad2d_cpu)
     pytest.mark.xfail(OnnxBackendPyTorchOperatorModelTest.test_operator_pad_cpu)
+
+# Tests which fail or are very slow on the INTERPRETER backend
+if selected_backend_name == 'INTERPRETER':
+    backend_test.exclude('test_operator_conv_cpu')
+    # Cast -> NGONNX-427
+    pytest.mark.xfail(OnnxBackendNodeModelTest.test_cast_DOUBLE_to_FLOAT16_cpu)
+    pytest.mark.xfail(OnnxBackendNodeModelTest.test_cast_FLOAT_to_FLOAT16_cpu)
+    pytest.mark.xfail(OnnxBackendNodeModelTest.test_cast_FLOAT16_to_DOUBLE_cpu)
+    pytest.mark.xfail(OnnxBackendNodeModelTest.test_cast_FLOAT16_to_FLOAT_cpu)
 
 if selected_backend_name == 'CPU':
     # Cast -> NGONNX-427
