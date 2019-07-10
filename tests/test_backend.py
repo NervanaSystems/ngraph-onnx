@@ -282,4 +282,4 @@ if selected_backend_name == 'PlaidML':
     pytest.mark.xfail(OnnxBackendNodeModelTest.test_hardmax_one_hot_cpu)
     pytest.mark.xfail(OnnxBackendNodeModelTest.test_reflect_pad_cpu)
     # Test which fail on PlaidML with INTELGPU
-    pytest.mark.xfail(OnnxBackendNodeModelTest.test_operator_pow_cpu)
+    pytest.mark.xfail(OnnxBackendPyTorchOperatorModelTest.test_operator_pow_cpu)
