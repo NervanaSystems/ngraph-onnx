@@ -54,11 +54,6 @@ backend_test.exclude('test_gru')
 # MeanVarianceNormalization -> NC-328
 backend_test.exclude('test_mvn')
 
-# Tests which fail on the CPU backend -> NC-330
-if selected_backend_name == 'CPU':
-    backend_test.exclude('test_Conv3d_dilated')
-    backend_test.exclude('test_Conv3d_dilated_strided')
-
 # Big model tests (see test_zoo_models.py):
 backend_test.exclude('test_bvlc_alexnet')
 backend_test.exclude('test_densenet121')
@@ -83,7 +78,6 @@ globals().update(backend_test.enable_report().test_cases)
 # PyTorch Operator tests -> NC-329
 pytest.mark.xfail(OnnxBackendPyTorchOperatorModelTest.test_operator_repeat_cpu)
 pytest.mark.xfail(OnnxBackendPyTorchOperatorModelTest.test_operator_repeat_dim_overflow_cpu)
-pytest.mark.xfail(OnnxBackendPyTorchOperatorModelTest.test_operator_symbolic_override_cpu)
 
 # Dynamic Expand -> NGONNX-367
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_expand_dim_changed_cpu)
@@ -107,10 +101,6 @@ pytest.mark.xfail(OnnxBackendNodeModelTest.test_tile_precomputed_cpu)
 # Cast -> NGONNX-427
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_cast_FLOAT_to_STRING_cpu)
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_cast_STRING_to_FLOAT_cpu)
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_cast_DOUBLE_to_FLOAT16_cpu)
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_cast_FLOAT_to_FLOAT16_cpu)
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_cast_FLOAT16_to_DOUBLE_cpu)
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_cast_FLOAT16_to_FLOAT_cpu)
 
 # Scan -> NGONNX-433
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_scan9_sum_cpu)
@@ -135,11 +125,6 @@ pytest.mark.xfail(OnnxBackendNodeModelTest.test_scatter_without_axis_cpu)
 # Max unpool -> NGONNX-447
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_maxunpool_export_with_output_shape_cpu)
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_maxunpool_export_without_output_shape_cpu)
-
-# Shrink -> NGONNX-449
-pytest.mark.xfail(OnnxBackendSimpleModelTest.test_shrink_cpu)
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_shrink_hard_cpu)
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_shrink_soft_cpu)
 
 # OneHot -> NGONNX-453
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_onehot_with_axis_cpu)
@@ -240,8 +225,6 @@ pytest.mark.xfail(OnnxBackendNodeModelTest.test_roialign_cpu)
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_top_k_cpu)
 
 # Other tests
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_instancenorm_epsilon_cpu)
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_instancenorm_example_cpu)
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_upsample_nearest_cpu)
 
 # Tests which fail on the INTELGPU backend
@@ -266,6 +249,16 @@ if selected_backend_name == 'INTELGPU':
     pytest.mark.xfail(OnnxBackendPyTorchConvertedModelTest.test_ReplicationPad2d_cpu)
     pytest.mark.xfail(OnnxBackendPyTorchOperatorModelTest.test_operator_pad_cpu)
 
+if selected_backend_name == "CPU":
+    # Cast -> NGONNX-427
+    pytest.mark.xfail(OnnxBackendNodeModelTest.test_cast_DOUBLE_to_FLOAT16_cpu)
+    pytest.mark.xfail(OnnxBackendNodeModelTest.test_cast_FLOAT_to_FLOAT16_cpu)
+    pytest.mark.xfail(OnnxBackendNodeModelTest.test_cast_FLOAT16_to_DOUBLE_cpu)
+    pytest.mark.xfail(OnnxBackendNodeModelTest.test_cast_FLOAT16_to_FLOAT_cpu)
+    # Tests which fail on the CPU backend -> NC-330
+    backend_test.exclude('test_Conv3d_dilated')
+    backend_test.exclude('test_Conv3d_dilated_strided')
+
 if selected_backend_name == 'PlaidML':
     pytest.mark.xfail(OnnxBackendPyTorchConvertedModelTest.test_Embedding_cpu)
     pytest.mark.xfail(OnnxBackendPyTorchConvertedModelTest.test_Embedding_sparse_cpu)
@@ -287,9 +280,4 @@ if selected_backend_name == 'PlaidML':
     pytest.mark.xfail(OnnxBackendNodeModelTest.test_hardmax_default_axis_cpu)
     pytest.mark.xfail(OnnxBackendNodeModelTest.test_hardmax_example_cpu)
     pytest.mark.xfail(OnnxBackendNodeModelTest.test_hardmax_one_hot_cpu)
-    pytest.mark.xfail(OnnxBackendNodeModelTest.test_lstm_defaults_cpu)
-    pytest.mark.xfail(OnnxBackendNodeModelTest.test_lstm_with_initial_bias_cpu)
-    pytest.mark.xfail(OnnxBackendNodeModelTest.test_lstm_with_peepholes_cpu)
-    pytest.mark.xfail(OnnxBackendNodeModelTest.test_reduce_mean_default_axes_keepdims_example_cpu)
-    pytest.mark.xfail(OnnxBackendNodeModelTest.test_reduce_mean_default_axes_keepdims_random_cpu)
     pytest.mark.xfail(OnnxBackendNodeModelTest.test_reflect_pad_cpu)
