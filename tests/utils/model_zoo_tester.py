@@ -142,4 +142,3 @@ class ModelZooTestRunner(onnx.backend.test.BackendTest):
         finally:
             os.remove(download_file.name)
         return model_dir
-
