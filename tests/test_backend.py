@@ -249,7 +249,7 @@ if selected_backend_name == 'INTELGPU':
     pytest.mark.xfail(OnnxBackendPyTorchConvertedModelTest.test_ReplicationPad2d_cpu)
     pytest.mark.xfail(OnnxBackendPyTorchOperatorModelTest.test_operator_pad_cpu)
 
-if selected_backend_name == "CPU":
+if selected_backend_name == 'CPU':
     # Cast -> NGONNX-427
     pytest.mark.xfail(OnnxBackendNodeModelTest.test_cast_DOUBLE_to_FLOAT16_cpu)
     pytest.mark.xfail(OnnxBackendNodeModelTest.test_cast_FLOAT_to_FLOAT16_cpu)
