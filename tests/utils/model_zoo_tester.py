@@ -19,16 +19,13 @@ import os
 import shutil
 import tarfile
 import tempfile
-import unittest
 from collections import defaultdict
 from six.moves.urllib.request import urlretrieve, urlopen
-from typing import Type, List, Dict, Optional, Set, Pattern, Text, Union, Any
+from typing import Type, List, Dict, Optional, Set, Pattern, Text
 
-import numpy as np
 import onnx.backend.test
 from onnx.backend.base import Backend
 from onnx.backend.test.runner import TestItem
-from onnx import numpy_helper, NodeProto, ModelProto
 from onnx.backend.test.case.test_case import TestCase as OnnxTestCase
 
 
