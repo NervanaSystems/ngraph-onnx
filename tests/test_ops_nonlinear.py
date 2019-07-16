@@ -90,6 +90,7 @@ def test_parametric_relu(x, slope):
     assert np.allclose(output, expected_output)
 
 
+@pytest.mark.skip_on_plaidml
 def test_selu():
     # f(x) = gamma * (alpha * exp(x) - alpha) for x <= 0, y = gamma * x for x > 0
     def selu(x, alpha=1.67326319217681884765625, gamma=1.05070102214813232421875):
