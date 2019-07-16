@@ -97,6 +97,7 @@ def test_reduce_min():
                           np.min(data, keepdims=False, axis=(0, 1, 2)))
 
 
+@pytest.mark.skip_on_plaidml
 def test_reduce_mean():
     data = np.array([[[5, 1], [20, 2]], [[30, 1], [40, 2]], [[55, 1], [60, 2]]], dtype=np.float32)
 
@@ -302,6 +303,7 @@ def test_reduce_log_sum_default_axes():
     assert np.allclose(expected, ng_result)
 
 
+@pytest.mark.skip_on_plaidml
 def test_reduce_log_sum_exp():
     def logsumexp(data, axis=None, keepdims=True):
         return np.log(np.sum(np.exp(data),
