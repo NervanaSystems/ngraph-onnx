@@ -51,11 +51,6 @@ backend_test.exclude('test_operator_lstm')
 # GRU -> NC-325
 backend_test.exclude('test_gru')
 
-# Tests which fail on the CPU backend -> NC-330
-if selected_backend_name == 'CPU':
-    backend_test.exclude('test_Conv3d_dilated')
-    backend_test.exclude('test_Conv3d_dilated_strided')
-
 # Big model tests (see test_zoo_models.py):
 backend_test.exclude('test_bvlc_alexnet')
 backend_test.exclude('test_densenet121')
