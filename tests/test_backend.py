@@ -51,9 +51,6 @@ backend_test.exclude('test_operator_lstm')
 # GRU -> NC-325
 backend_test.exclude('test_gru')
 
-# MeanVarianceNormalization -> NC-328
-backend_test.exclude('test_mvn')
-
 # Big model tests (see test_zoo_models.py):
 backend_test.exclude('test_bvlc_alexnet')
 backend_test.exclude('test_densenet121')
