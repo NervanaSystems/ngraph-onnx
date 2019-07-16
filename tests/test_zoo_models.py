@@ -467,10 +467,13 @@ if tests.utils.BACKEND_NAME != 'INTERPRETER':
     backend_test.exclude('test_yolov3_opset10')
 
     # Use of unsupported domain: ai.onnx.ml
-    pytest.mark.skip(test_cases.test_bidaf_opset9_cpu)
+    backend_test.exclude('test_bidaf_opset9')
 
-    # Not yet supported
+    # Unsupported ops: ConstantOfShape, NonMaxSuppression
     backend_test.exclude('test_ssd_opset10')
+
+    # Unsupported ops: ConstantOfShape, Expand, NonMaxSuppression, NonZero, Resize, RoiAlign, Scatter
+    backend_test.exclude('test_mask_rcnn_opset10')
 
     # Tests which fail on the INTELGPU backend
     if tests.utils.BACKEND_NAME == 'INTELGPU':
