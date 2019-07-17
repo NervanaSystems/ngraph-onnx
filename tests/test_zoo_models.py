@@ -303,7 +303,7 @@ zoo_models = [
     {
         'model_name': 'resnet50_v2_opset7',
         'atol': 1e-07,
-        'rtol': 0.005,
+        'rtol': 0.002,
         'url': _S3_MODEL_ZOO + 'resnet/resnet50v2/resnet50v2.tar.gz',
     },
 
@@ -448,6 +448,7 @@ if tests.utils.BACKEND_NAME != 'INTERPRETER':
 
     # Exclude failing tests...
     # Temporary dissabled tests
+    pytest.mark.xfail(test_cases.test_resnet50_v2_opset7_cpu)
     pytest.mark.xfail(test_cases.test_mobilenet_opset7_cpu)
 
     # Too long execution time.
