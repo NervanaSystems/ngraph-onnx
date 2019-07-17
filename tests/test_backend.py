@@ -184,10 +184,6 @@ pytest.mark.xfail(OnnxBackendNodeModelTest.test_resize_nearest_cpu)
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_resize_upsample_linear_cpu)
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_resize_upsample_nearest_cpu)
 
-# ReverseSequence - NGONNX-525
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_reversesequence_batch_cpu)
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_reversesequence_time_cpu)
-
 # Dynamic Slice NGONNX-522, 599
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_slice_cpu)
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_slice_default_axes_cpu)
