@@ -256,6 +256,9 @@ zoo_models = [
         'url': _S3_DOWNLOAD_ONNX + 'opset_9/inception_v2.tar.gz',
     },
 
+    # Mask R-CNN
+    {'model_name': 'mask_rcnn_opset10', 'url': _WINDOWS_NET + 'opset_10/mask_rcnn/mask_rcnn_R_50_FPN_1x.tar.gz'},
+
     # MNIST
     {'model_name': 'mnist_opset1', 'url': _WINDOWS_NET + 'opset_1/mnist/mnist.tar.gz'},
     {'model_name': 'mnist_opset7', 'url': _WINDOWS_NET + 'opset_7/mnist/mnist.tar.gz'},
@@ -464,10 +467,13 @@ if tests.utils.BACKEND_NAME != 'INTERPRETER':
     backend_test.exclude('test_yolov3_opset10')
 
     # Use of unsupported domain: ai.onnx.ml
-    pytest.mark.skip(test_cases.test_bidaf_opset9_cpu)
+    backend_test.exclude('test_bidaf_opset9')
 
-    # Not yet supported
+    # Unsupported ops: ConstantOfShape, NonMaxSuppression
     backend_test.exclude('test_ssd_opset10')
+
+    # Unsupported ops: ConstantOfShape, Expand, NonMaxSuppression, NonZero, Resize, RoiAlign, Scatter
+    backend_test.exclude('test_mask_rcnn_opset10')
 
     # Tests which fail on the INTELGPU backend
     if tests.utils.BACKEND_NAME == 'INTELGPU':
