@@ -24,7 +24,7 @@
 # this notice or any other notice embedded in Materials by Intel or Intel's
 # suppliers or licensors in any way.
 
-from slackclient import SlackClient
+import slack
 
 _CI_ALERTS_CHANNEL = 'ngraph-onnx-ci-alerts'
 _INTERNAL_ERRORS_CHANNEL = 'ci-watchdog-internal'
@@ -42,7 +42,6 @@ class SlackCommunicator:
     """
 
     def __init__(self, slack_token):
-        self.thread_id = None
         self.queued_messages = {}
         self.queued_messages[_CI_ALERTS_CHANNEL] = []
         self.queued_messages[_INTERNAL_ERRORS_CHANNEL] = []
@@ -71,14 +70,13 @@ class SlackCommunicator:
             :type channel:      String
         """
         try:
-            self.slack_client.api_call(
-                'chat.postMessage',
-                link_names=1,
+            self.slack_client.chat_postMessage(
+                token=self.slack_token,
+                link_names=True,
                 as_user=False,
                 username='CI_WATCHDOG',
                 channel=channel,
-                text=message,
-                thread_ts=self.thread_id)
+                text=message)
         except Exception:
             print('!!CRITICAL!! SlackCommunicator: Could not send message to ', channel)
             raise
@@ -94,7 +92,7 @@ class SlackCommunicator:
         """
         if self.slack_client is None:
             try:
-                self.slack_client = SlackClient(self.slack_token)
+                self.slack_client = slack.WebClient(self.slack_token)
             except Exception:
                 print('!!CRITICAL!! SlackCommunicator::CRITICAL: Could not create client')
                 raise
