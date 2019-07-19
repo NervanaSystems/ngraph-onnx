@@ -42,7 +42,7 @@ RUN make install
 
 # Build nGraph Wheel
 WORKDIR /root/ngraph/python
-RUN git clone --recursive -b allow-nonconstructible-holders https://github.com/jagerman/pybind11.git
+RUN git clone --recursive https://github.com/pybind/pybind11.git
 ENV NGRAPH_ONNX_IMPORT_ENABLE TRUE
 ENV PYBIND_HEADERS_PATH /root/ngraph/python/pybind11
 ENV NGRAPH_CPP_BUILD_PATH /root/ngraph_dist
