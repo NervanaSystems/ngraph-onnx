@@ -22,7 +22,7 @@ from __future__ import unicode_literals
 import onnx.backend.test
 import pytest
 
-from ngraph_onnx.onnx_importer.backend import NgraphBackend
+import ngraph_onnx.onnx_importer.backend as NgraphBackend
 
 import tests.utils
 
