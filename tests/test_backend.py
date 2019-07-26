@@ -22,20 +22,20 @@ from __future__ import unicode_literals
 import onnx.backend.test
 import pytest
 
-from ngraph_onnx.onnx_importer.backend import NgraphBackend
+import ngraph_onnx.onnx_importer.backend as ng_backend
 
 import tests.utils
 
 # Set backend device name to be used instead of hardcoded by ONNX BackendTest class ones.
 selected_backend_name = tests.utils.BACKEND_NAME
-NgraphBackend.backend_name = selected_backend_name
+ng_backend.NgraphBackend.backend_name = selected_backend_name
 
 # This is a pytest magic variable to load extra plugins
 # Uncomment the line below to enable the ONNX compatibility report
 # pytest_plugins = 'onnx.backend.test.report',
 
 # import all test cases at global scope to make them visible to python.unittest
-backend_test = onnx.backend.test.BackendTest(NgraphBackend, __name__)
+backend_test = onnx.backend.test.BackendTest(ng_backend, __name__)
 
 # MaxPool Indices -> NGRAPH-3131
 backend_test.exclude('test_maxpool_with_argmax')
