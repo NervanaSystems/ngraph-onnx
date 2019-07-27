@@ -14,15 +14,6 @@ pull_request_rules:
         method: squash
         strict: true
 
-  - name: automatic merge for PyUp pull requests
-    conditions:
-      - author=pyup-bot
-      - status-success=continuous-integration/travis-ci/pr
-    actions:
-      merge:
-        method: squash
-        strict: true
-
   - name: delete head branch after merge
     conditions: []
     actions:
