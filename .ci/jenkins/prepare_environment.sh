@@ -1,6 +1,6 @@
 #!/bin/bash
 # INTEL CONFIDENTIAL
-# Copyright 2018-2019 Intel Corporation All Rights Reserved.
+# Copyright 2017-2019 Intel Corporation All Rights Reserved.
 # The source code contained or described herein and all documents related to the
 # source code ("Material") are owned by Intel Corporation or its suppliers or
 # licensors. Title to the Material remains with Intel Corporation or its
@@ -19,30 +19,25 @@
 set -x
 set -e
 
-NGRAPH_CACHE_DIR="/cache"
-
 function build_ngraph() {
     set -x
-    # directory containing ngraph repo
     local ngraph_directory="$1"
-    local func_parameters="$2"
+    local backend="$2"
+    CMAKE_ARGS="-DNGRAPH_TOOLS_ENABLE=FALSE -DNGRAPH_WARNINGS_AS_ERRORS=TRUE -DCMAKE_BUILD_TYPE=Release -DNGRAPH_UNIT_TEST_ENABLE=FALSE -DNGRAPH_USE_PREBUILT_LLVM=TRUE -DNGRAPH_ONNX_IMPORT_ENABLE=TRUE -DCMAKE_INSTALL_PREFIX=${ngraph_directory}/ngraph_dist"
     cd "${ngraph_directory}/ngraph"
-    for parameter in $func_parameters
-    do
-        case $parameter in
-            REBUILD)
-                rm -rf "${ngraph_directory}/ngraph/build"
-                rm -rf "${ngraph_directory}/ngraph_dist"
-            ;;
-            USE_CACHED)
-                cp -Rf "${NGRAPH_CACHE_DIR}/build" "${ngraph_directory}/ngraph/" || return 1
-            ;;
-        esac
-    done
+    case $backend in
+        cpu)
+            echo "Building nGraph for CPU. No additional cmake args are required."
+        ;;
+        igpu)
+            echo "Building nGraph for Intel GPU."
+            CMAKE_ARGS="${CMAKE_ARGS} -DNGRAPH_INTELGPU_ENABLE=TRUE"
+        ;;
+    esac
     cd "${ngraph_directory}/ngraph"
     mkdir -p ./build
     cd ./build
-    cmake ../ -DNGRAPH_TOOLS_ENABLE=FALSE -DNGRAPH_UNIT_TEST_ENABLE=FALSE -DNGRAPH_USE_PREBUILT_LLVM=TRUE -DNGRAPH_ONNX_IMPORT_ENABLE=TRUE -DCMAKE_INSTALL_PREFIX="${ngraph_directory}/ngraph_dist" || return 1
+    cmake ${CMAKE_ARGS} ..  || return 1
     make -j $(lscpu --parse=CORE | grep -v '#' | sort | uniq | wc -l) || return 1
     make install || return 1
     cd "${ngraph_directory}/ngraph/python"
@@ -60,9 +55,32 @@ function build_ngraph() {
     return 0
 }
 
-# Link Onnx models
-mkdir -p /home/onnx_models/.onnx
-ln -s /home/onnx_models/.onnx /root/.onnx
+function main() {
+    # By default copy stored nGraph master and use it to build PR branch
+    BACKEND="cpu"
 
-# Copy stored nGraph master and use it to build PR branch
-build_ngraph "/root" "USE_CACHED" || build_ngraph "/root" "REBUILD"
+    PATTERN='[-a-zA-Z0-9_]*='
+    for i in "$@"
+    do
+        case $i in
+            --backend=*)
+                BACKEND="${i//${PATTERN}/}"
+                ;;
+            *)
+                echo "Parameter $i not recognized."
+                exit 1
+                ;;
+        esac
+    done
+
+    BUILD_CALL="build_ngraph \"/root\" \"${BACKEND}\""
+    # Link Onnx models
+    mkdir -p /home/onnx_models/.onnx
+    ln -s /home/onnx_models/.onnx /root/.onnx
+
+    eval "${BUILD_CALL}"
+}
+
+if [[ ${BASH_SOURCE[0]} == "${0}" ]]; then
+    main "${@}"
+fi
