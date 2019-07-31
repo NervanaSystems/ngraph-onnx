@@ -74,7 +74,7 @@ function main() {
     done
 
     BUILD_CALL="build_ngraph \"/root\" \"${BACKEND}\""
-    # Link Onnx models
+    # Link ONNX models
     mkdir -p /home/onnx_models/.onnx
     ln -s /home/onnx_models/.onnx /root/.onnx
 
