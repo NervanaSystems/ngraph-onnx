@@ -21,6 +21,7 @@ from ngraph_onnx.onnx_importer.backend import NgraphBackend
 import tests.utils
 from tests.utils.model_zoo_tester import ModelZooTestRunner
 
+_GITHUB_ONNX_MASTER = 'https://github.com/onnx/models/raw/master/'
 _S3_DOWNLOAD_ONNX = 'https://s3.amazonaws.com/download.onnx/models/'
 _S3_MODEL_ZOO = 'https://s3.amazonaws.com/onnx-model-zoo/'
 _WINDOWS_NET = 'https://onnxzoo.blob.core.windows.net/models/'
@@ -190,6 +191,28 @@ zoo_models = [
     {
         'model_name': 'emotion_ferplus_opset8',
         'url': _WINDOWS_NET + 'opset_8/emotion_ferplus/emotion_ferplus.tar.gz',
+    },
+
+    # Fast Neural Style Transfer
+    {
+        'model_name': 'style_transfer_mosaic_opset9',
+        'url': _GITHUB_ONNX_MASTER + 'vision/style_transfer/models/mosaic.tar.gz',
+    },
+    {
+        'model_name': 'style_transfer_candy_opset9',
+        'url': _GITHUB_ONNX_MASTER + 'vision/style_transfer/models/candy.tar.gz',
+    },
+    {
+        'model_name': 'style_transfer_princess_opset9',
+        'url': _GITHUB_ONNX_MASTER + 'vision/style_transfer/models/rain_princess.tar.gz',
+    },
+    {
+        'model_name': 'style_transfer_udnie_opset9',
+        'url': _GITHUB_ONNX_MASTER + 'vision/style_transfer/models/udnie.tar.gz',
+    },
+    {
+        'model_name': 'style_transfer_pointilism_opset9',
+        'url': _GITHUB_ONNX_MASTER + 'vision/style_transfer/models/pointilism.tar.gz',
     },
 
     # Inception-v1
@@ -471,6 +494,9 @@ if tests.utils.BACKEND_NAME != 'INTERPRETER':
 
     # Unsupported ops: ConstantOfShape, NonMaxSuppression
     backend_test.exclude('test_ssd_opset10')
+
+    # Unsupported ops: Upsample
+    backend_test.exclude('test_style_transfer')
 
     # Unsupported ops: ConstantOfShape, Expand, NonMaxSuppression, NonZero, Resize, RoiAlign, Scatter
     backend_test.exclude('test_mask_rcnn_opset10')
