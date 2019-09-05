@@ -23,8 +23,8 @@ catch (Exception e) {
     BACKEND_SKU_CONFIGURATIONS = [
         [ sku : "skx", backend : "cpu" ],
         [ sku : "clx", backend : "cpu" ],
-        [ sku : "bdw", backend : "cpu" ],
-        [ sku: "iris", backend : "igpu" ]
+        [ sku : "bdw", backend : "cpu" ]
+        // [ sku: "iris", backend : "igpu" ]
     ]
 }
 echo "BACKEND_SKU_CONFIGURATIONS=${BACKEND_SKU_CONFIGURATIONS}"
