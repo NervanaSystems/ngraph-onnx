@@ -81,11 +81,13 @@ CONFIGURATION_WORKFLOW = { configuration ->
 def cloneRepository(String address, String branch) {
     repositoryName = address.split("/").last().replace(".git","")
     dir ("${WORKDIR}/${repositoryName}") {
-        checkout([$class: 'GitSCM',
-            branches: [[name: "${branch}"]],
-            doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', timeout: 30]], submoduleCfg: [],
-            userRemoteConfigs: [[credentialsId: "${JENKINS_GITHUB_CREDENTIAL_ID}",
-            url: "${address}"]]])
+        retry(3) {
+            checkout([$class: 'GitSCM',
+                branches: [[name: "${branch}"]],
+                doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', timeout: 30]], submoduleCfg: [],
+                userRemoteConfigs: [[credentialsId: "${JENKINS_GITHUB_CREDENTIAL_ID}",
+                url: "${address}"]]])
+        }
     }
 }
 
