@@ -23,8 +23,8 @@ catch (Exception e) {
     BACKEND_SKU_CONFIGURATIONS = [
         [ sku : "skx", backend : "cpu" ],
         [ sku : "clx", backend : "cpu" ],
-        [ sku : "bdw", backend : "cpu" ],
-        [ sku: "iris", backend : "igpu" ]
+        [ sku : "bdw", backend : "cpu" ]
+        // [ sku: "iris", backend : "igpu" ]
     ]
 }
 echo "BACKEND_SKU_CONFIGURATIONS=${BACKEND_SKU_CONFIGURATIONS}"
@@ -81,11 +81,13 @@ CONFIGURATION_WORKFLOW = { configuration ->
 def cloneRepository(String address, String branch) {
     repositoryName = address.split("/").last().replace(".git","")
     dir ("${WORKDIR}/${repositoryName}") {
-        checkout([$class: 'GitSCM',
-            branches: [[name: "${branch}"]],
-            doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', timeout: 30]], submoduleCfg: [],
-            userRemoteConfigs: [[credentialsId: "${JENKINS_GITHUB_CREDENTIAL_ID}",
-            url: "${address}"]]])
+        retry(3) {
+            checkout([$class: 'GitSCM',
+                branches: [[name: "${branch}"]],
+                doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', timeout: 30]], submoduleCfg: [],
+                userRemoteConfigs: [[credentialsId: "${JENKINS_GITHUB_CREDENTIAL_ID}",
+                url: "${address}"]]])
+        }
     }
 }
 

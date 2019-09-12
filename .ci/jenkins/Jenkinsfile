@@ -81,11 +81,13 @@ def getGitPrInfo(String project) {
 def checkoutSources() {
     sh "rm -rf ${WORKSPACE}/*"
     dir ("${WORKDIR}/ngraph-onnx") {
-        checkout([$class: 'GitSCM',
-            branches: [[name: "${NGRAPH_ONNX_BRANCH}"]],
-            doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', timeout: 30]], submoduleCfg: [],
-            userRemoteConfigs: [[credentialsId: "${JENKINS_GITHUB_CREDENTIAL_ID}",
-            url: "${NGRAPH_ONNX_REPO_ADDRESS}"]]])
+        retry(3) {
+            checkout([$class: 'GitSCM',
+                branches: [[name: "${NGRAPH_ONNX_BRANCH}"]],
+                doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', timeout: 30]], submoduleCfg: [],
+                userRemoteConfigs: [[credentialsId: "${JENKINS_GITHUB_CREDENTIAL_ID}",
+                url: "${NGRAPH_ONNX_REPO_ADDRESS}"]]])
+        }
     }
 }
 
