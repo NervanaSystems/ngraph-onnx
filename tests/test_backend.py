@@ -45,10 +45,7 @@ backend_test.exclude('test_simple_rnn')
 backend_test.exclude('test_rnn')
 backend_test.exclude('test_operator_rnn')
 
-# PyTorch LSTM operator -> NGONNX-373
-backend_test.exclude('test_operator_lstm')
-
-# GRU -> NC-325
+# GRU -> NGONNX-325
 backend_test.exclude('test_gru')
 
 # Big model tests (see test_zoo_models.py):
@@ -68,10 +65,6 @@ OnnxBackendPyTorchOperatorModelTest = None
 OnnxBackendPyTorchConvertedModelTest = None
 globals().update(backend_test.enable_report().test_cases)
 
-# PyTorch Operator tests -> NC-329
-pytest.mark.xfail(OnnxBackendPyTorchOperatorModelTest.test_operator_repeat_cpu)
-pytest.mark.xfail(OnnxBackendPyTorchOperatorModelTest.test_operator_repeat_dim_overflow_cpu)
-
 # Dynamic Expand -> NGONNX-367
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_expand_dim_changed_cpu)
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_expand_dim_unchanged_cpu)
@@ -90,8 +83,10 @@ pytest.mark.xfail(OnnxBackendNodeModelTest.test_reshape_reordered_dims_cpu)
 # Dynamic Tile -> NGONNX-368
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_tile_cpu)
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_tile_precomputed_cpu)
+pytest.mark.xfail(OnnxBackendPyTorchOperatorModelTest.test_operator_repeat_cpu)
+pytest.mark.xfail(OnnxBackendPyTorchOperatorModelTest.test_operator_repeat_dim_overflow_cpu)
 
-# Cast -> NGONNX-427
+# Cast (support for String type)
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_cast_FLOAT_to_STRING_cpu)
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_cast_STRING_to_FLOAT_cpu)
 
@@ -119,11 +114,11 @@ pytest.mark.xfail(OnnxBackendNodeModelTest.test_scatter_without_axis_cpu)
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_maxunpool_export_with_output_shape_cpu)
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_maxunpool_export_without_output_shape_cpu)
 
-# OneHot -> NGONNX-453
+# OneHot -> NGONNX-486
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_onehot_with_axis_cpu)
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_onehot_without_axis_cpu)
 
-# TF id vectorizer -> NGONNX-471
+# TF id vectorizer -> NGONNX-523
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_tfidfvectorizer_tf_batch_onlybigrams_skip0_cpu)
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_tfidfvectorizer_tf_batch_onlybigrams_skip5_cpu)
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_tfidfvectorizer_tf_batch_uniandbigrams_skip5_cpu)
@@ -135,7 +130,7 @@ pytest.mark.xfail(OnnxBackendNodeModelTest.test_tfidfvectorizer_tf_uniandbigrams
 # Non zero -> NGONNX-472
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_nonzero_example_cpu)
 
-# ConvInteger NGONNX-410
+# ConvInteger NGONNX-766
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_basic_convinteger_cpu)
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_convinteger_with_padding_cpu)
 
@@ -146,8 +141,6 @@ pytest.mark.xfail(OnnxBackendNodeModelTest.test_qlinearconv_cpu)
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_qlinearmatmul_2D_cpu)
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_qlinearmatmul_3D_cpu)
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_quantizelinear_cpu)
-
-# MatmulInteger NGONNX-410
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_matmulinteger_cpu)
 
 # IsInf - NGONNX-528
@@ -240,14 +233,14 @@ if selected_backend_name == 'INTELGPU':
 # Tests which fail or are very slow on the INTERPRETER backend
 if selected_backend_name == 'INTERPRETER':
     backend_test.exclude('test_operator_conv_cpu')
-    # Cast -> NGONNX-427
+    # Cast -> NGONNX-764
     pytest.mark.xfail(OnnxBackendNodeModelTest.test_cast_DOUBLE_to_FLOAT16_cpu)
     pytest.mark.xfail(OnnxBackendNodeModelTest.test_cast_FLOAT_to_FLOAT16_cpu)
     pytest.mark.xfail(OnnxBackendNodeModelTest.test_cast_FLOAT16_to_DOUBLE_cpu)
     pytest.mark.xfail(OnnxBackendNodeModelTest.test_cast_FLOAT16_to_FLOAT_cpu)
 
 if selected_backend_name == 'CPU':
-    # Cast -> NGONNX-427
+    # Cast -> NGONNX-764
     pytest.mark.xfail(OnnxBackendNodeModelTest.test_cast_DOUBLE_to_FLOAT16_cpu)
     pytest.mark.xfail(OnnxBackendNodeModelTest.test_cast_FLOAT_to_FLOAT16_cpu)
     pytest.mark.xfail(OnnxBackendNodeModelTest.test_cast_FLOAT16_to_DOUBLE_cpu)

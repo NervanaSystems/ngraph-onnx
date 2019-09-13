@@ -20,6 +20,8 @@ import shutil
 import tarfile
 import tempfile
 from collections import defaultdict
+
+from retrying import retry
 from six.moves.urllib.request import urlretrieve, urlopen
 from typing import Type, List, Dict, Optional, Set, Pattern, Text
 
@@ -56,6 +58,7 @@ class ModelZooTestRunner(onnx.backend.test.BackendTest):
             self._add_model_test(test_case, 'Zoo')
 
     @staticmethod
+    @retry
     def _get_etag_for_url(url):  # type: (str) -> str
         request = urlopen(url)
         return request.info().get('ETag')
@@ -84,6 +87,7 @@ class ModelZooTestRunner(onnx.backend.test.BackendTest):
                 break
 
     @classmethod
+    @retry
     def prepare_model_data(cls, model_test):  # type: (OnnxTestCase) -> Text
         onnx_home = os.path.expanduser(os.getenv('ONNX_HOME', os.path.join('~', '.onnx')))
         models_dir = os.getenv('ONNX_MODELS', os.path.join(onnx_home, 'models'))
