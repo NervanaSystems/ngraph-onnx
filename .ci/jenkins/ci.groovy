@@ -131,8 +131,8 @@ def runToxTests() {
 def cleanup() {
     sh """
         docker start ${DOCKER_CONTAINER_NAME} || true
-        docker exec ${DOCKER_CONTAINER_NAME} bash -c "find /root -maxdepth 1 ! -name ".cache" ! -path /root -exec rm -rf {} \;" || true
-        docker exec ${DOCKER_CONTAINER_NAME} bash -c "find /root/cache -maxdepth 1 ! -name "pip" ! -path /root/.cache -exec rm -rf {} \;" || true
+        docker exec ${DOCKER_CONTAINER_NAME} bash -c "find /root -maxdepth 1 ! -name ".cache" ! -path /root -exec rm -rf {} \\;" || true
+        docker exec ${DOCKER_CONTAINER_NAME} bash -c "find /root/cache -maxdepth 1 ! -name "pip" ! -path /root/.cache -exec rm -rf {} \\;" || true
         docker stop ${DOCKER_CONTAINER_NAME} || true
         docker rm -f \$(docker ps -a -q) || true
         printf 'y' | docker system prune
