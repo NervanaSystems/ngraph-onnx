@@ -161,10 +161,10 @@ pytest.mark.xfail(OnnxBackendNodeModelTest.test_maxpool_2d_dilations_cpu)
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_averagepool_2d_ceil_cpu)
 
 # Modulus - NGONNX-527
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_mod_bcast_cpu)
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_mod_float_mixed_sign_example_cpu)
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_mod_fmod_mixed_sign_example_cpu)
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_mod_int64_mixed_sign_example_cpu)
+# pytest.mark.xfail(OnnxBackendNodeModelTest.test_mod_bcast_cpu)
+# pytest.mark.xfail(OnnxBackendNodeModelTest.test_mod_float_mixed_sign_example_cpu)
+# pytest.mark.xfail(OnnxBackendNodeModelTest.test_mod_fmod_mixed_sign_example_cpu)
+# pytest.mark.xfail(OnnxBackendNodeModelTest.test_mod_int64_mixed_sign_example_cpu)
 
 # NonMaxSuppression - NGONNX-526
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_nonmaxsuppression_center_point_box_format_cpu)
@@ -178,11 +178,11 @@ pytest.mark.xfail(OnnxBackendNodeModelTest.test_nonmaxsuppression_two_batches_cp
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_nonmaxsuppression_two_classes_cpu)
 
 # Resize NGONNX-598
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_resize_downsample_linear_cpu)
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_resize_downsample_nearest_cpu)
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_resize_nearest_cpu)
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_resize_upsample_linear_cpu)
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_resize_upsample_nearest_cpu)
+# pytest.mark.xfail(OnnxBackendNodeModelTest.test_resize_downsample_linear_cpu)
+# pytest.mark.xfail(OnnxBackendNodeModelTest.test_resize_downsample_nearest_cpu)
+# pytest.mark.xfail(OnnxBackendNodeModelTest.test_resize_nearest_cpu)
+# pytest.mark.xfail(OnnxBackendNodeModelTest.test_resize_upsample_linear_cpu)
+# pytest.mark.xfail(OnnxBackendNodeModelTest.test_resize_upsample_nearest_cpu)
 
 # Dynamic Slice NGONNX-522, 599
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_slice_cpu)
