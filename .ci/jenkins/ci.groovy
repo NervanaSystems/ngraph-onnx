@@ -109,6 +109,7 @@ def runDockerContainer(String imageName) {
                 --name ${DOCKER_CONTAINER_NAME}  \
                 --volume ${WORKDIR}:/logs \
                 --volume ${HOME}/ONNX_CI:/home \
+                --volume ${HOME}/ONNX_CI/cache:/root/.cache \
                 --volume ${WORKDIR}:/root \
                 ${imageName} tail -f /dev/null
     """
@@ -132,7 +133,8 @@ def cleanup() {
         docker start ${DOCKER_CONTAINER_NAME} || true
         docker exec ${DOCKER_CONTAINER_NAME} bash -c "find /logs -type d -exec chmod 0755 {} \\;" || true
         docker exec ${DOCKER_CONTAINER_NAME} bash -c "find /root -type d -exec chmod 0755 {} \\;" || true
-        docker exec ${DOCKER_CONTAINER_NAME} bash -c "rm -rf /root" || true
+        docker exec ${DOCKER_CONTAINER_NAME} bash -c "find /root -maxdepth 1 ! -name ".cache" ! -path /root -exec rm -rf {} \;" || true
+        docker exec ${DOCKER_CONTAINER_NAME} bash -c "find /root/cache -maxdepth 1 ! -name "pip" ! -path /root/.cache -exec rm -rf {} \;" || true
         docker stop ${DOCKER_CONTAINER_NAME} || true
         docker rm -f \$(docker ps -a -q) || true
         printf 'y' | docker system prune
