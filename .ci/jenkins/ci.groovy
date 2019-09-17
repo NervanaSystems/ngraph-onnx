@@ -129,6 +129,8 @@ def runToxTests() {
 }
 
 def cleanup() {
+    // In container remove everything in /root except .cache and everything in /root/.cache except /root/.cache/pip
+    // Prune containers
     sh """
         docker start ${DOCKER_CONTAINER_NAME} || true
         docker exec ${DOCKER_CONTAINER_NAME} bash -c "find /root -maxdepth 1 ! -name ".cache" ! -path /root -exec rm -rf {} \\;" || true
