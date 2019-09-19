@@ -193,9 +193,10 @@ def test_hardmax_special_cases():
     ng_results = run_node(node, [data])
     assert np.allclose(ng_results, [expected])
 
-    with pytest.raises(RuntimeError):
-        node = onnx.helper.make_node('Hardmax', inputs=['x'], outputs=['y'], axis=-1)
-        ng_results = run_node(node, [data])
+    expected = hardmax_2d(data.reshape(12, 5)).reshape(3, 4, 5)
+    node = onnx.helper.make_node('Hardmax', inputs=['x'], outputs=['y'], axis=-1)
+    ng_results = run_node(node, [data])
+    assert np.allclose(ng_results, [expected])
 
     with pytest.raises(RuntimeError):
         node = onnx.helper.make_node('Hardmax', inputs=['x'], outputs=['y'], axis=3)
