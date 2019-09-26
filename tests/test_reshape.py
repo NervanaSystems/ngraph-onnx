@@ -331,3 +331,15 @@ def test_depth_to_space():
 
     ng_results = run_node(node, [data])
     assert np.array_equal(ng_results, [expected_output])
+
+@pytest.mark.parametrize('new_shape,expected_output', [
+    (np.array( [2, 1, 6]).astype(np.int64), np.ones([2, 1, 6], dtype=np.float32)),
+])
+def test_expand(new_shape, expected_output):
+    shape = np.array( [3, 1]).astype(np.int64)
+    data = np.reshape(np.arange(1, np.prod(shape) + 1, dtype=np.float32), shape)
+    node = onnx.helper.make_node('Expand', inputs=['x', 'y'], outputs=['z'])
+    ng_results = run_node(node, [data, new_shape])
+    expected_output *= data
+    assert np.array_equal(ng_results, [expected_output])
+
