@@ -66,12 +66,12 @@ OnnxBackendPyTorchConvertedModelTest = None
 globals().update(backend_test.enable_report().test_cases)
 
 # Dynamic Expand -> NGONNX-367
-# pytest.mark.xfail(OnnxBackendNodeModelTest.test_expand_dim_changed_cpu)
-# pytest.mark.xfail(OnnxBackendNodeModelTest.test_expand_dim_unchanged_cpu)
-# pytest.mark.xfail(OnnxBackendSimpleModelTest.test_expand_shape_model1_cpu)
-# pytest.mark.xfail(OnnxBackendSimpleModelTest.test_expand_shape_model2_cpu)
-# pytest.mark.xfail(OnnxBackendSimpleModelTest.test_expand_shape_model3_cpu)
-# pytest.mark.xfail(OnnxBackendSimpleModelTest.test_expand_shape_model4_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_expand_dim_changed_cpu)
+pytest.mark.xfail(OnnxBackendNodeModelTest.test_expand_dim_unchanged_cpu)
+pytest.mark.xfail(OnnxBackendSimpleModelTest.test_expand_shape_model1_cpu)
+pytest.mark.xfail(OnnxBackendSimpleModelTest.test_expand_shape_model2_cpu)
+pytest.mark.xfail(OnnxBackendSimpleModelTest.test_expand_shape_model3_cpu)
+pytest.mark.xfail(OnnxBackendSimpleModelTest.test_expand_shape_model4_cpu)
 
 # Dynamic Reshape -> NGONNX-357
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_reshape_extended_dims_cpu)
