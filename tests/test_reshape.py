@@ -332,13 +332,29 @@ def test_depth_to_space():
     ng_results = run_node(node, [data])
     assert np.array_equal(ng_results, [expected_output])
 
-@pytest.mark.parametrize('new_shape', [
-    (np.array( [2, 1, 6]).astype(np.int64)),
-])
+
+@pytest.mark.parametrize('new_shape', [(np.array([2, 1, 6]).astype(np.int64))])
 def test_expand(new_shape):
-    shape = np.array( [3, 1]).astype(np.int64)
+    shape = np.array([3, 1]).astype(np.int64)
     data = np.reshape(np.arange(1, np.prod(shape) + 1, dtype=np.float32), shape)
-    node = onnx.helper.make_node('Expand', inputs=['x', 'y'], outputs=['z'])
-    ng_results = run_node(node, [data, new_shape])
+    const_node = make_node('Constant', inputs=[], outputs=['const_shape'],
+                           value=onnx.helper.make_tensor(
+                               name='const_tensor',
+                               data_type=onnx.TensorProto.INT64,
+                               dims=new_shape.shape,
+                               vals=new_shape.flatten()))
+
+    expand_node = onnx.helper.make_node('Expand', inputs=['data', 'const_shape'], outputs=['expanded'])
+    graph = make_graph([const_node, expand_node], 'test_graph',
+                       [make_tensor_value_info('data', onnx.TensorProto.FLOAT, data.shape)],
+                       [make_tensor_value_info('expanded', onnx.TensorProto.FLOAT, ())])
+
+    model = make_model(graph, producer_name='ngraph ONNX Importer')
+    model.opset_import[0].version = 8
+    ng_model_function = import_onnx_model(model)
+    runtime = get_runtime()
+    computation = runtime.computation(ng_model_function)
+    ng_results = computation(data)
     expected_output = data * np.ones(new_shape, dtype=np.float32)
-    assert np.array_equal(ng_results, [expected_output])
+
+    assert np.array_equal(ng_results[0], expected_output)
