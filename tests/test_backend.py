@@ -148,11 +148,6 @@ pytest.mark.xfail(OnnxBackendNodeModelTest.test_isinf_cpu)
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_isinf_negative_cpu)
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_isinf_positive_cpu)
 
-# Pooling ops NGONNX-597
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_maxpool_2d_ceil_cpu)
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_maxpool_2d_dilations_cpu)
-pytest.mark.xfail(OnnxBackendNodeModelTest.test_averagepool_2d_ceil_cpu)
-
 # Modulus - NGONNX-527
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_mod_bcast_cpu)
 pytest.mark.xfail(OnnxBackendNodeModelTest.test_mod_float_mixed_sign_example_cpu)
