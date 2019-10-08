@@ -30,12 +30,13 @@ import tests.utils
 
 
 def expect_fail(test_path):  # type: (str) -> None
+    """Mark the test as expected to fail."""
     module_name, test_name = test_path.split('.')
     module = globals().get(module_name)
     if hasattr(module, test_name):
         pytest.mark.xfail(getattr(module, test_name))
     else:
-        logging.getLogger().warning("Could not mark test as XFAIL, not found: %s", test_path)
+        logging.getLogger().warning('Could not mark test as XFAIL, not found: %s', test_path)
 
 
 # Set backend device name to be used instead of hardcoded by ONNX BackendTest class ones.
