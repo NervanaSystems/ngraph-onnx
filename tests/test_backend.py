@@ -29,9 +29,9 @@ import ngraph_onnx.onnx_importer.backend as ng_backend
 import tests.utils
 
 
-def expect_fail(test_path):  # type: (str) -> None
+def expect_fail(test_case_path):  # type: (str) -> None
     """Mark the test as expected to fail."""
-    module_name, test_name = test_path.split('.')
+    module_name, test_name = test_case_path.split('.')
     module = globals().get(module_name)
     if hasattr(module, test_name):
         pytest.mark.xfail(getattr(module, test_name))
