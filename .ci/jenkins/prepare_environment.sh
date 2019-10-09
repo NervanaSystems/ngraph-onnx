@@ -59,12 +59,21 @@ function main() {
     # By default copy stored nGraph master and use it to build PR branch
     BACKEND="cpu"
 
+    NUM_PARAMETERS="2"
+    if [ $# -lt "${NUM_PARAMETERS}" ]; then
+        echo "ERROR: Expected at least ${NUM_PARAMETERS} parameter got $#"
+        exit 1
+    fi
+
     PATTERN='[-a-zA-Z0-9_]*='
     for i in "$@"
     do
         case $i in
             --backend=*)
                 BACKEND="${i//${PATTERN}/}"
+                ;;
+            --build-dir=*)
+                BUILD_DIR="${i//${PATTERN}/}"
                 ;;
             *)
                 echo "Parameter $i not recognized."
@@ -73,11 +82,7 @@ function main() {
         esac
     done
 
-    BUILD_CALL="build_ngraph \"/root\" \"${BACKEND}\""
-    # Link ONNX models
-    mkdir -p /home/onnx_models/.onnx
-    ln -s /home/onnx_models/.onnx /root/.onnx
-
+    BUILD_CALL="build_ngraph \"${BUILD_DIR}\" \"${BACKEND}\""
     eval "${BUILD_CALL}"
 }
 

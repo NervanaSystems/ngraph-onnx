@@ -37,19 +37,24 @@ CI_DIR = "ngraph-onnx/.ci/jenkins"
 DOCKER_CONTAINER_NAME = "jenkins_ngraph-onnx_ci"
 JENKINS_GITHUB_CREDENTIAL_ID = "7157091e-bc04-42f0-99fd-dc4da2922a55"
 JENKINS_HEADLESS_CREDENTIAL_ID = "19d4cefb-3ef3-4632-9553-10f5b9211bd5"
+BASE_IMAGE_TAG = "ci"
+POSTPROCESS_DOCKERFILE = "append_user.dockerfile"
+EXECUTE_IMAGE_TAG = "ci_run"
 
 CONFIGURATION_WORKFLOW = { configuration ->
     node(configuration.label) {
         timeout(activity: true, time: 60) {
             WORKDIR = "${WORKSPACE}/${BUILD_NUMBER}"
+            DOCKER_HOME = "/home/${USER}"
             try {
                 stage("Clone repositories") {
                     cloneRepository(NGRAPH_ONNX_REPO_ADDRESS, configuration.ngraphOnnxBranch)
                     cloneRepository(NGRAPH_REPO_ADDRESS, configuration.ngraphBranch)
                 }
-                String imageName = "${DOCKER_REGISTRY}/aibt/aibt/ngraph_cpp/${configuration.os}/base:ci"
-                stage("Pull Docker image") {
+                String imageName = "${DOCKER_REGISTRY}/aibt/aibt/ngraph_cpp/${configuration.os}/base"
+                stage("Prepare Docker image") {
                     pullDockerImage(imageName)
+                    appendUserToDockerImage(imageName)
                 }
                 stage("Run Docker container") {
                     runDockerContainer(imageName)
@@ -97,45 +102,59 @@ def pullDockerImage(String imageName) {
                                         passwordVariable: 'dockerPassword')]) {
         sh """
             echo "${dockerPassword}" | docker login ${DOCKER_REGISTRY} --username ${dockerUsername} --password-stdin
-            docker pull ${imageName}
+            docker pull ${imageName}:${BASE_IMAGE_TAG}
+        """
+    }
+}
+
+def appendUserToDockerImage(String imageName) {
+    dir ("${WORKDIR}/${CI_DIR}/dockerfiles/postprocess/") {
+        sh """
+            docker build --build-arg base_image=${imageName}:${BASE_IMAGE_TAG} \
+                         --build-arg UID=\$(id -u) \
+                         --build-arg GID=\$(id -g) \
+                         --build-arg USERNAME=\${USER} \
+                         -f ${POSTPROCESS_DOCKERFILE} \
+                         -t ${imageName}:${EXECUTE_IMAGE_TAG} .
         """
     }
 }
 
 def runDockerContainer(String imageName) {
+    dockerOnnxModels = "${DOCKER_HOME}/.onnx"
+    dockerCache = "${DOCKER_HOME}/.cache"
     sh """
         mkdir -p ${HOME}/ONNX_CI
         docker run -id --privileged \
+                --user ${USER} \
                 --name ${DOCKER_CONTAINER_NAME}  \
                 --volume ${WORKDIR}:/logs \
-                --volume ${HOME}/ONNX_CI:/home \
-                --volume ${HOME}/ONNX_CI/cache:/root/.cache \
-                --volume ${WORKDIR}:/root \
-                ${imageName} tail -f /dev/null
+                --volume ${HOME}/ONNX_CI/onnx_models/.onnx:${dockerOnnxModels} \
+                --volume ${HOME}/ONNX_CI/cache:${dockerCache} \
+                --volume ${WORKDIR}:${DOCKER_HOME} \
+                ${imageName}:${EXECUTE_IMAGE_TAG} tail -f /dev/null
     """
 }
 
 def prepareEnvironment(String backend) {
     sh """
-        docker exec ${DOCKER_CONTAINER_NAME} bash -c "/root/${CI_DIR}/prepare_environment.sh --backend=${backend}"
+        docker exec ${DOCKER_CONTAINER_NAME} bash -c "${DOCKER_HOME}/${CI_DIR}/prepare_environment.sh \
+                                                                            --build-dir=${DOCKER_HOME} \
+                                                                            --backend=${backend}"
     """
 }
 
 def runToxTests() {
     sh """
-        NGRAPH_WHL=\$(docker exec ${DOCKER_CONTAINER_NAME} find /root/ngraph/python/dist/ -name 'ngraph*.whl')
-        docker exec -e TOX_INSTALL_NGRAPH_FROM=\${NGRAPH_WHL} ${DOCKER_CONTAINER_NAME} tox -c /root/ngraph-onnx
+        NGRAPH_WHL=\$(docker exec ${DOCKER_CONTAINER_NAME} find ${DOCKER_HOME}/ngraph/python/dist/ -name 'ngraph*.whl')
+        docker exec -e TOX_INSTALL_NGRAPH_FROM=\${NGRAPH_WHL} -w ${DOCKER_HOME}/ngraph-onnx ${DOCKER_CONTAINER_NAME} \
+            tox -c .
     """
 }
 
 def cleanup() {
-    // In container remove everything in /root except .cache and everything in /root/.cache except /root/.cache/pip
     // Prune containers
     sh """
-        docker start ${DOCKER_CONTAINER_NAME} || true
-        docker exec ${DOCKER_CONTAINER_NAME} bash -c "find /root -maxdepth 1 ! -name ".cache" ! -path /root -exec rm -rf {} \\;" || true
-        docker exec ${DOCKER_CONTAINER_NAME} bash -c "find /root/.cache -maxdepth 1 ! -name "pip" ! -path /root/.cache -exec rm -rf {} \\;" || true
-        docker stop ${DOCKER_CONTAINER_NAME} || true
         docker rm -f \$(docker ps -a -q) || true
         printf 'y' | docker system prune
     """
@@ -144,7 +163,7 @@ def cleanup() {
 
 def getConfigurationsMap(String dockerfilesPath, String ngraphOnnxBranch, String ngraphBranch) {
     def configurationsMap = [:]
-    def osImages = sh (script: "find ${dockerfilesPath} -name '*.dockerfile' -printf '%f\n'",
+    def osImages = sh (script: "find ${dockerfilesPath} -maxdepth 1 -name '*.dockerfile' -printf '%f\n'",
                     returnStdout: true).trim().replaceAll(".dockerfile","").split("\n") as List
 
     for (os in osImages) {
