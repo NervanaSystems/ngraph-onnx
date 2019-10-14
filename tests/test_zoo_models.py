@@ -35,6 +35,16 @@ zoo_models = [
         'url': _S3_MODEL_ZOO + 'arcface/resnet100/resnet100.tar.gz',
     },
 
+    # BERT-Squad
+    {
+        'model_name': 'bert_squad_opset8',
+        'url': _GITHUB_ONNX_MASTER + 'text/machine_comprehension/bert-squad/model/download_sample_8.tar.gz',
+    },
+    {
+        'model_name': 'bert_squad_opset10',
+        'url': _GITHUB_ONNX_MASTER + 'text/machine_comprehension/bert-squad/model/download_sample_10.tar.gz',
+    },
+
     # BiDAF
     {
         'model_name': 'bidaf_opset9',
@@ -473,7 +483,7 @@ if tests.utils.BACKEND_NAME != 'INTERPRETER':
     test_cases = backend_test.test_cases['OnnxBackendZooModelTest']
 
     # Exclude failing tests...
-    # Temporary dissabled tests
+    # Temporarily disabled tests
     pytest.mark.xfail(test_cases.test_resnet50_v2_opset7_cpu)
     pytest.mark.xfail(test_cases.test_mobilenet_opset7_cpu)
 
@@ -494,6 +504,10 @@ if tests.utils.BACKEND_NAME != 'INTERPRETER':
 
     # Unsupported ops: ConstantOfShape, NonMaxSuppression
     backend_test.exclude('test_ssd_opset10')
+
+    # Unsupported ops: ConstantOfShape (opset 10), Tile (8)
+    backend_test.exclude('test_bert_squad_opset8_cpu')
+    backend_test.exclude('test_bert_squad_opset10_cpu')
 
     # Unsupported ops: Upsample
     backend_test.exclude('test_style_transfer')
