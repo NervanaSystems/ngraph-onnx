@@ -45,7 +45,9 @@ def main(args):
 
     Keyword arguments:
     :param args:    arguments parsed by argparse ArgumentParser
+
     :return:        returns status code 0 on successful completion
+
     """
     jenkins_server = args.jenkins_server.strip()
     jenkins_user = args.jenkins_user.strip()

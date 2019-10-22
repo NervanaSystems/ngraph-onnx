@@ -56,7 +56,7 @@ Build Python package (Binary wheel) for nGraph:
 
     (nGraph) $ cd # Change directory to where you have cloned nGraph sources
     (nGraph) $ cd ngraph/python
-    (nGraph) $ git clone --recursive https://github.com/jagerman/pybind11.git
+    (nGraph) $ git clone --recursive https://github.com/pybind/pybind11.git
     (nGraph) $ export PYBIND_HEADERS_PATH=$PWD/pybind11
     (nGraph) $ export NGRAPH_CPP_BUILD_PATH=$HOME/ngraph_dist
     (nGraph) $ export NGRAPH_ONNX_IMPORT_ENABLE=TRUE

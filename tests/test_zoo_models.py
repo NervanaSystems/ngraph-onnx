@@ -21,6 +21,7 @@ from ngraph_onnx.onnx_importer.backend import NgraphBackend
 import tests.utils
 from tests.utils.model_zoo_tester import ModelZooTestRunner
 
+_GITHUB_ONNX_MASTER = 'https://github.com/onnx/models/raw/master/'
 _S3_DOWNLOAD_ONNX = 'https://s3.amazonaws.com/download.onnx/models/'
 _S3_MODEL_ZOO = 'https://s3.amazonaws.com/onnx-model-zoo/'
 _WINDOWS_NET = 'https://onnxzoo.blob.core.windows.net/models/'
@@ -32,6 +33,16 @@ zoo_models = [
         'model_name': 'arcface_lresnet100e_opset8',
         'rtol': 0.004,  # Change made after update to MKL-DNN v0.19 (2019.0.5.20190502)
         'url': _S3_MODEL_ZOO + 'arcface/resnet100/resnet100.tar.gz',
+    },
+
+    # BERT-Squad
+    {
+        'model_name': 'bert_squad_opset8',
+        'url': _GITHUB_ONNX_MASTER + 'text/machine_comprehension/bert-squad/model/download_sample_8.tar.gz',
+    },
+    {
+        'model_name': 'bert_squad_opset10',
+        'url': _GITHUB_ONNX_MASTER + 'text/machine_comprehension/bert-squad/model/download_sample_10.tar.gz',
     },
 
     # BiDAF
@@ -192,6 +203,28 @@ zoo_models = [
         'url': _WINDOWS_NET + 'opset_8/emotion_ferplus/emotion_ferplus.tar.gz',
     },
 
+    # Fast Neural Style Transfer
+    {
+        'model_name': 'style_transfer_mosaic_opset9',
+        'url': _GITHUB_ONNX_MASTER + 'vision/style_transfer/models/mosaic.tar.gz',
+    },
+    {
+        'model_name': 'style_transfer_candy_opset9',
+        'url': _GITHUB_ONNX_MASTER + 'vision/style_transfer/models/candy.tar.gz',
+    },
+    {
+        'model_name': 'style_transfer_princess_opset9',
+        'url': _GITHUB_ONNX_MASTER + 'vision/style_transfer/models/rain_princess.tar.gz',
+    },
+    {
+        'model_name': 'style_transfer_udnie_opset9',
+        'url': _GITHUB_ONNX_MASTER + 'vision/style_transfer/models/udnie.tar.gz',
+    },
+    {
+        'model_name': 'style_transfer_pointilism_opset9',
+        'url': _GITHUB_ONNX_MASTER + 'vision/style_transfer/models/pointilism.tar.gz',
+    },
+
     # Inception-v1
     {
         'model_name': 'inception_v1_opset3',
@@ -255,6 +288,9 @@ zoo_models = [
         'rtol': 0.001,
         'url': _S3_DOWNLOAD_ONNX + 'opset_9/inception_v2.tar.gz',
     },
+
+    # Mask R-CNN
+    {'model_name': 'mask_rcnn_opset10', 'url': _WINDOWS_NET + 'opset_10/mask_rcnn/mask_rcnn_R_50_FPN_1x.tar.gz'},
 
     # MNIST
     {'model_name': 'mnist_opset1', 'url': _WINDOWS_NET + 'opset_1/mnist/mnist.tar.gz'},
@@ -447,7 +483,7 @@ if tests.utils.BACKEND_NAME != 'INTERPRETER':
     test_cases = backend_test.test_cases['OnnxBackendZooModelTest']
 
     # Exclude failing tests...
-    # Temporary dissabled tests
+    # Temporarily disabled tests
     pytest.mark.xfail(test_cases.test_resnet50_v2_opset7_cpu)
     pytest.mark.xfail(test_cases.test_mobilenet_opset7_cpu)
 
@@ -464,10 +500,20 @@ if tests.utils.BACKEND_NAME != 'INTERPRETER':
     backend_test.exclude('test_yolov3_opset10')
 
     # Use of unsupported domain: ai.onnx.ml
-    pytest.mark.skip(test_cases.test_bidaf_opset9_cpu)
+    backend_test.exclude('test_bidaf_opset9')
 
-    # Not yet supported
+    # Unsupported ops: ConstantOfShape, NonMaxSuppression
     backend_test.exclude('test_ssd_opset10')
+
+    # Unsupported ops: ConstantOfShape (opset 10), Tile (8)
+    backend_test.exclude('test_bert_squad_opset8_cpu')
+    backend_test.exclude('test_bert_squad_opset10_cpu')
+
+    # Unsupported ops: Upsample
+    backend_test.exclude('test_style_transfer')
+
+    # Unsupported ops: ConstantOfShape, Expand, NonMaxSuppression, NonZero, Resize, RoiAlign, Scatter
+    backend_test.exclude('test_mask_rcnn_opset10')
 
     # Tests which fail on the INTELGPU backend
     if tests.utils.BACKEND_NAME == 'INTELGPU':
@@ -489,6 +535,20 @@ if tests.utils.BACKEND_NAME != 'INTERPRETER':
         pytest.mark.xfail(test_cases.test_resnet50_opset9_cpu)
         pytest.mark.xfail(test_cases.test_vgg19_opset8_cpu)
         pytest.mark.xfail(test_cases.test_vgg19_opset9_cpu)
+
+    if tests.utils.BACKEND_NAME == 'PlaidML':
+        pytest.mark.xfail(test_cases.test_densenet121_opset3_cpu)
+        pytest.mark.xfail(test_cases.test_densenet121_opset6_cpu)
+        pytest.mark.xfail(test_cases.test_densenet121_opset7_cpu)
+        pytest.mark.xfail(test_cases.test_densenet121_opset8_cpu)
+        pytest.mark.xfail(test_cases.test_densenet121_opset9_cpu)
+        # Computation time takes too long on iGPU and PlaidML
+        pytest.mark.skip(test_cases.test_mobilenet_opset7_cpu)
+        pytest.mark.skip(test_cases.test_shufflenet_opset3_cpu)
+        pytest.mark.skip(test_cases.test_shufflenet_opset6_cpu)
+        pytest.mark.skip(test_cases.test_shufflenet_opset7_cpu)
+        pytest.mark.skip(test_cases.test_shufflenet_opset8_cpu)
+        pytest.mark.skip(test_cases.test_shufflenet_opset9_cpu)
 
     del test_cases
     globals().update(backend_test.enable_report().test_cases)

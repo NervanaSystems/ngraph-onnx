@@ -131,6 +131,7 @@ def test_clip(min_value, max_value):
     assert np.allclose(ng_results, [expected])
 
 
+@pytest.mark.skip_on_plaidml
 def test_clip_default():
     np.random.seed(133391)
     data = -100. + np.random.randn(3, 4, 5).astype(np.float32) * 200.0
@@ -159,6 +160,7 @@ def test_reciprocal(input_data):
 
 
 @pytest.mark.skip_on_intelgpu
+@pytest.mark.skip_on_plaidml
 @pytest.mark.parametrize('axis, dim1, dim2', [
     (0, 1, 60),
     (1, 3, 20),
@@ -177,6 +179,7 @@ def test_hardmax(axis, dim1, dim2):
 
 
 @pytest.mark.skip_on_intelgpu
+@pytest.mark.skip_on_plaidml
 def test_hardmax_special_cases():
     def hardmax_2d(data):
         return np.eye(data.shape[1], dtype=data.dtype)[np.argmax(data, axis=1)]
@@ -190,9 +193,10 @@ def test_hardmax_special_cases():
     ng_results = run_node(node, [data])
     assert np.allclose(ng_results, [expected])
 
-    with pytest.raises(RuntimeError):
-        node = onnx.helper.make_node('Hardmax', inputs=['x'], outputs=['y'], axis=-1)
-        ng_results = run_node(node, [data])
+    expected = hardmax_2d(data.reshape(12, 5)).reshape(3, 4, 5)
+    node = onnx.helper.make_node('Hardmax', inputs=['x'], outputs=['y'], axis=-1)
+    ng_results = run_node(node, [data])
+    assert np.allclose(ng_results, [expected])
 
     with pytest.raises(RuntimeError):
         node = onnx.helper.make_node('Hardmax', inputs=['x'], outputs=['y'], axis=3)

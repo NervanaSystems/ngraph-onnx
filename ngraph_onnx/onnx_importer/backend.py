@@ -53,6 +53,7 @@ class NgraphBackend(Backend):
         ('INTERPRETER', 'CPU'),
         ('ARGON', 'CPU'),
         ('NNP', 'CPU'),
+        ('PlaidML', 'CPU'),
     ]
 
     @classmethod
@@ -162,3 +163,9 @@ class NgraphBackendRep(BackendRep):
 
     def _get_ngraph_device_name(self, onnx_device):  # type: (str) -> str
         return 'GPU' if onnx_device == 'CUDA' else onnx_device
+
+
+prepare = NgraphBackend.prepare
+run_model = NgraphBackend.run_model
+run_node = NgraphBackend.run_node
+supports_device = NgraphBackend.supports_device

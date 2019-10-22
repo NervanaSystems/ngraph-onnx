@@ -19,16 +19,15 @@ import os
 import shutil
 import tarfile
 import tempfile
-import unittest
 from collections import defaultdict
-from six.moves.urllib.request import urlretrieve, urlopen
-from typing import Type, List, Dict, Optional, Set, Pattern, Text, Union, Any
 
-import numpy as np
+from retrying import retry
+from six.moves.urllib.request import urlretrieve, urlopen
+from typing import Type, List, Dict, Optional, Set, Pattern, Text
+
 import onnx.backend.test
 from onnx.backend.base import Backend
 from onnx.backend.test.runner import TestItem
-from onnx import numpy_helper, NodeProto, ModelProto
 from onnx.backend.test.case.test_case import TestCase as OnnxTestCase
 
 
@@ -59,6 +58,7 @@ class ModelZooTestRunner(onnx.backend.test.BackendTest):
             self._add_model_test(test_case, 'Zoo')
 
     @staticmethod
+    @retry
     def _get_etag_for_url(url):  # type: (str) -> str
         request = urlopen(url)
         return request.info().get('ETag')
@@ -86,8 +86,9 @@ class ModelZooTestRunner(onnx.backend.test.BackendTest):
                 shutil.move(model_dir, dest)
                 break
 
-    @staticmethod
-    def _prepare_model_data(model_test):  # type: (OnnxTestCase) -> Text
+    @classmethod
+    @retry
+    def prepare_model_data(cls, model_test):  # type: (OnnxTestCase) -> Text
         onnx_home = os.path.expanduser(os.getenv('ONNX_HOME', os.path.join('~', '.onnx')))
         models_dir = os.getenv('ONNX_MODELS', os.path.join(onnx_home, 'models'))
         model_dir = os.path.join(models_dir, model_test.model_name)  # type: Text
@@ -142,60 +143,3 @@ class ModelZooTestRunner(onnx.backend.test.BackendTest):
         finally:
             os.remove(download_file.name)
         return model_dir
-
-    def _add_model_test(self, model_test, kind):  # type: (OnnxTestCase, Text) -> None  # noqa: C901
-        # @TODO: Remove _add_model_test if https://github.com/onnx/onnx/pull/1809 is accepted
-        # model is loaded at runtime, note sometimes it could even
-        # never loaded if the test skipped
-        model_marker = [None]  # type: List[Optional[Union[ModelProto, NodeProto]]]
-
-        def run(test_self, device):  # type: (Any, Text) -> None
-            if model_test.model_dir is None:
-                model_dir = self._prepare_model_data(model_test)
-            else:
-                model_dir = model_test.model_dir
-            model_pb_path = os.path.join(model_dir, 'model.onnx')
-            model = onnx.load(model_pb_path)
-            model_marker[0] = model
-            if hasattr(self.backend, 'is_compatible') \
-               and callable(self.backend.is_compatible) \
-               and not self.backend.is_compatible(model):
-                raise unittest.SkipTest('Not compatible with backend')
-            prepared_model = self.backend.prepare(model, device)
-            assert prepared_model is not None
-
-            # TODO after converting all npz files to protobuf, we can delete this.
-            for test_data_npz in glob.glob(
-                    os.path.join(model_dir, 'test_data_*.npz')):
-                test_data = np.load(test_data_npz, encoding='bytes')
-                inputs = list(test_data['inputs'])
-                outputs = list(prepared_model.run(inputs))
-                ref_outputs = test_data['outputs']
-                self.assert_similar_outputs(ref_outputs, outputs,
-                                            rtol=model_test.rtol,
-                                            atol=model_test.atol)
-
-            for test_data_dir in glob.glob(
-                    os.path.join(model_dir, 'test_data_set*')):
-                inputs = []
-                inputs_num = len(glob.glob(os.path.join(test_data_dir, 'input_*.pb')))
-                for i in range(inputs_num):
-                    input_file = os.path.join(test_data_dir, 'input_{}.pb'.format(i))
-                    tensor = onnx.TensorProto()
-                    with open(input_file, 'rb') as f:
-                        tensor.ParseFromString(f.read())
-                    inputs.append(numpy_helper.to_array(tensor))
-                ref_outputs = []
-                ref_outputs_num = len(glob.glob(os.path.join(test_data_dir, 'output_*.pb')))
-                for i in range(ref_outputs_num):
-                    output_file = os.path.join(test_data_dir, 'output_{}.pb'.format(i))
-                    tensor = onnx.TensorProto()
-                    with open(output_file, 'rb') as f:
-                        tensor.ParseFromString(f.read())
-                    ref_outputs.append(numpy_helper.to_array(tensor))
-                outputs = list(prepared_model.run(inputs))
-                self.assert_similar_outputs(ref_outputs, outputs,
-                                            rtol=model_test.rtol,
-                                            atol=model_test.atol)
-
-        self._add_test(kind + 'Model', model_test.name, run, model_marker)
