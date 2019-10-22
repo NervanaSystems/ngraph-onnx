@@ -91,8 +91,6 @@ class Watchdog:
         # Create Slack api object
         proxy = os.environ["http_proxy"] or os.environ["HTTP_PROXY"]
         self._slack_app = SlackCommunicator(slack_token=slack_token, proxy=proxy)
-        self._queue_message("test", message_severity='internal')
-        self._queue_message("test")
         self._ci_job_name = ci_job_name
         self._watchdog_job_name = watchdog_job_name
         # Read config file
@@ -122,7 +120,7 @@ class Watchdog:
             except Exception as e:
                 log.exception(str(e))
                 self._queue_message(str(e), message_severity='internal')
-        #self._update_config()
+        self._update_config()
         self._send_message(quiet=quiet)
 
     def _read_config_file(self):

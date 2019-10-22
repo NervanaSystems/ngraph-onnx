@@ -28,7 +28,7 @@ timeout(30)
 
         BUILD_WORKSPACE = "$WORKSPACE/$BUILD_NUMBER"
         WATCHDOG_ROOT = "$BUILD_WORKSPACE/.ci/watchdog"
-        VENV_PATH = "${HOME}/.wdvenv2"
+        VENV_PATH = "${HOME}/.wdvenv"
 
         try {
                 stage("Clone repository") {
