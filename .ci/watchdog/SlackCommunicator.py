@@ -41,12 +41,13 @@ class SlackCommunicator:
         :type slack_token:        str
     """
 
-    def __init__(self, slack_token):
+    def __init__(self, slack_token, proxy):
         self.queued_messages = {}
         self.queued_messages[_CI_ALERTS_CHANNEL] = []
         self.queued_messages[_INTERNAL_ERRORS_CHANNEL] = []
         self.slack_client = None
         self.slack_token = slack_token
+        self.proxy = proxy
 
     def queue_message(self, message, internal_error=False):
         """
@@ -92,7 +93,7 @@ class SlackCommunicator:
         """
         if self.slack_client is None:
             try:
-                self.slack_client = slack.WebClient(self.slack_token)
+                self.slack_client = slack.WebClient(self.slack_token, proxy=self.proxy, ssl=False)
             except Exception:
                 print('!!CRITICAL!! SlackCommunicator::CRITICAL: Could not create client')
                 raise

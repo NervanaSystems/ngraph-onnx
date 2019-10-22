@@ -89,7 +89,8 @@ class Watchdog:
         # Load GitHub token and log in, retrieve pull requests
         self._git = GitWrapper(git_token, repository=git_org, project=git_project)
         # Create Slack api object
-        self._slack_app = SlackCommunicator(slack_token)
+        proxy = os.environ["http_proxy"] or os.environ["HTTP_PROXY"]
+        self._slack_app = SlackCommunicator(token=slack_token, proxy=proxy)
         self._queue_message("test", message_severity='internal')
         self._queue_message("test")
         self._ci_job_name = ci_job_name
