@@ -24,7 +24,8 @@
 # this notice or any other notice embedded in Materials by Intel or Intel's
 # suppliers or licensors in any way.
 
-from slackclient import SlackClient
+import slack
+import os
 
 _CI_ALERTS_CHANNEL = 'ngraph-onnx-ci-alerts'
 _INTERNAL_ERRORS_CHANNEL = 'ci-watchdog-internal'
@@ -42,12 +43,42 @@ class SlackCommunicator:
     """
 
     def __init__(self, slack_token):
-        self.thread_id = None
-        self.queued_messages = {}
-        self.queued_messages[_CI_ALERTS_CHANNEL] = []
-        self.queued_messages[_INTERNAL_ERRORS_CHANNEL] = []
-        self.slack_client = None
-        self.slack_token = slack_token
+        self._queued_messages = {}
+        self._queued_messages[_CI_ALERTS_CHANNEL] = []
+        self._queued_messages[_INTERNAL_ERRORS_CHANNEL] = []
+        self._slack_client = None
+        self._slack_token = slack_token
+        self._proxy = os.environ['http_proxy'] or os.environ['HTTP_PROXY']
+
+    @property
+    def messages(self):
+        """
+        Get list of queued messages.
+
+            :return:           List of queued messages
+            :return type:      List[String]
+        """
+        return self._queued_messages.values()
+
+    @property
+    def proxy(self):
+        """
+        Get proxy address used to connect to Slack.
+
+            :return:           Proxy address
+            :return type:      String
+        """
+        return self._proxy
+
+    @proxy.setter
+    def proxy(self, proxy):
+        """
+        Set proxy address used to connect to Slack.
+
+            :param proxy:     Proxy address
+            :type proxy:      String
+        """
+        self._proxy = proxy
 
     def queue_message(self, message, internal_error=False):
         """
@@ -57,9 +88,9 @@ class SlackCommunicator:
             :type message:      String
         """
         if internal_error:
-            self.queued_messages[_INTERNAL_ERRORS_CHANNEL].append(message)
+            self._queued_messages[_INTERNAL_ERRORS_CHANNEL].append(message)
         else:
-            self.queued_messages[_CI_ALERTS_CHANNEL].append(message)
+            self._queued_messages[_CI_ALERTS_CHANNEL].append(message)
 
     def _send_to_channel(self, message, channel):
         """
@@ -71,14 +102,13 @@ class SlackCommunicator:
             :type channel:      String
         """
         try:
-            self.slack_client.api_call(
-                'chat.postMessage',
-                link_names=1,
+            self._slack_client.chat_postMessage(
+                token=self._slack_token,
+                link_names=True,
                 as_user=False,
                 username='CI_WATCHDOG',
                 channel=channel,
-                text=message,
-                thread_ts=self.thread_id)
+                text=message)
         except Exception:
             print('!!CRITICAL!! SlackCommunicator: Could not send message to ', channel)
             raise
@@ -92,13 +122,13 @@ class SlackCommunicator:
             :type message:      String
             :type quiet:        Boolean
         """
-        if self.slack_client is None:
+        if self._slack_client is None:
             try:
-                self.slack_client = SlackClient(self.slack_token)
+                self._slack_client = slack.WebClient(self._slack_token, proxy=self._proxy, ssl=False)
             except Exception:
                 print('!!CRITICAL!! SlackCommunicator::CRITICAL: Could not create client')
                 raise
-        for channel, message_queue in self.queued_messages.items():
+        for channel, message_queue in self._queued_messages.items():
             final_message = message + '\n\n' + '\n'.join(message_queue)
             print(final_message)
             if not quiet and message_queue:

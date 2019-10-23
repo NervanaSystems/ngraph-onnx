@@ -89,13 +89,13 @@ class Watchdog:
         # Load GitHub token and log in, retrieve pull requests
         self._git = GitWrapper(git_token, repository=git_org, project=git_project)
         # Create Slack api object
-        self._slack_app = SlackCommunicator(slack_token)
+        self._slack_app = SlackCommunicator(slack_token=slack_token)
         self._ci_job_name = ci_job_name
         self._watchdog_job_name = watchdog_job_name
         # Read config file
         self._config = self._read_config_file()
         # Time at Watchdog initiation
-        self._now_time = self._get_current_time()
+        self._now_time = datetime.datetime.now()
         self._current_prs = {}
 
     def run(self, quiet=False):
@@ -121,15 +121,6 @@ class Watchdog:
                 self._queue_message(str(e), message_severity='internal')
         self._update_config()
         self._send_message(quiet=quiet)
-
-    def _get_current_time(self):
-        try:
-            now_time = self._git.get_git_time()
-        except GitWrapperError:
-            message = 'Falling back to system time! This can produce invalid results!'
-            log.warning(message)
-            now_time = datetime.datetime.now()
-        return now_time
 
     def _read_config_file(self):
         """Read Watchdog config file stored on the system.
@@ -458,7 +449,7 @@ class Watchdog:
         :param quiet:   Flag for disabling sending report through Slack
         :type quiet:    Boolean
         """
-        if any(messages for messages in self._slack_app.queued_messages.values()):
+        if any(messages for messages in self._slack_app.messages):
             try:
                 watchdog_build = self._jenkins.get_job_info(self._watchdog_job_name)['lastBuild']
                 watchdog_build_number = watchdog_build['number']
