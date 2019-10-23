@@ -89,8 +89,7 @@ class Watchdog:
         # Load GitHub token and log in, retrieve pull requests
         self._git = GitWrapper(git_token, repository=git_org, project=git_project)
         # Create Slack api object
-        proxy = os.environ["http_proxy"] or os.environ["HTTP_PROXY"]
-        self._slack_app = SlackCommunicator(slack_token=slack_token, proxy=proxy)
+        self._slack_app = SlackCommunicator(slack_token=slack_token)
         self._ci_job_name = ci_job_name
         self._watchdog_job_name = watchdog_job_name
         # Read config file
@@ -450,7 +449,7 @@ class Watchdog:
         :param quiet:   Flag for disabling sending report through Slack
         :type quiet:    Boolean
         """
-        if any(messages for messages in self._slack_app.queued_messages.values()):
+        if any(messages for messages in self._slack_app.messages):
             try:
                 watchdog_build = self._jenkins.get_job_info(self._watchdog_job_name)['lastBuild']
                 watchdog_build_number = watchdog_build['number']
