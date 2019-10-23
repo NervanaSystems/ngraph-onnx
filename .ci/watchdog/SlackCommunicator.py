@@ -48,7 +48,7 @@ class SlackCommunicator:
         self._queued_messages[_INTERNAL_ERRORS_CHANNEL] = []
         self._slack_client = None
         self._slack_token = slack_token
-        self._proxy = os.environ["http_proxy"] or os.environ["HTTP_PROXY"]
+        self._proxy = os.environ['http_proxy'] or os.environ['HTTP_PROXY']
 
     @property
     def messages(self):
