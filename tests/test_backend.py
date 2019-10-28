@@ -72,6 +72,9 @@ backend_test.exclude('test_squeezenet')
 backend_test.exclude('test_vgg19')
 backend_test.exclude('test_zfnet512')
 
+# Support for ONNX Sequence type - NGONNX-789
+backend_test.exclude('test_sequence_model')
+
 OnnxBackendNodeModelTest = None
 OnnxBackendSimpleModelTest = None
 OnnxBackendPyTorchOperatorModelTest = None
@@ -91,7 +94,11 @@ expect_fail('OnnxBackendNodeModelTest.test_reshape_extended_dims_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_reshape_negative_dim_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_reshape_one_dim_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_reshape_reduced_dims_cpu')
-expect_fail('OnnxBackendNodeModelTest.test_reshape_reordered_dims_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_reshape_negative_extended_dims_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_reshape_reordered_all_dims_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_reshape_reordered_last_dims_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_reshape_zero_and_negative_dim_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_reshape_zero_dim_cpu')
 
 # Dynamic Tile -> NGONNX-368
 expect_fail('OnnxBackendNodeModelTest.test_tile_cpu')
@@ -111,6 +118,7 @@ expect_fail('OnnxBackendNodeModelTest.test_scan_sum_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_compress_default_axis_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_compress_0_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_compress_1_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_compress_negative_axis_cpu')
 
 # Isnan -> NGONNX-440
 expect_fail('OnnxBackendNodeModelTest.test_isnan_cpu')
@@ -130,6 +138,8 @@ expect_fail('OnnxBackendNodeModelTest.test_maxunpool_export_without_output_shape
 # OneHot -> NGONNX-486
 expect_fail('OnnxBackendNodeModelTest.test_onehot_with_axis_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_onehot_without_axis_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_onehot_negative_indices_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_onehot_with_negative_axis_cpu')
 
 # TF id vectorizer -> NGONNX-523
 expect_fail('OnnxBackendNodeModelTest.test_tfidfvectorizer_tf_batch_onlybigrams_skip0_cpu')
@@ -167,10 +177,19 @@ expect_fail('OnnxBackendNodeModelTest.test_maxpool_2d_dilations_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_averagepool_2d_ceil_cpu')
 
 # Modulus - NGONNX-527
-expect_fail('OnnxBackendNodeModelTest.test_mod_bcast_cpu')
-expect_fail('OnnxBackendNodeModelTest.test_mod_float_mixed_sign_example_cpu')
-expect_fail('OnnxBackendNodeModelTest.test_mod_fmod_mixed_sign_example_cpu')
-expect_fail('OnnxBackendNodeModelTest.test_mod_int64_mixed_sign_example_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_mod_broadcast_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_mod_int64_fmod_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_mod_mixed_sign_float16_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_mod_mixed_sign_float32_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_mod_mixed_sign_float64_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_mod_mixed_sign_int16_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_mod_mixed_sign_int32_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_mod_mixed_sign_int64_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_mod_mixed_sign_int8_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_mod_uint16_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_mod_uint32_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_mod_uint64_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_mod_uint8_cpu')
 
 # NonMaxSuppression - NGONNX-526
 expect_fail('OnnxBackendNodeModelTest.test_nonmaxsuppression_center_point_box_format_cpu')
@@ -183,13 +202,6 @@ expect_fail('OnnxBackendNodeModelTest.test_nonmaxsuppression_suppress_by_IOU_cpu
 expect_fail('OnnxBackendNodeModelTest.test_nonmaxsuppression_two_batches_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_nonmaxsuppression_two_classes_cpu')
 
-# Resize NGONNX-598
-expect_fail('OnnxBackendNodeModelTest.test_resize_downsample_linear_cpu')
-expect_fail('OnnxBackendNodeModelTest.test_resize_downsample_nearest_cpu')
-expect_fail('OnnxBackendNodeModelTest.test_resize_nearest_cpu')
-expect_fail('OnnxBackendNodeModelTest.test_resize_upsample_linear_cpu')
-expect_fail('OnnxBackendNodeModelTest.test_resize_upsample_nearest_cpu')
-
 # Dynamic Slice NGONNX-522, 599
 expect_fail('OnnxBackendNodeModelTest.test_slice_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_slice_default_axes_cpu')
@@ -198,6 +210,7 @@ expect_fail('OnnxBackendNodeModelTest.test_slice_end_out_of_bounds_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_slice_neg_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_slice_neg_steps_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_slice_start_out_of_bounds_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_slice_negative_axes_cpu')
 
 # StrNormalizer NGONNX-600
 expect_fail('OnnxBackendNodeModelTest.test_strnormalizer_export_monday_casesensintive_lower_cpu')
@@ -213,14 +226,123 @@ expect_fail('OnnxBackendSimpleModelTest.test_strnorm_model_monday_empty_output_c
 expect_fail('OnnxBackendSimpleModelTest.test_strnorm_model_monday_insensintive_upper_twodim_cpu')
 expect_fail('OnnxBackendSimpleModelTest.test_strnorm_model_nostopwords_nochangecase_cpu')
 
-# RoiAlign NGONNX-601
+# RoiAlign - NGONNX-601
 expect_fail('OnnxBackendNodeModelTest.test_roialign_cpu')
 
-# NGONNX-521
-expect_fail('OnnxBackendNodeModelTest.test_top_k_cpu')
-
-# Other tests
+# Upsample - NGONNX-781
 expect_fail('OnnxBackendNodeModelTest.test_upsample_nearest_cpu')
+
+# CumSum - NGONNX-753
+expect_fail('OnnxBackendNodeModelTest.test_cumsum_1d_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_cumsum_1d_exclusive_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_cumsum_1d_reverse_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_cumsum_1d_reverse_exclusive_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_cumsum_2d_axis_0_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_cumsum_2d_axis_1_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_cumsum_2d_negative_axis_cpu')
+
+# BitShift - NGONNX-752
+expect_fail('OnnxBackendNodeModelTest.test_bitshift_left_uint16_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_bitshift_left_uint32_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_bitshift_left_uint64_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_bitshift_left_uint8_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_bitshift_right_uint16_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_bitshift_right_uint32_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_bitshift_right_uint64_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_bitshift_right_uint8_cpu')
+
+# Clip-11 - NGONNX-755
+expect_fail('OnnxBackendNodeModelTest.test_clip_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_clip_default_max_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_clip_default_min_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_clip_example_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_clip_outbounds_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_clip_splitbounds_cpu')
+
+# Det - NGONNX-754
+expect_fail('OnnxBackendNodeModelTest.test_det_2d_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_det_nd_cpu')
+
+# GatherElements, ScatterElements - NGONNX-757
+expect_fail('OnnxBackendNodeModelTest.test_gather_elements_0_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_gather_elements_1_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_gather_elements_negative_indices_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_scatter_elements_with_axis_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_scatter_elements_with_negative_indices_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_scatter_elements_without_axis_cpu')
+
+# GatherND - NGONNX-758
+expect_fail('OnnxBackendNodeModelTest.test_gathernd_example_float32_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_gathernd_example_int32_cpu')
+
+# ScatterND - NGONNX-762
+expect_fail('OnnxBackendNodeModelTest.test_scatternd_cpu')
+
+# Resize - NGONNX-782
+expect_fail('OnnxBackendNodeModelTest.test_resize_downsample_scales_cubic_A_n0p5_exclude_outside_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_resize_downsample_scales_cubic_align_corners_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_resize_downsample_scales_cubic_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_resize_downsample_scales_linear_align_corners_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_resize_downsample_scales_linear_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_resize_downsample_scales_nearest_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_resize_downsample_sizes_cubic_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_resize_downsample_sizes_linear_pytorch_half_pixel_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_resize_downsample_sizes_nearest_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_resize_downsample_sizes_nearest_tf_half_pixel_for_nn_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_resize_tf_crop_and_resize_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_resize_upsample_scales_cubic_A_n0p5_exclude_outside_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_resize_upsample_scales_cubic_align_corners_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_resize_upsample_scales_cubic_asymmetric_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_resize_upsample_scales_cubic_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_resize_upsample_scales_linear_align_corners_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_resize_upsample_scales_linear_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_resize_upsample_scales_nearest_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_resize_upsample_sizes_cubic_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_resize_upsample_sizes_nearest_ceil_half_pixel_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_resize_upsample_sizes_nearest_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_resize_upsample_sizes_nearest_floor_align_corners_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_resize_upsample_sizes_nearest_round_prefer_ceil_asymmetric_cpu')
+
+# Pad errors - NGONNX-783
+expect_fail('OnnxBackendNodeModelTest.test_constant_pad_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_edge_pad_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_reflect_pad_cpu')
+
+# DepthToSpace CRD mode - NGONNX-784
+expect_fail('OnnxBackendNodeModelTest.test_depthtospace_crd_mode_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_depthtospace_crd_mode_example_cpu')
+
+# DynamicQuantizeLinear - NGONNX-786
+expect_fail('OnnxBackendNodeModelTest.test_dynamicquantizelinear_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_dynamicquantizelinear_expanded_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_dynamicquantizelinear_max_adjusted_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_dynamicquantizelinear_max_adjusted_expanded_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_dynamicquantizelinear_min_adjusted_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_dynamicquantizelinear_min_adjusted_expanded_cpu')
+
+# Range op - NGONNX-787
+expect_fail('OnnxBackendNodeModelTest.test_range_float_type_positive_delta_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_range_float_type_positive_delta_expanded_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_range_int32_type_negative_delta_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_range_int32_type_negative_delta_expanded_cpu')
+
+# Unique op - NGONNX-761
+expect_fail('OnnxBackendNodeModelTest.test_unique_not_sorted_without_axis_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_unique_sorted_with_axis_3d_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_unique_sorted_with_axis_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_unique_sorted_with_negative_axis_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_unique_sorted_without_axis_cpu')
+
+# Gemm-11 - NGONNX-788
+expect_fail('OnnxBackendNodeModelTest.test_gemm_default_no_bias_cpu')
+
+# Round - NGONNX-760
+expect_fail('OnnxBackendNodeModelTest.test_round_cpu')
+
+# Operations not supported by nGraph Backends
+expect_fail('OnnxBackendNodeModelTest.test_top_k_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_top_k_negative_axis_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_top_k_smallest_cpu')
 
 # Tests which fail on the INTELGPU backend
 if selected_backend_name == 'INTELGPU':

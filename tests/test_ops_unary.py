@@ -121,30 +121,27 @@ def test_ceil(input_data):
 ])
 def test_clip(min_value, max_value):
     np.random.seed(133391)
-    data = (np.float32(-100.)
-            + np.random.randn(3, 4, 5).astype(np.float32) * np.float32(200.))
-
-    node = onnx.helper.make_node('Clip', inputs=['x'], outputs=['y'],
-                                 min=float(min_value), max=float(max_value))
-    expected = np.clip(data, min_value, max_value)
-    ng_results = run_node(node, [data])
-    assert np.allclose(ng_results, [expected])
+    input_data = (np.float32(-100.) + np.random.randn(3, 4, 5).astype(np.float32) * np.float32(200.))
+    model = get_node_model('Clip', input_data, opset=10, min=float(min_value), max=float(max_value))
+    result = run_model(model, [input_data])
+    expected = np.clip(input_data, min_value, max_value)
+    assert np.allclose(result, [expected])
 
 
 @pytest.mark.skip_on_plaidml
 def test_clip_default():
     np.random.seed(133391)
-    data = -100. + np.random.randn(3, 4, 5).astype(np.float32) * 200.0
+    input_data = -100. + np.random.randn(3, 4, 5).astype(np.float32) * 200.0
 
-    node = onnx.helper.make_node('Clip', inputs=['x'], outputs=['y'], min=0.)
-    expected = np.clip(data, np.float32(0.), np.finfo(np.float32).max)
-    ng_results = run_node(node, [data])
-    assert np.allclose(ng_results, [expected])
+    model = get_node_model('Clip', input_data, opset=10, min=0.)
+    result = run_model(model, [input_data])
+    expected = np.clip(input_data, np.float32(0.), np.finfo(np.float32).max)
+    assert np.allclose(result, [expected])
 
-    node = onnx.helper.make_node('Clip', inputs=['x'], outputs=['y'], max=0.)
-    expected = np.clip(data, np.finfo(np.float32).min, np.float32(0.))
-    ng_results = run_node(node, [data])
-    assert np.allclose(ng_results, [expected])
+    model = get_node_model('Clip', input_data, opset=10, max=0.)
+    result = run_model(model, [input_data])
+    expected = np.clip(input_data, np.finfo(np.float32).min, np.float32(0.))
+    assert np.allclose(result, [expected])
 
 
 @pytest.mark.parametrize('input_data', [
