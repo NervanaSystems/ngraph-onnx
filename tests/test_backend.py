@@ -308,7 +308,7 @@ expect_fail('OnnxBackendNodeModelTest.test_constant_pad_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_edge_pad_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_reflect_pad_cpu')
 
-# DynamicQuantizeLinear - NGONNX-786\
+# DynamicQuantizeLinear - NGONNX-786
 expect_fail('OnnxBackendNodeModelTest.test_dynamicquantizelinear_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_dynamicquantizelinear_expanded_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_dynamicquantizelinear_max_adjusted_cpu')
