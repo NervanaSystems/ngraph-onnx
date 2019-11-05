@@ -308,10 +308,6 @@ expect_fail('OnnxBackendNodeModelTest.test_constant_pad_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_edge_pad_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_reflect_pad_cpu')
 
-# DepthToSpace CRD mode - NGONNX-784
-expect_fail('OnnxBackendNodeModelTest.test_depthtospace_crd_mode_cpu')
-expect_fail('OnnxBackendNodeModelTest.test_depthtospace_crd_mode_example_cpu')
-
 # DynamicQuantizeLinear - NGONNX-786
 expect_fail('OnnxBackendNodeModelTest.test_dynamicquantizelinear_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_dynamicquantizelinear_expanded_cpu')
