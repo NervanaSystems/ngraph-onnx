@@ -51,20 +51,20 @@ CONFIGURATION_WORKFLOW = { configuration ->
                     cloneRepository(NGRAPH_ONNX_REPO_ADDRESS, configuration.ngraphOnnxBranch)
                     cloneRepository(NGRAPH_REPO_ADDRESS, configuration.ngraphBranch)
                 }
-                // String imageName = "${DOCKER_REGISTRY}/aibt/aibt/ngraph_cpp/${configuration.os}/base"
-                // stage("Prepare Docker image") {
-                //     pullDockerImage(imageName)
-                //     appendUserToDockerImage(imageName)
-                // }
-                // stage("Run Docker container") {
-                //     runDockerContainer(imageName)
-                // }
-                // stage("Prepare environment") {
-                //     prepareEnvironment(configuration.backend)
-                // }
-                // stage("Run tests") {
-                //     runToxTests()
-                // }
+                String imageName = "${DOCKER_REGISTRY}/aibt/aibt/ngraph_cpp/${configuration.os}/base"
+                stage("Prepare Docker image") {
+                    pullDockerImage(imageName)
+                    appendUserToDockerImage(imageName)
+                }
+                stage("Run Docker container") {
+                    runDockerContainer(imageName)
+                }
+                stage("Prepare environment") {
+                    prepareEnvironment(configuration.backend)
+                }
+                stage("Run tests") {
+                    runToxTests()
+                }
             }
             catch(e) {
                 // Set result to ABORTED if exception contains exit code of a process interrupted by SIGTERM
