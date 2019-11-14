@@ -30,7 +30,7 @@ catch (Exception e) {
 echo "BACKEND_SKU_CONFIGURATIONS=${BACKEND_SKU_CONFIGURATIONS}"
 
 // --- CI constants ---
-NGRAPH_ONNX_REPO_ADDRESS="https://github.com/NervanaSystems/ngraph-onnx.git"
+NGRAPH_ONNX_REPO_ADDRESS="git@github.com:NervanaSystems/ngraph-onnx.git"
 NGRAPH_REPO_ADDRESS="git@github.com:NervanaSystems/ngraph.git"
 CI_LABELS = "ngraph_onnx && ci"
 CI_DIR = "ngraph-onnx/.ci/jenkins"
