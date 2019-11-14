@@ -89,7 +89,9 @@ def cloneRepository(String address, String branch) {
         retry(3) {
             checkout([$class: 'GitSCM',
                 branches: [[name: "${branch}"]],
-                doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', timeout: 30]], submoduleCfg: [],
+                doGenerateSubmoduleConfigurations: false,
+                extensions: [[$class: 'CloneOption', depth: 1, noTags: false, shallow: true, timeout: 30]],
+                submoduleCfg: [],
                 userRemoteConfigs: [[credentialsId: "${JENKINS_GITHUB_CREDENTIAL_ID}",
                 url: "${address}"]]])
         }
