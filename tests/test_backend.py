@@ -187,7 +187,7 @@ expect_fail('OnnxBackendNodeModelTest.test_mod_uint16_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_mod_uint32_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_mod_uint64_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_mod_uint8_cpu')
-#float16 is not supported for Sign operator
+# float16 is not supported for Sign operator
 expect_fail('OnnxBackendNodeModelTest.test_mod_mixed_sign_float16_cpu')
 
 # NonMaxSuppression - NGONNX-526
