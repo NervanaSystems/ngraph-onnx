@@ -232,15 +232,6 @@ expect_fail('OnnxBackendNodeModelTest.test_roialign_cpu')
 # Upsample - NGONNX-781
 expect_fail('OnnxBackendNodeModelTest.test_upsample_nearest_cpu')
 
-# CumSum - NGONNX-753
-expect_fail('OnnxBackendNodeModelTest.test_cumsum_1d_cpu')
-expect_fail('OnnxBackendNodeModelTest.test_cumsum_1d_exclusive_cpu')
-expect_fail('OnnxBackendNodeModelTest.test_cumsum_1d_reverse_cpu')
-expect_fail('OnnxBackendNodeModelTest.test_cumsum_1d_reverse_exclusive_cpu')
-expect_fail('OnnxBackendNodeModelTest.test_cumsum_2d_axis_0_cpu')
-expect_fail('OnnxBackendNodeModelTest.test_cumsum_2d_axis_1_cpu')
-expect_fail('OnnxBackendNodeModelTest.test_cumsum_2d_negative_axis_cpu')
-
 # BitShift - NGONNX-752
 expect_fail('OnnxBackendNodeModelTest.test_bitshift_left_uint16_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_bitshift_left_uint32_cpu')
