@@ -225,6 +225,12 @@ zoo_models = [
         'url': _GITHUB_ONNX_MASTER + 'vision/style_transfer/models/pointilism.tar.gz',
     },
 
+    # GPT-2
+    {
+        'model_name': 'gpt2_opset10',
+        'url': _GITHUB_ONNX_MASTER + 'text/machine_comprehension/gpt-2/model/GPT-2.tar.gz',
+    },
+
     # Inception-v1
     {
         'model_name': 'inception_v1_opset3',
@@ -514,6 +520,9 @@ if tests.utils.BACKEND_NAME != 'INTERPRETER':
 
     # Unsupported ops: ConstantOfShape, Expand, NonMaxSuppression, NonZero, Resize, RoiAlign, Scatter
     backend_test.exclude('test_mask_rcnn_opset10')
+
+    # Unsupported ops: ConstantOfShape, NonZero
+    backend_test.exclude('gpt2_opset10')
 
     # Tests which fail on the INTELGPU backend
     if tests.utils.BACKEND_NAME == 'INTELGPU':
