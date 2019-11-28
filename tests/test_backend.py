@@ -177,11 +177,8 @@ expect_fail('OnnxBackendNodeModelTest.test_maxpool_2d_dilations_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_averagepool_2d_ceil_cpu')
 
 # Modulus - NGONNX-527
+# fmod=0 is not supported
 expect_fail('OnnxBackendNodeModelTest.test_mod_broadcast_cpu')
-expect_fail('OnnxBackendNodeModelTest.test_mod_int64_fmod_cpu')
-expect_fail('OnnxBackendNodeModelTest.test_mod_mixed_sign_float16_cpu')
-expect_fail('OnnxBackendNodeModelTest.test_mod_mixed_sign_float32_cpu')
-expect_fail('OnnxBackendNodeModelTest.test_mod_mixed_sign_float64_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_mod_mixed_sign_int16_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_mod_mixed_sign_int32_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_mod_mixed_sign_int64_cpu')
@@ -190,6 +187,8 @@ expect_fail('OnnxBackendNodeModelTest.test_mod_uint16_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_mod_uint32_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_mod_uint64_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_mod_uint8_cpu')
+# float16 is not supported for Sign operator
+expect_fail('OnnxBackendNodeModelTest.test_mod_mixed_sign_float16_cpu')
 
 # NonMaxSuppression - NGONNX-526
 expect_fail('OnnxBackendNodeModelTest.test_nonmaxsuppression_center_point_box_format_cpu')
