@@ -198,12 +198,12 @@ def test_concat():
             in_args = ['value' + str(k) for k in range(len(values))]
             node = onnx.helper.make_node(
                 'Concat',
-                inputs=[s for s in in_args],
+                inputs=list(in_args),
                 outputs=['output'],
                 axis=i,
             )
             expected_output = np.concatenate(values, i)
-            ng_results = run_node(node, [v for v in values])
+            ng_results = run_node(node, list(values))
             assert np.array_equal(ng_results, [expected_output])
 
 
