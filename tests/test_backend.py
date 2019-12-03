@@ -261,6 +261,9 @@ expect_fail('OnnxBackendNodeModelTest.test_scatter_elements_with_axis_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_scatter_elements_with_negative_indices_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_scatter_elements_without_axis_cpu')
 
+# GatherND - NGONNX-758
+expect_fail('OnnxBackendNodeModelTest.test_gathernd_example_int32_cpu')
+
 # ScatterND - NGONNX-762
 expect_fail('OnnxBackendNodeModelTest.test_scatternd_cpu')
 
