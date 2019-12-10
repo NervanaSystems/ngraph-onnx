@@ -153,12 +153,22 @@ def prepareEnvironment(List<String> backends) {
 
 def runToxTests(String backend) {
     String toxEnvVar = "TOX_INSTALL_NGRAPH_FROM=\${NGRAPH_WHL}"
-    String backendEnvVar = "NGRAPH_BACKEND=${backend}"
-    sh """
-        NGRAPH_WHL=\$(docker exec ${DOCKER_CONTAINER_NAME} find ${DOCKER_HOME}/ngraph/python/dist/ -name 'ngraph*.whl')
-        docker exec -e ${toxEnvVar} -e ${backendEnvVar} -w ${DOCKER_HOME}/ngraph-onnx ${DOCKER_CONTAINER_NAME} \
-            tox -c .
-    """
+    String backendEnvVar = "NGRAPH_BACKEND=${backend.toUpperCase()}"
+    try {
+        sh """
+            NGRAPH_WHL=\$(docker exec ${DOCKER_CONTAINER_NAME} find ${DOCKER_HOME}/ngraph/python/dist/ -name 'ngraph*.whl')
+            docker exec -e ${toxEnvVar} -e ${backendEnvVar} -w ${DOCKER_HOME}/ngraph-onnx ${DOCKER_CONTAINER_NAME} \
+                tox -c .
+        """
+    }
+    catch(e) {
+        // Set result to ABORTED if exception contains exit code of a process interrupted by SIGTERM
+        if ("$e".contains("143")) {
+            currentBuild.result = "ABORTED"
+        } else {
+            currentBuild.result = "FAILURE"
+        }
+    }
 }
 
 def cleanup() {
