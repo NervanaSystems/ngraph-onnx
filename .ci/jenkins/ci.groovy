@@ -179,7 +179,8 @@ def getConfigurationsMap(String dockerfilesPath, String ngraphOnnxBranch, String
             configuration.os = os
             configuration.ngraphOnnxBranch = ngraphOnnxBranch
             configuration.ngraphBranch = ngraphBranch
-            configuration.label = "${configuration.backend} && ${configuration.sku} && ${CI_LABELS}"
+            String backendLabels = configuration.backends.join(" && ")
+            configuration.label = "${backendLabels} && ${configuration.sku} && ${CI_LABELS}"
             configuration.name = "${configuration.sku}-${configuration.os}"
             configurationsMap[configuration.name] = {
                 stage(configuration.name) { CONFIGURATION_WORKFLOW(configuration) }
