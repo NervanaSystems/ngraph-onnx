@@ -141,20 +141,20 @@ def runDockerContainer(String imageName) {
 }
 
 def prepareEnvironment(List<String> backends) {
-    String backends_string = backends.join(",")
+    String backendsString = backends.join(",")
     sh """
         docker exec ${DOCKER_CONTAINER_NAME} bash -c "${DOCKER_HOME}/${CI_DIR}/prepare_environment.sh \
                                                                             --build-dir=${DOCKER_HOME} \
-                                                                            --backends=${backends_string}"
+                                                                            --backends=${backendsString}"
     """
 }
 
 def runToxTests(String backend) {
-    String tox_env_var = "TOX_INSTALL_NGRAPH_FROM=\${NGRAPH_WHL}"
-    String backend_env_var = "NGRAPH_BACKEND=${backend}"
+    String toxEnvVar = "TOX_INSTALL_NGRAPH_FROM=\${NGRAPH_WHL}"
+    String backendEnvVar = "NGRAPH_BACKEND=${backend}"
     sh """
         NGRAPH_WHL=\$(docker exec ${DOCKER_CONTAINER_NAME} find ${DOCKER_HOME}/ngraph/python/dist/ -name 'ngraph*.whl')
-        docker exec -e ${tox_env_var} -e ${backend_env_var} -w ${DOCKER_HOME}/ngraph-onnx ${DOCKER_CONTAINER_NAME} \
+        docker exec -e ${toxEnvVar} -e ${backendEnvVar} -w ${DOCKER_HOME}/ngraph-onnx ${DOCKER_CONTAINER_NAME} \
             tox -c .
     """
 }
