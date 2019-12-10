@@ -101,13 +101,15 @@ def cloneRepository(String address, String branch) {
 }
 
 def pullDockerImage(String imageName) {
-    withCredentials([usernamePassword(credentialsId: "${JENKINS_HEADLESS_CREDENTIAL_ID}",
-                                        usernameVariable: 'dockerUsername',
-                                        passwordVariable: 'dockerPassword')]) {
-        sh """
-            echo "${dockerPassword}" | docker login ${DOCKER_REGISTRY} --username ${dockerUsername} --password-stdin
-            docker pull ${imageName}:${BASE_IMAGE_TAG}
-        """
+    retry(3) {
+        withCredentials([usernamePassword(credentialsId: "${JENKINS_HEADLESS_CREDENTIAL_ID}",
+                                            usernameVariable: 'dockerUsername',
+                                            passwordVariable: 'dockerPassword')]) {
+            sh """
+                echo "${dockerPassword}" | docker login ${DOCKER_REGISTRY} --username ${dockerUsername} --password-stdin
+                docker pull ${imageName}:${BASE_IMAGE_TAG}
+            """
+        }
     }
 }
 
