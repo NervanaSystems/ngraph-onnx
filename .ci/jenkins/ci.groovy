@@ -21,9 +21,9 @@ if(DOCKER_REGISTRY.trim() == "") {throw new Exception("Missing Docker registry u
 try {if(BACKEND_SKU_CONFIGURATION.trim() == "") {throw new Exception()}}
 catch (Exception e) {
     BACKEND_SKU_CONFIGURATIONS = [
-        [ sku : "skx", backend : "cpu" ],
-        [ sku : "clx", backend : "cpu" ],
-        [ sku : "bdw", backend : "cpu" ]
+        [ sku : "skx", backends : ["cpu", "interpreter"] ],
+        [ sku : "clx", backends : ["cpu", "interpreter"] ],
+        [ sku : "bdw", backends : ["cpu", "interpreter"] ]
         // [ sku: "iris", backend : "igpu" ]
     ]
 }
@@ -60,10 +60,12 @@ CONFIGURATION_WORKFLOW = { configuration ->
                     runDockerContainer(imageName)
                 }
                 stage("Prepare environment") {
-                    prepareEnvironment(configuration.backend)
+                    prepareEnvironment(configuration.backends)
                 }
-                stage("Run tests") {
-                    runToxTests()
+                for (backend in configuration.backends) {
+                    stage("Run ${backend} tests") {
+                        runToxTests(backend)
+                    }
                 }
             }
             catch(e) {
@@ -138,18 +140,21 @@ def runDockerContainer(String imageName) {
     """
 }
 
-def prepareEnvironment(String backend) {
+def prepareEnvironment(List<String> backends) {
+    String backends_string = backends.join(",")
     sh """
         docker exec ${DOCKER_CONTAINER_NAME} bash -c "${DOCKER_HOME}/${CI_DIR}/prepare_environment.sh \
                                                                             --build-dir=${DOCKER_HOME} \
-                                                                            --backend=${backend}"
+                                                                            --backends=${backends_string}"
     """
 }
 
-def runToxTests() {
+def runToxTests(String backend) {
+    String tox_env_var = "TOX_INSTALL_NGRAPH_FROM=\${NGRAPH_WHL}"
+    String backend_env_var = "NGRAPH_BACKEND=${backend}"
     sh """
         NGRAPH_WHL=\$(docker exec ${DOCKER_CONTAINER_NAME} find ${DOCKER_HOME}/ngraph/python/dist/ -name 'ngraph*.whl')
-        docker exec -e TOX_INSTALL_NGRAPH_FROM=\${NGRAPH_WHL} -w ${DOCKER_HOME}/ngraph-onnx ${DOCKER_CONTAINER_NAME} \
+        docker exec -e ${tox_env_var} -e ${backend_env_var} -w ${DOCKER_HOME}/ngraph-onnx ${DOCKER_CONTAINER_NAME} \
             tox -c .
     """
 }

@@ -22,18 +22,20 @@ set -e
 function build_ngraph() {
     set -x
     local ngraph_directory="$1"
-    local backend="$2"
+    local backends="$2"
     CMAKE_ARGS="-DNGRAPH_TOOLS_ENABLE=FALSE -DNGRAPH_WARNINGS_AS_ERRORS=TRUE -DCMAKE_BUILD_TYPE=Release -DNGRAPH_UNIT_TEST_ENABLE=FALSE -DNGRAPH_USE_PREBUILT_LLVM=TRUE -DNGRAPH_ONNX_IMPORT_ENABLE=TRUE -DCMAKE_INSTALL_PREFIX=${ngraph_directory}/ngraph_dist"
     cd "${ngraph_directory}/ngraph"
-    case $backend in
-        cpu)
-            echo "Building nGraph for CPU. No additional cmake args are required."
-        ;;
-        igpu)
-            echo "Building nGraph for Intel GPU."
-            CMAKE_ARGS="${CMAKE_ARGS} -DNGRAPH_INTELGPU_ENABLE=TRUE"
-        ;;
-    esac
+
+    # CMAKE args for nGraph backends
+    if [[ ${backends} == *"igpu"* ]]; then
+        echo "Building nGraph for Intel GPU."
+        CMAKE_ARGS="${CMAKE_ARGS} -DNGRAPH_INTERPRETER_ENABLE=TRUE"
+    fi
+    if [[ ${backends} == *"interpreter"* ]]; then
+        echo "Building nGraph for INTERPRETER backend."
+        CMAKE_ARGS="${CMAKE_ARGS} -DNGRAPH_INTELGPU_ENABLE=TRUE"
+    fi
+
     cd "${ngraph_directory}/ngraph"
     mkdir -p ./build
     cd ./build
@@ -57,7 +59,7 @@ function build_ngraph() {
 
 function main() {
     # By default copy stored nGraph master and use it to build PR branch
-    BACKEND="cpu"
+    BACKENDS="cpu"
 
     NUM_PARAMETERS="2"
     if [ $# -lt "${NUM_PARAMETERS}" ]; then
@@ -69,8 +71,8 @@ function main() {
     for i in "$@"
     do
         case $i in
-            --backend=*)
-                BACKEND="${i//${PATTERN}/}"
+            --backends=*)
+                BACKENDS="${i//${PATTERN}/}"
                 ;;
             --build-dir=*)
                 BUILD_DIR="${i//${PATTERN}/}"
@@ -82,7 +84,7 @@ function main() {
         esac
     done
 
-    BUILD_CALL="build_ngraph \"${BUILD_DIR}\" \"${BACKEND}\""
+    BUILD_CALL="build_ngraph \"${BUILD_DIR}\" \"${BACKENDS}\""
     eval "${BUILD_CALL}"
 }
 
