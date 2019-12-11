@@ -240,7 +240,6 @@ def test_unsqueeze():
     assert np.array_equal(ng_results, [expected_output])
 
 
-@pytest.mark.skip_on_interpreter  # TODO: remove after https://github.com/NervanaSystems/ngraph/pull/4036
 @pytest.mark.parametrize('node, expected_output', [
     # Split into 2 equal parts along axis=0
     (onnx.helper.make_node('Split', inputs=['x'], outputs=['y', 'z'], axis=0),
@@ -268,7 +267,6 @@ def test_split_2d(node, expected_output):
     assert all_arrays_equal(ng_results, expected_output)
 
 
-@pytest.mark.skip_on_interpreter  # TODO: remove after https://github.com/NervanaSystems/ngraph/pull/4036
 def test_split_1d():
     # 1D
     data = np.array([1., 2., 3., 4., 5., 6.]).astype(np.float32)

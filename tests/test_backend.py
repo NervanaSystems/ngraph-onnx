@@ -80,15 +80,6 @@ backend_test.exclude('test_sequence_model')
 backend_test.exclude('test_Conv3d_dilated')
 backend_test.exclude('test_Conv3d_dilated_strided')
 
-# Tests temporarily disabled.
-# Re-enable, when https://github.com/NervanaSystems/ngraph/pull/4036 is merged.
-if selected_backend_name == 'INTERPRETER':
-    backend_test.exclude('test_Conv')
-    backend_test.exclude('test_GLU')
-    backend_test.exclude('test_operator_chunk')
-    backend_test.exclude('test_reduce_log_sum_exp')
-    backend_test.exclude('test_split')
-    backend_test.exclude('test_operator_conv_cpu')
 
 # NOTE: ALL backend_test.exclude CALLS MUST BE PERFORMED BEFORE THE CALL TO globals().update
 
