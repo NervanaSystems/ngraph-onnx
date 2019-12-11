@@ -21,9 +21,9 @@ if(DOCKER_REGISTRY.trim() == "") {throw new Exception("Missing Docker registry u
 try {if(BACKEND_SKU_CONFIGURATION.trim() == "") {throw new Exception()}}
 catch (Exception e) {
     BACKEND_SKU_CONFIGURATIONS = [
-        [ sku : "skx", backend : "cpu" ],
-        [ sku : "clx", backend : "cpu" ],
-        [ sku : "bdw", backend : "cpu" ]
+        [ sku : "skx", backends : ["cpu", "interpreter"] ],
+        [ sku : "clx", backends : ["cpu", "interpreter"] ],
+        [ sku : "bdw", backends : ["cpu", "interpreter"] ]
         // [ sku: "iris", backend : "igpu" ]
     ]
 }
@@ -60,10 +60,22 @@ CONFIGURATION_WORKFLOW = { configuration ->
                     runDockerContainer(imageName)
                 }
                 stage("Prepare environment") {
-                    prepareEnvironment(configuration.backend)
+                    prepareEnvironment(configuration.backends)
                 }
-                stage("Run tests") {
-                    runToxTests()
+                for (backend in configuration.backends) {
+                    try {
+                        stage("Run ${backend} tests") {
+                            runToxTests(backend)
+                        }
+                    }
+                    catch(e) {
+                        // If cause of exception was job abortion - throw exception
+                        if ("$e".contains("143")) {
+                            throw e
+                        } else {
+                            currentBuild.result = "FAILURE"
+                        }
+                    }
                 }
             }
             catch(e) {
@@ -140,18 +152,21 @@ def runDockerContainer(String imageName) {
     """
 }
 
-def prepareEnvironment(String backend) {
+def prepareEnvironment(List<String> backends) {
+    String backendsString = backends.join(",")
     sh """
         docker exec ${DOCKER_CONTAINER_NAME} bash -c "${DOCKER_HOME}/${CI_DIR}/prepare_environment.sh \
                                                                             --build-dir=${DOCKER_HOME} \
-                                                                            --backend=${backend}"
+                                                                            --backends=${backendsString}"
     """
 }
 
-def runToxTests() {
+def runToxTests(String backend) {
+    String toxEnvVar = "TOX_INSTALL_NGRAPH_FROM=\${NGRAPH_WHL}"
+    String backendEnvVar = "NGRAPH_BACKEND=${backend.toUpperCase()}"
     sh """
         NGRAPH_WHL=\$(docker exec ${DOCKER_CONTAINER_NAME} find ${DOCKER_HOME}/ngraph/python/dist/ -name 'ngraph*.whl')
-        docker exec -e TOX_INSTALL_NGRAPH_FROM=\${NGRAPH_WHL} -w ${DOCKER_HOME}/ngraph-onnx ${DOCKER_CONTAINER_NAME} \
+        docker exec -e ${toxEnvVar} -e ${backendEnvVar} -w ${DOCKER_HOME}/ngraph-onnx ${DOCKER_CONTAINER_NAME} \
             tox -c .
     """
 }
@@ -176,7 +191,8 @@ def getConfigurationsMap(String dockerfilesPath, String ngraphOnnxBranch, String
             configuration.os = os
             configuration.ngraphOnnxBranch = ngraphOnnxBranch
             configuration.ngraphBranch = ngraphBranch
-            configuration.label = "${configuration.backend} && ${configuration.sku} && ${CI_LABELS}"
+            String backendLabels = configuration.backends.join(" && ")
+            configuration.label = "${backendLabels} && ${configuration.sku} && ${CI_LABELS}"
             configuration.name = "${configuration.sku}-${configuration.os}"
             configurationsMap[configuration.name] = {
                 stage(configuration.name) { CONFIGURATION_WORKFLOW(configuration) }
