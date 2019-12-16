@@ -262,9 +262,9 @@ expect_fail('OnnxBackendNodeModelTest.test_det_2d_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_det_nd_cpu')
 
 # GatherElements, ScatterElements - NGONNX-757
-expect_fail('OnnxBackendNodeModelTest.test_gather_elements_0_cpu')
-expect_fail('OnnxBackendNodeModelTest.test_gather_elements_1_cpu')
-expect_fail('OnnxBackendNodeModelTest.test_gather_elements_negative_indices_cpu')
+#expect_fail('OnnxBackendNodeModelTest.test_gather_elements_0_cpu')
+#expect_fail('OnnxBackendNodeModelTest.test_gather_elements_1_cpu')
+#expect_fail('OnnxBackendNodeModelTest.test_gather_elements_negative_indices_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_scatter_elements_with_axis_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_scatter_elements_with_negative_indices_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_scatter_elements_without_axis_cpu')
@@ -302,9 +302,9 @@ expect_fail('OnnxBackendNodeModelTest.test_resize_upsample_sizes_nearest_floor_a
 expect_fail('OnnxBackendNodeModelTest.test_resize_upsample_sizes_nearest_round_prefer_ceil_asymmetric_cpu')
 
 # Pad errors - NGONNX-783
-expect_fail('OnnxBackendNodeModelTest.test_constant_pad_cpu')
-expect_fail('OnnxBackendNodeModelTest.test_edge_pad_cpu')
-expect_fail('OnnxBackendNodeModelTest.test_reflect_pad_cpu')
+#expect_fail('OnnxBackendNodeModelTest.test_constant_pad_cpu')
+#expect_fail('OnnxBackendNodeModelTest.test_edge_pad_cpu')
+#expect_fail('OnnxBackendNodeModelTest.test_reflect_pad_cpu')
 
 # DynamicQuantizeLinear - NGONNX-786
 expect_fail('OnnxBackendNodeModelTest.test_dynamicquantizelinear_cpu')
