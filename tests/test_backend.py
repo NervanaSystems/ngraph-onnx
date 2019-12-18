@@ -75,6 +75,14 @@ backend_test.exclude('test_zfnet512')
 # Support for ONNX Sequence type - NGONNX-789
 backend_test.exclude('test_sequence_model')
 
+
+# Tests which fail on the CPU backend -> NC-330
+backend_test.exclude('test_Conv3d_dilated')
+backend_test.exclude('test_Conv3d_dilated_strided')
+
+
+# NOTE: ALL backend_test.exclude CALLS MUST BE PERFORMED BEFORE THE CALL TO globals().update
+
 OnnxBackendNodeModelTest = None
 OnnxBackendSimpleModelTest = None
 OnnxBackendPyTorchOperatorModelTest = None
@@ -349,7 +357,6 @@ if selected_backend_name == 'INTELGPU':
 
 # Tests which fail or are very slow on the INTERPRETER backend
 if selected_backend_name == 'INTERPRETER':
-    backend_test.exclude('test_operator_conv_cpu')
     # Cast -> NGONNX-764
     expect_fail('OnnxBackendNodeModelTest.test_cast_DOUBLE_to_FLOAT16_cpu')
     expect_fail('OnnxBackendNodeModelTest.test_cast_FLOAT_to_FLOAT16_cpu')
@@ -362,9 +369,6 @@ if selected_backend_name == 'CPU':
     expect_fail('OnnxBackendNodeModelTest.test_cast_FLOAT_to_FLOAT16_cpu')
     expect_fail('OnnxBackendNodeModelTest.test_cast_FLOAT16_to_DOUBLE_cpu')
     expect_fail('OnnxBackendNodeModelTest.test_cast_FLOAT16_to_FLOAT_cpu')
-    # Tests which fail on the CPU backend -> NC-330
-    backend_test.exclude('test_Conv3d_dilated')
-    backend_test.exclude('test_Conv3d_dilated_strided')
 
 if selected_backend_name == 'PlaidML':
     expect_fail('OnnxBackendPyTorchConvertedModelTest.test_Embedding_cpu')
@@ -383,7 +387,6 @@ if selected_backend_name == 'PlaidML':
     expect_fail('OnnxBackendNodeModelTest.test_cumsum_2d_axis_0_cpu')
     expect_fail('OnnxBackendNodeModelTest.test_cumsum_2d_axis_1_cpu')
     expect_fail('OnnxBackendNodeModelTest.test_cumsum_2d_negative_axis_cpu')
-    expect_fail('OnnxBackendNodeModelTest.test_edge_pad_cpu')
     expect_fail('OnnxBackendNodeModelTest.test_edge_pad_cpu')
     expect_fail('OnnxBackendNodeModelTest.test_erf_cpu')
     expect_fail('OnnxBackendNodeModelTest.test_gather_0_cpu')
