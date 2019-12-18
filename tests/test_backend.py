@@ -301,11 +301,6 @@ expect_fail('OnnxBackendNodeModelTest.test_resize_upsample_sizes_nearest_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_resize_upsample_sizes_nearest_floor_align_corners_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_resize_upsample_sizes_nearest_round_prefer_ceil_asymmetric_cpu')
 
-# Pad errors - NGONNX-783
-expect_fail('OnnxBackendNodeModelTest.test_constant_pad_cpu')
-expect_fail('OnnxBackendNodeModelTest.test_edge_pad_cpu')
-expect_fail('OnnxBackendNodeModelTest.test_reflect_pad_cpu')
-
 # DynamicQuantizeLinear - NGONNX-786
 expect_fail('OnnxBackendNodeModelTest.test_dynamicquantizelinear_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_dynamicquantizelinear_expanded_cpu')
