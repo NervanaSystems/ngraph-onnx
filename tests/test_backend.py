@@ -167,11 +167,9 @@ expect_fail('OnnxBackendNodeModelTest.test_convinteger_with_padding_cpu')
 
 # Quantized NGONNX-595
 # Scale / zero point not a scalar
-expect_fail('OnnxBackendNodeModelTest.test_dequantizelinear_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_qlinearconv_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_qlinearmatmul_2D_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_qlinearmatmul_3D_cpu')
-expect_fail('OnnxBackendNodeModelTest.test_quantizelinear_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_matmulinteger_cpu')
 
 # IsInf - NGONNX-528
