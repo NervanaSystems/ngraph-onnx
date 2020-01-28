@@ -247,14 +247,6 @@ expect_fail('OnnxBackendNodeModelTest.test_bitshift_right_uint32_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_bitshift_right_uint64_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_bitshift_right_uint8_cpu')
 
-# Clip-11 - NGONNX-755
-expect_fail('OnnxBackendNodeModelTest.test_clip_cpu')
-expect_fail('OnnxBackendNodeModelTest.test_clip_default_max_cpu')
-expect_fail('OnnxBackendNodeModelTest.test_clip_default_min_cpu')
-expect_fail('OnnxBackendNodeModelTest.test_clip_example_cpu')
-expect_fail('OnnxBackendNodeModelTest.test_clip_outbounds_cpu')
-expect_fail('OnnxBackendNodeModelTest.test_clip_splitbounds_cpu')
-
 # Det - NGONNX-754
 expect_fail('OnnxBackendNodeModelTest.test_det_2d_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_det_nd_cpu')
