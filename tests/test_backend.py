@@ -270,11 +270,7 @@ expect_fail('OnnxBackendNodeModelTest.test_scatter_elements_with_negative_indice
 expect_fail('OnnxBackendNodeModelTest.test_scatter_elements_without_axis_cpu')
 
 # GatherND - NGONNX-758
-expect_fail('OnnxBackendNodeModelTest.test_gathernd_example_float32_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_gathernd_example_int32_cpu')
-
-# ScatterND - NGONNX-762
-expect_fail('OnnxBackendNodeModelTest.test_scatternd_cpu')
 
 # Resize - NGONNX-782
 expect_fail('OnnxBackendNodeModelTest.test_resize_downsample_scales_cubic_A_n0p5_exclude_outside_cpu')
