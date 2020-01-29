@@ -161,10 +161,6 @@ expect_fail('OnnxBackendNodeModelTest.test_tfidfvectorizer_tf_uniandbigrams_skip
 # Non zero -> NGONNX-472
 expect_fail('OnnxBackendNodeModelTest.test_nonzero_example_cpu')
 
-# ConvInteger NGONNX-766
-expect_fail('OnnxBackendNodeModelTest.test_basic_convinteger_cpu')
-expect_fail('OnnxBackendNodeModelTest.test_convinteger_with_padding_cpu')
-
 # Quantized NGONNX-595
 # Scale / zero point not a scalar
 expect_fail('OnnxBackendNodeModelTest.test_qlinearconv_cpu')
