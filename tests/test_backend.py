@@ -161,17 +161,11 @@ expect_fail('OnnxBackendNodeModelTest.test_tfidfvectorizer_tf_uniandbigrams_skip
 # Non zero -> NGONNX-472
 expect_fail('OnnxBackendNodeModelTest.test_nonzero_example_cpu')
 
-# ConvInteger NGONNX-766
-expect_fail('OnnxBackendNodeModelTest.test_basic_convinteger_cpu')
-expect_fail('OnnxBackendNodeModelTest.test_convinteger_with_padding_cpu')
-
 # Quantized NGONNX-595
 # Scale / zero point not a scalar
-expect_fail('OnnxBackendNodeModelTest.test_dequantizelinear_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_qlinearconv_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_qlinearmatmul_2D_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_qlinearmatmul_3D_cpu')
-expect_fail('OnnxBackendNodeModelTest.test_quantizelinear_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_matmulinteger_cpu')
 
 # IsInf - NGONNX-528
@@ -248,14 +242,6 @@ expect_fail('OnnxBackendNodeModelTest.test_bitshift_right_uint16_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_bitshift_right_uint32_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_bitshift_right_uint64_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_bitshift_right_uint8_cpu')
-
-# Clip-11 - NGONNX-755
-expect_fail('OnnxBackendNodeModelTest.test_clip_cpu')
-expect_fail('OnnxBackendNodeModelTest.test_clip_default_max_cpu')
-expect_fail('OnnxBackendNodeModelTest.test_clip_default_min_cpu')
-expect_fail('OnnxBackendNodeModelTest.test_clip_example_cpu')
-expect_fail('OnnxBackendNodeModelTest.test_clip_outbounds_cpu')
-expect_fail('OnnxBackendNodeModelTest.test_clip_splitbounds_cpu')
 
 # Det - NGONNX-754
 expect_fail('OnnxBackendNodeModelTest.test_det_2d_cpu')
