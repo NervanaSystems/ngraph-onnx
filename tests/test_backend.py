@@ -1,5 +1,5 @@
 # ******************************************************************************
-# Copyright 2018-2019 Intel Corporation
+# Copyright 2018-2020 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -74,6 +74,14 @@ backend_test.exclude('test_zfnet512')
 
 # Support for ONNX Sequence type - NGONNX-789
 backend_test.exclude('test_sequence_model')
+
+
+# Tests which fail on the CPU backend -> NC-330
+backend_test.exclude('test_Conv3d_dilated')
+backend_test.exclude('test_Conv3d_dilated_strided')
+
+
+# NOTE: ALL backend_test.exclude CALLS MUST BE PERFORMED BEFORE THE CALL TO globals().update
 
 OnnxBackendNodeModelTest = None
 OnnxBackendSimpleModelTest = None
@@ -153,17 +161,11 @@ expect_fail('OnnxBackendNodeModelTest.test_tfidfvectorizer_tf_uniandbigrams_skip
 # Non zero -> NGONNX-472
 expect_fail('OnnxBackendNodeModelTest.test_nonzero_example_cpu')
 
-# ConvInteger NGONNX-766
-expect_fail('OnnxBackendNodeModelTest.test_basic_convinteger_cpu')
-expect_fail('OnnxBackendNodeModelTest.test_convinteger_with_padding_cpu')
-
 # Quantized NGONNX-595
 # Scale / zero point not a scalar
-expect_fail('OnnxBackendNodeModelTest.test_dequantizelinear_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_qlinearconv_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_qlinearmatmul_2D_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_qlinearmatmul_3D_cpu')
-expect_fail('OnnxBackendNodeModelTest.test_quantizelinear_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_matmulinteger_cpu')
 
 # IsInf - NGONNX-528
@@ -231,15 +233,6 @@ expect_fail('OnnxBackendNodeModelTest.test_roialign_cpu')
 # Upsample - NGONNX-781
 expect_fail('OnnxBackendNodeModelTest.test_upsample_nearest_cpu')
 
-# CumSum - NGONNX-753
-expect_fail('OnnxBackendNodeModelTest.test_cumsum_1d_cpu')
-expect_fail('OnnxBackendNodeModelTest.test_cumsum_1d_exclusive_cpu')
-expect_fail('OnnxBackendNodeModelTest.test_cumsum_1d_reverse_cpu')
-expect_fail('OnnxBackendNodeModelTest.test_cumsum_1d_reverse_exclusive_cpu')
-expect_fail('OnnxBackendNodeModelTest.test_cumsum_2d_axis_0_cpu')
-expect_fail('OnnxBackendNodeModelTest.test_cumsum_2d_axis_1_cpu')
-expect_fail('OnnxBackendNodeModelTest.test_cumsum_2d_negative_axis_cpu')
-
 # BitShift - NGONNX-752
 expect_fail('OnnxBackendNodeModelTest.test_bitshift_left_uint16_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_bitshift_left_uint32_cpu')
@@ -249,14 +242,6 @@ expect_fail('OnnxBackendNodeModelTest.test_bitshift_right_uint16_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_bitshift_right_uint32_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_bitshift_right_uint64_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_bitshift_right_uint8_cpu')
-
-# Clip-11 - NGONNX-755
-expect_fail('OnnxBackendNodeModelTest.test_clip_cpu')
-expect_fail('OnnxBackendNodeModelTest.test_clip_default_max_cpu')
-expect_fail('OnnxBackendNodeModelTest.test_clip_default_min_cpu')
-expect_fail('OnnxBackendNodeModelTest.test_clip_example_cpu')
-expect_fail('OnnxBackendNodeModelTest.test_clip_outbounds_cpu')
-expect_fail('OnnxBackendNodeModelTest.test_clip_splitbounds_cpu')
 
 # Det - NGONNX-754
 expect_fail('OnnxBackendNodeModelTest.test_det_2d_cpu')
@@ -271,11 +256,7 @@ expect_fail('OnnxBackendNodeModelTest.test_scatter_elements_with_negative_indice
 expect_fail('OnnxBackendNodeModelTest.test_scatter_elements_without_axis_cpu')
 
 # GatherND - NGONNX-758
-expect_fail('OnnxBackendNodeModelTest.test_gathernd_example_float32_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_gathernd_example_int32_cpu')
-
-# ScatterND - NGONNX-762
-expect_fail('OnnxBackendNodeModelTest.test_scatternd_cpu')
 
 # Resize - NGONNX-782
 expect_fail('OnnxBackendNodeModelTest.test_resize_downsample_scales_cubic_A_n0p5_exclude_outside_cpu')
@@ -302,7 +283,7 @@ expect_fail('OnnxBackendNodeModelTest.test_resize_upsample_sizes_nearest_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_resize_upsample_sizes_nearest_floor_align_corners_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_resize_upsample_sizes_nearest_round_prefer_ceil_asymmetric_cpu')
 
-# Pad errors - NGONNX-783
+# Tests pass on backend with support for nGraph v1 opset.
 expect_fail('OnnxBackendNodeModelTest.test_constant_pad_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_edge_pad_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_reflect_pad_cpu')
@@ -359,7 +340,6 @@ if selected_backend_name == 'INTELGPU':
 
 # Tests which fail or are very slow on the INTERPRETER backend
 if selected_backend_name == 'INTERPRETER':
-    backend_test.exclude('test_operator_conv_cpu')
     # Cast -> NGONNX-764
     expect_fail('OnnxBackendNodeModelTest.test_cast_DOUBLE_to_FLOAT16_cpu')
     expect_fail('OnnxBackendNodeModelTest.test_cast_FLOAT_to_FLOAT16_cpu')
@@ -372,9 +352,6 @@ if selected_backend_name == 'CPU':
     expect_fail('OnnxBackendNodeModelTest.test_cast_FLOAT_to_FLOAT16_cpu')
     expect_fail('OnnxBackendNodeModelTest.test_cast_FLOAT16_to_DOUBLE_cpu')
     expect_fail('OnnxBackendNodeModelTest.test_cast_FLOAT16_to_FLOAT_cpu')
-    # Tests which fail on the CPU backend -> NC-330
-    backend_test.exclude('test_Conv3d_dilated')
-    backend_test.exclude('test_Conv3d_dilated_strided')
 
 if selected_backend_name == 'PlaidML':
     expect_fail('OnnxBackendPyTorchConvertedModelTest.test_Embedding_cpu')
@@ -386,7 +363,13 @@ if selected_backend_name == 'PlaidML':
     expect_fail('OnnxBackendNodeModelTest.test_clip_default_max_cpu')
     expect_fail('OnnxBackendNodeModelTest.test_clip_default_min_cpu')
     expect_fail('OnnxBackendNodeModelTest.test_convtranspose_output_shape_cpu')
-    expect_fail('OnnxBackendNodeModelTest.test_edge_pad_cpu')
+    expect_fail('OnnxBackendNodeModelTest.test_cumsum_1d_cpu')
+    expect_fail('OnnxBackendNodeModelTest.test_cumsum_1d_exclusive_cpu')
+    expect_fail('OnnxBackendNodeModelTest.test_cumsum_1d_reverse_cpu')
+    expect_fail('OnnxBackendNodeModelTest.test_cumsum_1d_reverse_exclusive_cpu')
+    expect_fail('OnnxBackendNodeModelTest.test_cumsum_2d_axis_0_cpu')
+    expect_fail('OnnxBackendNodeModelTest.test_cumsum_2d_axis_1_cpu')
+    expect_fail('OnnxBackendNodeModelTest.test_cumsum_2d_negative_axis_cpu')
     expect_fail('OnnxBackendNodeModelTest.test_edge_pad_cpu')
     expect_fail('OnnxBackendNodeModelTest.test_erf_cpu')
     expect_fail('OnnxBackendNodeModelTest.test_gather_0_cpu')
