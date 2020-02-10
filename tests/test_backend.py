@@ -288,14 +288,6 @@ expect_fail('OnnxBackendNodeModelTest.test_constant_pad_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_edge_pad_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_reflect_pad_cpu')
 
-# DynamicQuantizeLinear - NGONNX-786
-expect_fail('OnnxBackendNodeModelTest.test_dynamicquantizelinear_cpu')
-expect_fail('OnnxBackendNodeModelTest.test_dynamicquantizelinear_expanded_cpu')
-expect_fail('OnnxBackendNodeModelTest.test_dynamicquantizelinear_max_adjusted_cpu')
-expect_fail('OnnxBackendNodeModelTest.test_dynamicquantizelinear_max_adjusted_expanded_cpu')
-expect_fail('OnnxBackendNodeModelTest.test_dynamicquantizelinear_min_adjusted_cpu')
-expect_fail('OnnxBackendNodeModelTest.test_dynamicquantizelinear_min_adjusted_expanded_cpu')
-
 # Range op - NGONNX-787
 expect_fail('OnnxBackendNodeModelTest.test_range_float_type_positive_delta_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_range_float_type_positive_delta_expanded_cpu')
