@@ -68,6 +68,7 @@ backend_test.exclude('test_inception_v1')
 backend_test.exclude('test_inception_v2')
 backend_test.exclude('test_resnet50')
 backend_test.exclude('test_shufflenet')
+B
 backend_test.exclude('test_squeezenet')
 backend_test.exclude('test_vgg19')
 backend_test.exclude('test_zfnet512')
@@ -295,12 +296,6 @@ expect_fail('OnnxBackendNodeModelTest.test_dynamicquantizelinear_max_adjusted_cp
 expect_fail('OnnxBackendNodeModelTest.test_dynamicquantizelinear_max_adjusted_expanded_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_dynamicquantizelinear_min_adjusted_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_dynamicquantizelinear_min_adjusted_expanded_cpu')
-
-# Range op - NGONNX-787
-expect_fail('OnnxBackendNodeModelTest.test_range_float_type_positive_delta_cpu')
-expect_fail('OnnxBackendNodeModelTest.test_range_float_type_positive_delta_expanded_cpu')
-expect_fail('OnnxBackendNodeModelTest.test_range_int32_type_negative_delta_cpu')
-expect_fail('OnnxBackendNodeModelTest.test_range_int32_type_negative_delta_expanded_cpu')
 
 # Unique op - NGONNX-761
 expect_fail('OnnxBackendNodeModelTest.test_unique_not_sorted_without_axis_cpu')
