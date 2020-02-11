@@ -381,6 +381,12 @@ zoo_models = [
         'url': _S3_DOWNLOAD_ONNX + 'opset_9/shufflenet.tar.gz',
     },
 
+    # ShuffleNetV2
+    {
+        'model_name': 'shufflenet_v2_opset10',
+        'url': _GITHUB_ONNX_MASTER + '/vision/classification/shufflenet_v2/model/model.tar.gz',
+    },
+
     # SqueezeNet
     {
         'model_name': 'squeezenet_opset3',
