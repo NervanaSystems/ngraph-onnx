@@ -447,6 +447,12 @@ zoo_models = [
         'model_name': 'tiny_yolov2_opset8',
         'url': _WINDOWS_NET + 'opset_8/tiny_yolov2/tiny_yolov2.tar.gz',
     },
+    
+    # Tiny-YOLOv3
+    {
+        'model_name': 'tiny_yolov3_opset11',
+        'url': _GITHUB_ONNX_MASTER + 'vision/object_detection_segmentation/tiny_yolov3/model/yolov3-tiny.tar.gz',
+    },
 
     # VGG-19
     {'model_name': 'vgg19_opset3', 'url': _S3_DOWNLOAD_ONNX + 'opset_3/vgg19.tar.gz'},
