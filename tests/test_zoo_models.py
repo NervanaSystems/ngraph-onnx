@@ -447,7 +447,7 @@ zoo_models = [
         'model_name': 'tiny_yolov2_opset8',
         'url': _WINDOWS_NET + 'opset_8/tiny_yolov2/tiny_yolov2.tar.gz',
     },
-    
+
     # Tiny-YOLOv3
     {
         'model_name': 'tiny_yolov3_opset11',
