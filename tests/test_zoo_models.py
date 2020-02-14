@@ -518,6 +518,9 @@ if tests.utils.BACKEND_NAME != 'INTERPRETER':
     backend_test.exclude('test_tiny_yolov2_opset7')
     backend_test.exclude('test_tiny_yolov2_opset8')
 
+    # RuntimeError: unsupported data type: BOOL
+    backend_test.exclude('test_tiny_yolov3_opset11')
+
     # ONNX ValidationError
     backend_test.exclude('test_mnist_opset1')
     backend_test.exclude('test_tiny_yolov2_opset1')
@@ -525,6 +528,9 @@ if tests.utils.BACKEND_NAME != 'INTERPRETER':
 
     # Use of unsupported domain: ai.onnx.ml
     backend_test.exclude('test_bidaf_opset9')
+
+    # UserInputError: Provided tensor's shape does not match the expected
+    backend_test.exclude('test_shufflenet_v2_opset10')
 
     # Unsupported ops: ConstantOfShape, NonMaxSuppression
     backend_test.exclude('test_ssd_opset10')
@@ -541,6 +547,9 @@ if tests.utils.BACKEND_NAME != 'INTERPRETER':
 
     # Unsupported ops: ConstantOfShape, NonZero
     backend_test.exclude('gpt2_opset10')
+
+    # Unsupported ops: ConstantOfShape, NonZero, Resize, RoiAlign, Scatter
+    backend_test.exclude('test_faster_rcnn_r50_fpn_opset10')
 
     # Tests which fail on the INTELGPU backend
     if tests.utils.BACKEND_NAME == 'INTELGPU':
