@@ -203,6 +203,12 @@ zoo_models = [
         'url': _WINDOWS_NET + 'opset_8/emotion_ferplus/emotion_ferplus.tar.gz',
     },
 
+    # Faster R-CNN
+    {
+        'model_name': 'faster_rcnn_r50_fpn_opset10',
+        'url': _WINDOWS_NET + 'opset_10/faster_rcnn/faster_rcnn_R_50_FPN_1x.tar.gz',
+    },
+
     # Fast Neural Style Transfer
     {
         'model_name': 'style_transfer_mosaic_opset9',
