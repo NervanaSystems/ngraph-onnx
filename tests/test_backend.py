@@ -296,15 +296,18 @@ expect_fail('OnnxBackendNodeModelTest.test_dynamicquantizelinear_max_adjusted_ex
 expect_fail('OnnxBackendNodeModelTest.test_dynamicquantizelinear_min_adjusted_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_dynamicquantizelinear_min_adjusted_expanded_cpu')
 
+# Range op - NGONNX-787
+expect_fail('OnnxBackendNodeModelTest.test_range_float_type_positive_delta_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_range_float_type_positive_delta_expanded_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_range_int32_type_negative_delta_cpu')
+expect_fail('OnnxBackendNodeModelTest.test_range_int32_type_negative_delta_expanded_cpu')
+
 # Unique op - NGONNX-761
 expect_fail('OnnxBackendNodeModelTest.test_unique_not_sorted_without_axis_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_unique_sorted_with_axis_3d_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_unique_sorted_with_axis_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_unique_sorted_with_negative_axis_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_unique_sorted_without_axis_cpu')
-
-# Round - NGONNX-760
-expect_fail('OnnxBackendNodeModelTest.test_round_cpu')
 
 # Operations not supported by nGraph Backends
 expect_fail('OnnxBackendNodeModelTest.test_top_k_cpu')
