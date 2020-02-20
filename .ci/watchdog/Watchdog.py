@@ -226,15 +226,20 @@ class Watchdog:
         :return:            Returns True if PR should be ignored
         :rtype:             Bool
         """
+        # Ignore PR if it's external contribution
+        if pr.head.repo.fork:
+            log.info('PR#{} should be ignored. External contribution.'.format(pr.number))
+            return True
+
         # Ignore PR if it has WIP label or WIP in title
         if 'WIP' in pr.title:
             log.info('PR#{} should be ignored. WIP tag in title.'.format(pr.number))
             return True
 
-        for label in pr.labels:
-            if 'WIP' in label.name:
-                log.info('PR#{} should be ignored. WIP label present.'.format(pr.number))
-                return True
+        label_names = [label.name for label in pr.labels]
+        if 'WIP' in label_names:
+            log.info('PR#{} should be ignored. WIP label present.'.format(pr.number))
+            return True
 
         # Ignore PR if base ref is not master
         if 'master' not in pr.base.ref:
@@ -243,11 +248,10 @@ class Watchdog:
 
         # Ignore PR if mergeable state is 'dirty' or 'behind'.
         # Practically this ignores PR in case of merge conflicts
-        ignored_mergeable_states = ['behind', 'dirty']
-        for state in ignored_mergeable_states:
-            if state in pr.mergeable_state:
-                log.info('PR#{} should be ignored. Mergeable state is {} '.format(pr.number, state))
-                return True
+        ignored_mergeable_states = ['behind', 'dirty', 'draft']
+        if pr.mergeable_state in ignored_mergeable_states:
+            log.info('PR#{} should be ignored. Mergeable state is {}. '.format(pr.number, pr.mergeable_state))
+            return True
 
         # If no criteria for ignoring PR are met - return false
         return False
