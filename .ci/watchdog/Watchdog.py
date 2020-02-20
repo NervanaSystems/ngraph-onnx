@@ -251,7 +251,7 @@ class Watchdog:
         ignored_mergeable_states = ['behind', 'dirty', 'draft']
         for state in ignored_mergeable_states:
             if state in pr.mergeable_state:
-                log.info('PR#{} should be ignored. Mergeable state is {} '.format(pr.number, state))
+                log.info('PR#{} should be ignored. Mergeable state is {}. '.format(pr.number, state))
                 return True
 
         # If no criteria for ignoring PR are met - return false
