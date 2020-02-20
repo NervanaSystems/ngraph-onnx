@@ -226,6 +226,11 @@ class Watchdog:
         :return:            Returns True if PR should be ignored
         :rtype:             Bool
         """
+        # Ignore PR if it's external contribution
+        if pr.head.repo.fork:
+            log.info('PR#{} should be ignored. External contribution.'.format(pr.number))
+            return True
+
         # Ignore PR if it has WIP label or WIP in title
         if 'WIP' in pr.title:
             log.info('PR#{} should be ignored. WIP tag in title.'.format(pr.number))
@@ -243,7 +248,7 @@ class Watchdog:
 
         # Ignore PR if mergeable state is 'dirty' or 'behind'.
         # Practically this ignores PR in case of merge conflicts
-        ignored_mergeable_states = ['behind', 'dirty']
+        ignored_mergeable_states = ['behind', 'dirty', 'draft']
         for state in ignored_mergeable_states:
             if state in pr.mergeable_state:
                 log.info('PR#{} should be ignored. Mergeable state is {} '.format(pr.number, state))
