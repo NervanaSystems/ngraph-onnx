@@ -80,6 +80,14 @@ backend_test.exclude('test_sequence_model')
 backend_test.exclude('test_Conv3d_dilated')
 backend_test.exclude('test_Conv3d_dilated_strided')
 
+if selected_backend_name == 'IE':
+    # segfaults
+    backend_test.exclude('test_greater_cpu')
+    backend_test.exclude('test_greater_bcast_cpu')
+    backend_test.exclude('test_hardmax_axis_0_cpu')
+    backend_test.exclude('test_less_cpu')
+    backend_test.exclude('test_less_bcast_cpu')
+    backend_test.exclude('test_log_cpu')
 
 # NOTE: ALL backend_test.exclude CALLS MUST BE PERFORMED BEFORE THE CALL TO globals().update
 
@@ -405,6 +413,7 @@ if selected_backend_name == 'IE':
     expect_fail('OnnxBackendNodeModelTest.test_sqrt_example_cpu')
     expect_fail('OnnxBackendPyTorchOperatorModelTest.test_operator_sqrt_cpu')
     expect_fail('OnnxBackendPyTorchOperatorModelTest.test_operator_symbolic_override_cpu')
+
     # [NOT_IMPLEMENTED] Input image format BOOL is not supported yet...
     expect_fail('OnnxBackendNodeModelTest.test_and2d_cpu')
     expect_fail('OnnxBackendNodeModelTest.test_and3d_cpu')
@@ -435,12 +444,14 @@ if selected_backend_name == 'IE':
     expect_fail('OnnxBackendNodeModelTest.test_xor_bcast4v2d_cpu')
     expect_fail('OnnxBackendNodeModelTest.test_xor_bcast4v3d_cpu')
     expect_fail('OnnxBackendNodeModelTest.test_xor_bcast4v4d_cpu')
+
     # Pooling layer. Unsupported mode. Only 4D and 5D blobs are supported as input.
     expect_fail('OnnxBackendNodeModelTest.test_averagepool_1d_default_cpu')
     expect_fail('OnnxBackendNodeModelTest.test_maxpool_1d_default_cpu')
     expect_fail('OnnxBackendPyTorchOperatorModelTest.test_operator_maxpool_cpu')
     expect_fail('OnnxBackendPyTorchConvertedModelTest.test_MaxPool1d_cpu')
     expect_fail('OnnxBackendPyTorchConvertedModelTest.test_MaxPool1d_stride_cpu')
+
     # Layer y input port 1 is not connected to any data
     expect_fail('OnnxBackendNodeModelTest.test_convtranspose_1d_cpu')
     expect_fail('OnnxBackendNodeModelTest.test_convtranspose_3d_cpu')
@@ -453,12 +464,14 @@ if selected_backend_name == 'IE':
     expect_fail('OnnxBackendNodeModelTest.test_convtranspose_with_kernel_cpu')
     expect_fail('OnnxBackendNodeModelTest.test_prelu_broadcast_cpu')
     expect_fail('OnnxBackendNodeModelTest.test_prelu_example_cpu')
+
     # Cannot cast ngraph node y to CNNLayer!
     expect_fail('OnnxBackendNodeModelTest.test_basic_convinteger_cpu')
     expect_fail('OnnxBackendNodeModelTest.test_convinteger_with_padding_cpu')
     expect_fail('OnnxBackendNodeModelTest.test_dequantizelinear_cpu')
     expect_fail('OnnxBackendNodeModelTest.test_quantizelinear_cpu')
     expect_fail('OnnxBackendNodeModelTest.test_scatternd_cpu')
+
     # Incorrect precision f64!
     expect_fail('OnnxBackendNodeModelTest.test_cast_DOUBLE_to_FLOAT16_cpu')
     expect_fail('OnnxBackendNodeModelTest.test_cast_DOUBLE_to_FLOAT_cpu')
@@ -478,9 +491,11 @@ if selected_backend_name == 'IE':
     expect_fail('OnnxBackendPyTorchOperatorModelTest.test_operator_add_size1_right_broadcast_cpu')
     expect_fail('OnnxBackendPyTorchOperatorModelTest.test_operator_add_size1_singleton_broadcast_cpu')
     expect_fail('OnnxBackendPyTorchOperatorModelTest.test_operator_addconstant_cpu')
+
     # Unsupported primitive of type: Ceiling name: y
     expect_fail('OnnxBackendNodeModelTest.test_ceil_cpu')
     expect_fail('OnnxBackendNodeModelTest.test_ceil_example_cpu')
+
     # Can't convert dims 0 to Layout!
     expect_fail('OnnxBackendNodeModelTest.test_clip_cpu')
     expect_fail('OnnxBackendNodeModelTest.test_clip_default_max_cpu')
@@ -491,6 +506,7 @@ if selected_backend_name == 'IE':
     expect_fail('OnnxBackendNodeModelTest.test_clip_splitbounds_cpu')
     expect_fail('OnnxBackendNodeModelTest.test_gemm_default_scalar_bias_cpu')
     expect_fail('OnnxBackendNodeModelTest.test_pow_bcast_scalar_cpu')
+
     # RuntimeError: data [<name>] doesn't exist
     expect_fail('OnnxBackendNodeModelTest.test_cast_FLOAT16_to_FLOAT_cpu')
     expect_fail('OnnxBackendNodeModelTest.test_cast_FLOAT_to_FLOAT16_cpu')
@@ -508,9 +524,11 @@ if selected_backend_name == 'IE':
     expect_fail('OnnxBackendNodeModelTest.test_size_cpu')
     expect_fail('OnnxBackendNodeModelTest.test_size_example_cpu')
     expect_fail('OnnxBackendNodeModelTest.test_sum_one_input_cpu')
+
     # RuntimeError: [PARAMETER_MISMATCH] Failed to set Blob with precision FP32
     expect_fail('OnnxBackendNodeModelTest.test_equal_bcast_cpu')
     expect_fail('OnnxBackendNodeModelTest.test_equal_cpu')
+
     # [NOT_IMPLEMENTED] Input image format I64 is not supported yet...
     expect_fail('OnnxBackendNodeModelTest.test_gather_0_cpu')
     expect_fail('OnnxBackendNodeModelTest.test_gather_1_cpu')
@@ -521,14 +539,15 @@ if selected_backend_name == 'IE':
     expect_fail('OnnxBackendPyTorchOperatorModelTest.test_operator_non_float_params_cpu')
     expect_fail('OnnxBackendPyTorchConvertedModelTest.test_Embedding_cpu')
     expect_fail('OnnxBackendPyTorchConvertedModelTest.test_Embedding_sparse_cpu')
+
     # RuntimeError: Cannot cast ngraph node LSTMSequence to CNNLayer!
     expect_fail('OnnxBackendNodeModelTest.test_lstm_defaults_cpu')
     expect_fail('OnnxBackendNodeModelTest.test_lstm_with_initial_bias_cpu')
     expect_fail('OnnxBackendNodeModelTest.test_lstm_with_peepholes_cpu')
-    # RuntimeError: Can't convert dims 6 to Layout!
-    expect_fail('OnnxBackendPyTorchOperatorModelTest.test_operator_permute2_cpu')
+
     # RuntimeError: Cannot cast ngraph node output to CNNLayer!
     expect_fail('OnnxBackendNodeModelTest.test_gathernd_example_float32_cpu')
+
     # AssertionError: result mismatch
     expect_fail('OnnxBackendNodeModelTest.test_argmax_default_axis_example_cpu')
     expect_fail('OnnxBackendNodeModelTest.test_argmax_default_axis_random_cpu')
@@ -547,17 +566,12 @@ if selected_backend_name == 'IE':
     expect_fail('OnnxBackendNodeModelTest.test_argmin_no_keepdims_example_cpu')
     expect_fail('OnnxBackendNodeModelTest.test_argmin_no_keepdims_random_cpu')
     expect_fail('OnnxBackendNodeModelTest.test_elu_example_cpu')
-    expect_fail('OnnxBackendNodeModelTest.test_greater_bcast_cpu')
-    expect_fail('OnnxBackendNodeModelTest.test_greater_cpu')
-    expect_fail('OnnxBackendNodeModelTest.test_hardmax_axis_0_cpu')
     expect_fail('OnnxBackendNodeModelTest.test_hardmax_axis_1_cpu')
     expect_fail('OnnxBackendNodeModelTest.test_hardmax_axis_2_cpu')
     expect_fail('OnnxBackendNodeModelTest.test_hardmax_default_axis_cpu')
     expect_fail('OnnxBackendNodeModelTest.test_hardmax_example_cpu')
     expect_fail('OnnxBackendNodeModelTest.test_hardmax_negative_axis_cpu')
     expect_fail('OnnxBackendNodeModelTest.test_hardmax_one_hot_cpu')
-    expect_fail('OnnxBackendNodeModelTest.test_less_bcast_cpu')
-    expect_fail('OnnxBackendNodeModelTest.test_less_cpu')
     expect_fail('OnnxBackendNodeModelTest.test_logsoftmax_axis_0_cpu')
     expect_fail('OnnxBackendNodeModelTest.test_logsoftmax_axis_1_cpu')
     expect_fail('OnnxBackendNodeModelTest.test_logsoftmax_default_axis_cpu')
@@ -573,6 +587,8 @@ if selected_backend_name == 'IE':
     expect_fail('OnnxBackendNodeModelTest.test_split_variable_parts_default_axis_cpu')
     expect_fail('OnnxBackendPyTorchOperatorModelTest.test_operator_chunk_cpu')
     expect_fail('OnnxBackendPyTorchOperatorModelTest.test_operator_symbolic_override_nested_cpu')
+
     # RuntimeError: Node Split contains empty child edge for index 0
     expect_fail('OnnxBackendPyTorchConvertedModelTest.test_GLU_cpu')
     expect_fail('OnnxBackendPyTorchConvertedModelTest.test_GLU_dim_cpu')
+
