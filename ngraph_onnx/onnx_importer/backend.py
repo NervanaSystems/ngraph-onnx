@@ -54,7 +54,7 @@ class NgraphBackend(Backend):
         ('ARGON', 'CPU'),
         ('NNP', 'CPU'),
         ('PlaidML', 'CPU'),
-        ('INFERENCE_ENGINE', 'CPU'),
+        ('IE', 'CPU'),
     ]
 
     @classmethod

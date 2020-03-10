@@ -384,7 +384,7 @@ if selected_backend_name == 'PlaidML':
     # Test which fail on PlaidML with INTELGPU
     expect_fail('OnnxBackendPyTorchOperatorModelTest.test_operator_pow_cpu')
 
-if selected_backend_name == 'INFERENCE_ENGINE':
+if selected_backend_name == 'IE':
     # Unsupported primitive of type: Sqrt
     expect_fail('OnnxBackendNodeModelTest.test_acosh_cpu')
     expect_fail('OnnxBackendNodeModelTest.test_acosh_example_cpu')
