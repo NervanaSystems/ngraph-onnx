@@ -75,13 +75,18 @@ function main() {
         git clone "${NGRAPH_REPO_ADDRESS}" --branch "${NGRAPH_REPO_BRANCH}" "${NGRAPH_REPO_DIR_NAME}"
     fi
 
-    local cloned_repo_sha="$(check_ngraph_rev)"
+    local cloned_repo_branch="$(ngraph_rev_parse "--abbrev-ref")"
+    if [[ "${cloned_repo_branch}"!="${NGRAPH_ONNX_REPO_BRANCH}" ]]; then
+        checkout_ngraph_repo "${NGRAPH_ONNX_REPO_BRANCH}"
+    fi
+
+    local cloned_repo_sha="$(ngraph_rev_parse)"
     if [ -z "${NGRAPH_REPO_SHA}" ]; then
         NGRAPH_REPO_SHA="${cloned_repo_sha}"
     fi
 
     if [[ "${NGRAPH_REPO_SHA}" != "${cloned_repo_sha}" ]]; then
-        checkout_ngraph_repo
+        checkout_ngraph_repo "${NGRAPH_REPO_SHA}"
     fi
 
     run_ci
@@ -154,23 +159,25 @@ function check_ngraph_repo() {
     fi
 }
 
-function check_ngraph_rev() {
-    # Returns current nGraph-ONNX repository commit SHA
+function ngraph_rev_parse() {
+    # Returns the result of git rev-parse on nGraph repository.
+    local rev_parse_args="${1}"
     local previous_dir="$(pwd)"
     local ngraph_dir="${WORKSPACE}/${NGRAPH_REPO_DIR_NAME}"
     cd "${ngraph_dir}"
-    local sha="$(git rev-parse HEAD)"
+    local result="$(git rev-parse ${rev_parse_args} HEAD)"
     cd "${previous_dir}"
-    echo "${sha}"
+    echo "${result}"
 
     return 0
 }
 
 function checkout_ngraph_repo() {
-    # Switches nGraph-ONNX repository to commit SHA
+    # Switches nGraph repository to commit SHA
+    local rev="${1}"
     local previous_dir="$(pwd)"
     cd "${WORKSPACE}/${NGRAPH_REPO_DIR_NAME}"
-    git checkout "${NGRAPH_REPO_SHA}"
+    git checkout "${rev}"
     cd "${previous_dir}"
 
     return 0
