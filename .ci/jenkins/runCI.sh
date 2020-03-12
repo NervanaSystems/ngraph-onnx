@@ -65,20 +65,21 @@ function main() {
 
     WORKSPACE="$(pwd)/$( dirname "${BASH_SOURCE[0]}" )"
     cd "${WORKSPACE}"
+    local repo_clone_location="${WORKSPACE%/.ci*}"
 
     if [ "${CLEANUP}" = "true" ]; then
-        cleanup
+        cleanup "${repo_clone_location}"
         return 0
     fi
 
-    local repo_clone_location="${WORKSPACE%/.ci*}"
+
     if ! check_ngraph_repo "${repo_clone_location}"; then
         git clone "${NGRAPH_REPO_ADDRESS}" --branch "${NGRAPH_REPO_BRANCH}" "${repo_clone_location}/${NGRAPH_REPO_DIR_NAME}"
     fi
 
     local cloned_repo_branch="$(ngraph_rev_parse "${repo_clone_location}" "--abbrev-ref")"
     if [[ "${cloned_repo_branch}"!="${NGRAPH_REPO_BRANCH}" ]]; then
-        checkout_ngraph_repo "${NGRAPH_REPO_BRANCH}"
+        checkout_ngraph_repo "${repo_clone_location}" "${NGRAPH_REPO_BRANCH}"
     fi
 
     local cloned_repo_sha="$(ngraph_rev_parse "${repo_clone_location}")"
