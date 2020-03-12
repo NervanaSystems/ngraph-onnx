@@ -141,7 +141,7 @@ function cleanup() {
     # Performs cleanup of artifacts and containers from previous runs.
     local container_name_pattern="${DOCKER_CONTAINER_NAME_PATTERN/<OPERATING_SYSTEM>/*}"
     docker rm -f "$(docker ps -a --format="{{.ID}}" --filter="name=${container_name_pattern}")"
-    rm -rf "${WORKSPACE}/${NGRAPH_REPO_DIR_NAME}"
+    rm -rf "${WORKSPACE%/.ci*}/${NGRAPH_REPO_DIR_NAME}"
 
     return 0
 }
