@@ -265,7 +265,7 @@ function prepare_environment() {
     local docker_container_name="${1}"
     local container_ngraph_onnx_ci_path="${2}"
     local container_ci_path_absolute="${DOCKER_HOME}/${container_ngraph_onnx_ci_path}"
-    local container_ngraph_onnx_dir="${DOCKER_HOME}/${container_ngraph_onnx_ci_path%.ci/*}"
+    local container_ngraph_onnx_dir="${DOCKER_HOME}/${container_ngraph_onnx_ci_path%/.ci*}"
     docker exec ${docker_container_name} bash -c "${container_ci_path_absolute}/prepare_environment.sh \
                                                     --build-dir=${container_ngraph_onnx_dir} \
                                                     --backends=${BACKENDS// /,}"
@@ -289,7 +289,7 @@ function run_backend_test() {
     local docker_container_name="${1}"
     local container_ngraph_onnx_ci_path="${2}"
     local backend="${3}"
-    local ngraph_onnx_dir="${DOCKER_HOME}/${container_ngraph_onnx_ci_path%.ci/*}"
+    local ngraph_onnx_dir="${DOCKER_HOME}/${container_ngraph_onnx_ci_path%/.ci*}"
     local backend_env="NGRAPH_BACKEND=$(printf '%s\n' "${backend}" | awk '{ print toupper($0) }')"
     local ngraph_whl=$(docker exec ${docker_container_name} find ${ngraph_onnx_dir}/ngraph/python/dist/ -name 'ngraph*.whl')
     local tox_env="TOX_INSTALL_NGRAPH_FROM=${ngraph_whl}"
