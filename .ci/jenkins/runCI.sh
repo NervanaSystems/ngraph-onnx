@@ -71,22 +71,23 @@ function main() {
         return 0
     fi
 
-    if ! check_ngraph_repo; then
-        git clone "${NGRAPH_REPO_ADDRESS}" --branch "${NGRAPH_REPO_BRANCH}" "${WORKSPACE%/.ci*}/${NGRAPH_REPO_DIR_NAME}"
+    local repo_clone_location="${WORKSPACE%/.ci*}"
+    if ! check_ngraph_repo "${repo_clone_location}"; then
+        git clone "${NGRAPH_REPO_ADDRESS}" --branch "${NGRAPH_REPO_BRANCH}" "${repo_clone_location}/${NGRAPH_REPO_DIR_NAME}"
     fi
 
-    local cloned_repo_branch="$(ngraph_rev_parse "--abbrev-ref")"
-    if [[ "${cloned_repo_branch}"!="${NGRAPH_ONNX_REPO_BRANCH}" ]]; then
-        checkout_ngraph_repo "${NGRAPH_ONNX_REPO_BRANCH}"
+    local cloned_repo_branch="$(ngraph_rev_parse "${repo_clone_location}" "--abbrev-ref")"
+    if [[ "${cloned_repo_branch}"!="${NGRAPH_REPO_BRANCH}" ]]; then
+        checkout_ngraph_repo "${NGRAPH_REPO_BRANCH}"
     fi
 
-    local cloned_repo_sha="$(ngraph_rev_parse)"
+    local cloned_repo_sha="$(ngraph_rev_parse "${repo_clone_location}")"
     if [ -z "${NGRAPH_REPO_SHA}" ]; then
         NGRAPH_REPO_SHA="${cloned_repo_sha}"
     fi
 
     if [[ "${NGRAPH_REPO_SHA}" != "${cloned_repo_sha}" ]]; then
-        checkout_ngraph_repo "${NGRAPH_REPO_SHA}"
+        checkout_ngraph_repo "${repo_clone_location}" "${NGRAPH_REPO_SHA}"
     fi
 
     run_ci
@@ -139,9 +140,10 @@ function parse_arguments {
 
 function cleanup() {
     # Performs cleanup of artifacts and containers from previous runs.
+    local repo_clone_location="${1}"
     local container_name_pattern="${DOCKER_CONTAINER_NAME_PATTERN/<OPERATING_SYSTEM>/*}"
     docker rm -f "$(docker ps -a --format="{{.ID}}" --filter="name=${container_name_pattern}")"
-    rm -rf "${WORKSPACE%/.ci*}/${NGRAPH_REPO_DIR_NAME}"
+    rm -rf "${repo_clone_location}/${NGRAPH_REPO_DIR_NAME}"
 
     return 0
 }
@@ -149,7 +151,8 @@ function cleanup() {
 
 function check_ngraph_repo() {
     # Verifies if nGraph-ONNX repository is present
-    local ngraph_git="${WORKSPACE}/${NGRAPH_REPO_DIR_NAME}/.git"
+    local repo_clone_location="${1}"
+    local ngraph_git="${repo_clone_location}/${NGRAPH_REPO_DIR_NAME}/.git"
     if [ -d "${ngraph_git}" ]; then
         # 0 - true
         return 0
@@ -161,9 +164,10 @@ function check_ngraph_repo() {
 
 function ngraph_rev_parse() {
     # Returns the result of git rev-parse on nGraph repository.
-    local rev_parse_args="${1}"
+    local repo_clone_location="${1}"
+    local rev_parse_args="${2}"
     local previous_dir="$(pwd)"
-    local ngraph_dir="${WORKSPACE}/${NGRAPH_REPO_DIR_NAME}"
+    local ngraph_dir="${repo_clone_location}/${NGRAPH_REPO_DIR_NAME}"
     cd "${ngraph_dir}"
     local result="$(git rev-parse ${rev_parse_args} HEAD)"
     cd "${previous_dir}"
@@ -174,9 +178,10 @@ function ngraph_rev_parse() {
 
 function checkout_ngraph_repo() {
     # Switches nGraph repository to commit SHA
-    local rev="${1}"
+    local repo_clone_location="${1}"
+    local rev="${2}"
     local previous_dir="$(pwd)"
-    cd "${WORKSPACE}/${NGRAPH_REPO_DIR_NAME}"
+    cd "${repo_clone_location}/${NGRAPH_REPO_DIR_NAME}"
     git checkout "${rev}"
     cd "${previous_dir}"
 
