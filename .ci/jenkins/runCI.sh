@@ -179,7 +179,6 @@ function checkout_ngraph_repo() {
 function run_ci() {
     # Builds necessary Docker images and executes CI
     local ngraph_onnx_ci_dockerfiles_dir="${WORKSPACE}/dockerfiles"
-    local ngraph_ci_dir="${WORKSPACE#*ngraph/}"
     for dockerfile in $(find ${ngraph_onnx_ci_dockerfiles_dir} -maxdepth 1 -name *.dockerfile -printf "%f"); do
         local operating_system="${dockerfile/.dockerfile/}"
         local docker_container_name="${DOCKER_CONTAINER_NAME_PATTERN/<OPERATING_SYSTEM>/$operating_system}"
@@ -253,8 +252,8 @@ function run_docker_container() {
 function prepare_environment() {
     # Prepares environment - builds nGraph
     local docker_container_name="${1}"
-    local ngraph_onnx_dir_name="${WORKSPACE%.ci*}"
-    local ngraph_onnx_ci_dir="${DOCKER_HOME}/${ngraph_onnx_dir_name}/${NGRAPH_ONNX_CI_DIR}"
+    local ngraph_onnx_path="${WORKSPACE%/.ci*}"
+    local ngraph_onnx_ci_dir="${DOCKER_HOME}/${ngraph_onnx_path##*/}/${NGRAPH_ONNX_CI_DIR}"
     docker exec ${docker_container_name} bash -c "${ngraph_onnx_ci_dir}/prepare_environment.sh \
                                                     --build-dir=${ngraph_onnx_ci_dir} \
                                                     --backends=${BACKENDS// /,}"
