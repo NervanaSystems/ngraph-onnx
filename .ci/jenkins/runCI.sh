@@ -106,12 +106,12 @@ function parse_arguments {
                 REBUILD="true"
                 echo "[INFO] nGraph is going to be rebuilt."
                 ;;
-            "--ngraph_onnx_branch="*)
+            "--ngraph_branch="*)
                 NGRAPH_REPO_BRANCH="${i//${PATTERN}/}"
                 ;;
-            "--ngraph_onnx_sha="*)
+            "--ngraph_sha="*)
                 NGRAPH_REPO_SHA="${i//${PATTERN}/}"
-                echo "[INFO] Using nGraph-ONNX commit ${NGRAPH_REPO_SHA}"
+                echo "[INFO] Using nGraph commit ${NGRAPH_REPO_SHA}"
                 ;;
             "--backends="*)
                 BACKENDS="${i//${PATTERN}/}"
@@ -126,7 +126,7 @@ function parse_arguments {
         esac
     done
 
-    echo "[INFO] Using nGraph-ONNX branch ${NGRAPH_REPO_BRANCH}"
+    echo "[INFO] Using nGraph branch ${NGRAPH_REPO_BRANCH}"
     echo "[INFO] Backends tested: ${BACKENDS}"
 
     return 0
