@@ -24,9 +24,9 @@ Arguments:
     --help                      - Displays this message.
     --cleanup                   - Removes docker container and files created during script execution, instead of running CI.
     --rebuild                   - Rebuilds nGraph and runs tox tests.
-    --ngraph_branch=...         - Will use specified branch of nGraph.
+    --ngraph-branch=...         - Will use specified branch of nGraph.
                                   Default: master
-    --ngraph_sha=...            - Checkout to specified nGraph commit.
+    --ngraph-sha=...            - Checkout to specified nGraph commit.
                                   Default: none - latest commit of cloned branch used
     --backends=...              - Comma separated list (no whitespaces!) of nGraph backends to run CI on.
                                   Default: cpu,interpreter
@@ -113,10 +113,10 @@ function parse_arguments {
                 REBUILD="true"
                 echo "[INFO] nGraph is going to be rebuilt."
                 ;;
-            "--ngraph_branch="*)
+            "--ngraph-branch="*)
                 NGRAPH_REPO_BRANCH="${i//${PATTERN}/}"
                 ;;
-            "--ngraph_sha="*)
+            "--ngraph-sha="*)
                 NGRAPH_REPO_SHA="${i//${PATTERN}/}"
                 echo "[INFO] Using nGraph commit ${NGRAPH_REPO_SHA}"
                 ;;
