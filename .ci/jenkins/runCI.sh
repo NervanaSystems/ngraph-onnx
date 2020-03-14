@@ -68,7 +68,6 @@ function main() {
     local ngraph_onnx_parrent_path="$(dirname ${NGRAPH_ONNX_ROOT_ABS_PATH})"
     WORKSPACE="${ngraph_onnx_parrent_path}"
     cd "${WORKSPACE}"
-    NGRAPH_REPO_PATH="${WORKSPACE}/${NGRAPH_REPO_DIR_NAME}"
 
     if [ "${CLEANUP}" = "true" ]; then
         cleanup
