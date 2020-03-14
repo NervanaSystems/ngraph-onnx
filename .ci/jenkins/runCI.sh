@@ -35,8 +35,6 @@ Arguments:
 NGRAPH_REPO_ADDRESS="https://github.com/NervanaSystems/ngraph.git"
 NGRAPH_REPO_DIR_NAME="ngraph"
 
-NGRAPH_ONNX_CI_DIR=".ci/jenkins"
-
 DEFAULT_NGRAPH_REPO_BRANCH="master"
 DEFAULT_NGRAPH_REPO_SHA=""
 
