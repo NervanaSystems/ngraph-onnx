@@ -67,6 +67,8 @@ function main() {
     NGRAPH_ONNX_ROOT_ABS_PATH="${NGRAPH_ONNX_CI_ABS_PATH%/.ci*}"
     local ngraph_onnx_parrent_path="$(dirname ${NGRAPH_ONNX_ROOT_ABS_PATH})"
     WORKSPACE="${ngraph_onnx_parrent_path}"
+    NGRAPH_REPO_PATH="${WORKSPACE}/${NGRAPH_REPO_DIR_NAME}"
+
     cd "${WORKSPACE}"
 
     if [ "${CLEANUP}" = "true" ]; then
@@ -75,11 +77,13 @@ function main() {
     fi
 
     if ! check_ngraph_repo; then
-        git clone "${NGRAPH_REPO_ADDRESS}" --branch "${NGRAPH_REPO_BRANCH}" "${WORKSPACE}/${NGRAPH_REPO_DIR_NAME}"
+        echo "[INFO] nGraph repository is going to be cloned to ${NGRAPH_REPO_PATH}"
+        git clone "${NGRAPH_REPO_ADDRESS}" --branch "${NGRAPH_REPO_BRANCH}" "${NGRAPH_REPO_PATH}"
     fi
 
     local cloned_repo_branch="$(ngraph_rev_parse "--abbrev-ref")"
     if [[ "${cloned_repo_branch}"!="${NGRAPH_REPO_BRANCH}" ]]; then
+        echo "[INFO] Checking out nGraph to ${NGRAPH_REPO_BRANCH}"
         checkout_ngraph_repo "${NGRAPH_REPO_BRANCH}"
     fi
 
@@ -89,6 +93,7 @@ function main() {
     fi
 
     if [[ "${NGRAPH_REPO_SHA}" != "${cloned_repo_sha}" ]]; then
+        echo "[INFO] Checking out nGraph to ${NGRAPH_REPO_SHA}"
         checkout_ngraph_repo "${NGRAPH_REPO_SHA}"
     fi
 
@@ -143,15 +148,16 @@ function parse_arguments {
 function cleanup() {
     # Performs cleanup of artifacts and containers from previous runs.
     local container_name_pattern="${DOCKER_CONTAINER_NAME_PATTERN/<OPERATING_SYSTEM>/*}"
+    echo "[INFO] Performing cleanup"
     docker rm -f "$(docker ps -a --format="{{.ID}}" --filter="name=${container_name_pattern}")"
-    rm -rf "${WORKSPACE}/${NGRAPH_REPO_DIR_NAME}"
+    rm -rf "${NGRAPH_REPO_PATH}"
 
     return 0
 }
 
 function check_ngraph_repo() {
     # Verifies if nGraph-ONNX repository is present
-    local ngraph_git="${WORKSPACE}/${NGRAPH_REPO_DIR_NAME}/.git"
+    local ngraph_git="${NGRAPH_REPO_PATH}/.git"
     if [ -d "${ngraph_git}" ]; then
         # 0 - true
         return 0
@@ -165,7 +171,7 @@ function ngraph_rev_parse() {
     # Returns the result of git rev-parse on nGraph repository.
     local rev_parse_args="${1}"
     local previous_dir="$(pwd)"
-    local ngraph_dir="${WORKSPACE}/${NGRAPH_REPO_DIR_NAME}"
+    local ngraph_dir="${NGRAPH_REPO_PATH}"
     cd "${ngraph_dir}"
     local result="$(git rev-parse ${rev_parse_args} HEAD)"
     cd "${previous_dir}"
@@ -178,7 +184,7 @@ function checkout_ngraph_repo() {
     # Switches nGraph repository to commit SHA
     local rev="${1}"
     local previous_dir="$(pwd)"
-    cd "${WORKSPACE}/${NGRAPH_REPO_DIR_NAME}"
+    cd "${NGRAPH_REPO_PATH}"
     git checkout "${rev}"
     cd "${previous_dir}"
 
@@ -190,6 +196,7 @@ function run_ci() {
 
     for dockerfile in $(find ${NGRAPH_ONNX_CI_ABS_PATH}/dockerfiles -maxdepth 1 -name *.dockerfile -printf "%f"); do
         local operating_system="${dockerfile/.dockerfile/}"
+        echo "[INFO] Running CI for operating system ${operating_system}"
         local docker_container_name="${DOCKER_CONTAINER_NAME_PATTERN/<OPERATING_SYSTEM>/$operating_system}"
         local docker_image_name="${DOCKER_IMAGE_NAME_PATTERN/<OPERATING_SYSTEM>/$operating_system}"
         # Rebuild container if REBUILD parameter used or if there's no container present
@@ -221,13 +228,13 @@ function build_docker_image() {
     local docker_image_name="${2}"
     local dockerfiles_dir="${NGRAPH_ONNX_CI_ABS_PATH}/dockerfiles"
     local postprocess_dockerfile_subpath="postprocess/append_user.dockerfile"
-    # build base image
+    echo "[INFO] Building base image"
     docker build \
         --build-arg http_proxy="${HTTP_PROXY}" \
         --build-arg https_proxy="${HTTPS_PROXY}" \
         -f "${dockerfiles_dir}/${operating_system}.dockerfile" \
         -t "${docker_image_name}:${DOCKER_BASE_IMAGE_TAG}" .
-    # build image with appended user
+    echo "[INFO] Building CI execution image with appended user"
     docker build \
         --build-arg base_image="${docker_image_name}:${DOCKER_BASE_IMAGE_TAG}" \
         --build-arg UID="$(id -u)" \
@@ -243,6 +250,7 @@ function run_docker_container() {
     # Runs Docker container using image specified as parameter
     local docker_image_name="${1}"
     local docker_container_name="${2}"
+    echo "[INFO] Running Docker container ${docker_container_name}"
     docker run -td \
                 --privileged \
                 --user "${USER}" \
@@ -256,6 +264,7 @@ function run_docker_container() {
 function prepare_environment() {
     # Prepares environment - builds nGraph
     local docker_container_name="${1}"
+    echo "[INFO] Building nGraph in Docker container ${docker_container_name}"
     docker exec ${docker_container_name} bash -c "${DOCKER_HOME}/"${NGRAPH_ONNX_CI_ABS_PATH#*$WORKSPACE/}"/prepare_environment.sh \
                                                     --build-dir=${WORKSPACE} \
                                                     --backends=${BACKENDS// /,}"
@@ -280,6 +289,7 @@ function run_backend_test() {
     local backend_env="NGRAPH_BACKEND=$(printf '%s\n' "${backend}" | awk '{ print toupper($0) }')"
     local ngraph_whl=$(docker exec ${docker_container_name} find ${DOCKER_HOME}/${NGRAPH_REPO_DIR_NAME}/python/dist/ -name 'ngraph*.whl')
     local tox_env="TOX_INSTALL_NGRAPH_FROM=${ngraph_whl}"
+    echo "[INFO] Running tox tests in Docker container ${docker_container_name} for ${backend} backend"
     docker exec -e "${tox_env}" -e "${backend_env}" -w "${DOCKER_HOME}/${NGRAPH_ONNX_ROOT_ABS_PATH#*$WORKSPACE/}" ${docker_container_name} tox -c .
 
     return 0
