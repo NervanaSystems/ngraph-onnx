@@ -32,6 +32,8 @@ echo "BACKEND_SKU_CONFIGURATIONS=${BACKEND_SKU_CONFIGURATIONS}"
 // --- CI constants ---
 NGRAPH_ONNX_REPO_ADDRESS="git@github.com:NervanaSystems/ngraph-onnx.git"
 NGRAPH_REPO_ADDRESS="git@github.com:NervanaSystems/ngraph.git"
+DLDT_REPO_ADDRESS = "git@gitlab-icv.inn.intel.com:inference-engine/dldt.git"
+
 CI_LABELS = "ngraph_onnx && ci"
 CI_DIR = "ngraph-onnx/.ci/jenkins"
 DOCKER_CONTAINER_NAME = "jenkins_ngraph-onnx_ci"
@@ -50,6 +52,7 @@ CONFIGURATION_WORKFLOW = { configuration ->
                 stage("Clone repositories") {
                     cloneRepository(NGRAPH_ONNX_REPO_ADDRESS, configuration.ngraphOnnxBranch)
                     cloneRepository(NGRAPH_REPO_ADDRESS, configuration.ngraphBranch)
+                    cloneRepository(DLDT_REPO_ADDRESS, configuration.ngraphBranch)
                 }
                 String imageName = "${DOCKER_REGISTRY}/aibt/aibt/ngraph_cpp/${configuration.os}/base"
                 stage("Prepare Docker image") {
@@ -102,7 +105,14 @@ def cloneRepository(String address, String branch) {
             checkout([$class: 'GitSCM',
                 branches: [[name: "${branch}"]],
                 doGenerateSubmoduleConfigurations: false,
-                extensions: [[$class: 'CloneOption', depth: 1, noTags: false, shallow: true, timeout: 30]],
+                extensions: [[
+                    $class: 'SubmoduleOption', 
+                    disableSubmodules: false, 
+                    parentCredentials: true, 
+                    recursiveSubmodules: true, 
+                    reference: '', 
+                    trackingSubmodules: false
+                ]], 
                 submoduleCfg: [],
                 userRemoteConfigs: [[credentialsId: "${JENKINS_GITHUB_CREDENTIAL_ID}",
                 url: "${address}"]]])
@@ -180,7 +190,7 @@ def cleanup() {
     deleteDir()
 }
 
-def getConfigurationsMap(String dockerfilesPath, String ngraphOnnxBranch, String ngraphBranch) {
+def getConfigurationsMap(String dockerfilesPath, String ngraphOnnxBranch, String ngraphBranch, String dldtBranch) {
     def configurationsMap = [:]
     def osImages = sh (script: "find ${dockerfilesPath} -maxdepth 1 -name '*.dockerfile' -printf '%f\n'",
                     returnStdout: true).trim().replaceAll(".dockerfile","").split("\n") as List
@@ -191,6 +201,7 @@ def getConfigurationsMap(String dockerfilesPath, String ngraphOnnxBranch, String
             configuration.os = os
             configuration.ngraphOnnxBranch = ngraphOnnxBranch
             configuration.ngraphBranch = ngraphBranch
+            configuration.dldtBranch = dldtBranch
             String backendLabels = configuration.backends.join(" && ")
             configuration.label = "${backendLabels} && ${configuration.sku} && ${CI_LABELS}"
             configuration.name = "${configuration.sku}-${configuration.os}"
