@@ -22,7 +22,7 @@ try {if(BACKEND_SKU_CONFIGURATION.trim() == "") {throw new Exception()}}
 catch (Exception e) {
     BACKEND_SKU_CONFIGURATIONS = [
         [ sku : "skx", backends : ["cpu", "interpreter"] ],
-        [ sku : "clx", backends : ["cpu", "interpreter"] ],
+        [ sku : "clx", backends : ["cpu", "interpreter", "ie"] ],
         [ sku : "bdw", backends : ["cpu", "interpreter"] ]
         // [ sku: "iris", backend : "igpu" ]
     ]
