@@ -53,9 +53,13 @@ CONFIGURATION_WORKFLOW = { configuration ->
             DOCKER_HOME = "/home/${USER}"
             try {
                 stage("Clone repositories") {
-                    cloneRepository(NGRAPH_ONNX_REPO_ADDRESS, configuration.ngraphOnnxBranch)
-                    cloneRepository(NGRAPH_REPO_ADDRESS, configuration.ngraphBranch)
-                    cloneRepository(DLDT_REPO_ADDRESS, configuration.ngraphBranch, JENKINS_GITLAB_CREDENTIAL_ID)
+                    gitClone( "Clone ngraph-onnx", NGRAPH_ONNX_REPO_ADDRESS, configuration.ngraphOnnxBranch)
+                    gitClone( "Clone ngraph", NGRAPH_REPO_ADDRESS, configuration.ngraphBranch)
+                    gitClone( "Clone dldt", DLDT_REPO_ADDRESS, configuration.dldtBranch, JENKINS_GITLAB_CREDENTIAL_ID)
+
+                    // cloneRepository(NGRAPH_ONNX_REPO_ADDRESS, configuration.ngraphOnnxBranch)
+                    // cloneRepository(NGRAPH_REPO_ADDRESS, configuration.ngraphBranch)
+                    // cloneRepository(DLDT_REPO_ADDRESS, configuration.dldtBranch, JENKINS_GITLAB_CREDENTIAL_ID)
                 }
                 String imageName = "${DOCKER_REGISTRY}/aibt/aibt/ngraph_cpp/${configuration.os}/base"
                 stage("Prepare Docker image") {
@@ -121,6 +125,25 @@ def cloneRepository(String address, String branch, String credential_id=JENKINS_
                 url: "${address}"]]])
         }
     }
+}
+
+def gitClone( String label, String address, String branch, String credential_id=JENKINS_GITHUB_CREDENTIAL_ID) {
+    repositoryName = address.split("/").last().replace(".git","")
+
+    sh  label: label,
+        script:
+    """
+        ${HOST_GIT_BIN} clone \
+            -b ${branch} \
+            --single-branch \
+            --no-tags \
+            --reference ${refDir} \
+            --dissociate \
+            --depth 1 \
+            --verbose \
+            ${address} \
+            \${WORKDIR}/${repositoryName}
+    """
 }
 
 def pullDockerImage(String imageName) {
