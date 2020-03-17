@@ -37,8 +37,11 @@ DLDT_REPO_ADDRESS = "git@gitlab-icv.inn.intel.com:inference-engine/dldt.git"
 CI_LABELS = "ngraph_onnx && ci"
 CI_DIR = "ngraph-onnx/.ci/jenkins"
 DOCKER_CONTAINER_NAME = "jenkins_ngraph-onnx_ci"
+
 JENKINS_GITHUB_CREDENTIAL_ID = "7157091e-bc04-42f0-99fd-dc4da2922a55"
+JENKINS_GITLAB_CREDENTIAL_ID = "1caab8d7-1d0c-4b8a-9438-b65336862ead"
 JENKINS_HEADLESS_CREDENTIAL_ID = "19d4cefb-3ef3-4632-9553-10f5b9211bd5"
+
 BASE_IMAGE_TAG = "ci"
 POSTPROCESS_DOCKERFILE = "append_user.dockerfile"
 EXECUTE_IMAGE_TAG = "ci_run"
@@ -52,7 +55,7 @@ CONFIGURATION_WORKFLOW = { configuration ->
                 stage("Clone repositories") {
                     cloneRepository(NGRAPH_ONNX_REPO_ADDRESS, configuration.ngraphOnnxBranch)
                     cloneRepository(NGRAPH_REPO_ADDRESS, configuration.ngraphBranch)
-                    cloneRepository(DLDT_REPO_ADDRESS, configuration.ngraphBranch)
+                    cloneRepository(DLDT_REPO_ADDRESS, configuration.ngraphBranch, JENKINS_GITLAB_CREDENTIAL_ID)
                 }
                 String imageName = "${DOCKER_REGISTRY}/aibt/aibt/ngraph_cpp/${configuration.os}/base"
                 stage("Prepare Docker image") {
@@ -98,7 +101,7 @@ CONFIGURATION_WORKFLOW = { configuration ->
     }
 }
 
-def cloneRepository(String address, String branch) {
+def cloneRepository(String address, String branch, String credential_id=JENKINS_GITHUB_CREDENTIAL_ID) {
     repositoryName = address.split("/").last().replace(".git","")
     dir ("${WORKDIR}/${repositoryName}") {
         retry(3) {
@@ -114,7 +117,7 @@ def cloneRepository(String address, String branch) {
                     trackingSubmodules: false
                 ]], 
                 submoduleCfg: [],
-                userRemoteConfigs: [[credentialsId: "${JENKINS_GITHUB_CREDENTIAL_ID}",
+                userRemoteConfigs: [[credentialsId: "${credential_id}",
                 url: "${address}"]]])
         }
     }
