@@ -59,6 +59,7 @@ def import_and_compute_conv(x, weights, transpose=False, **attributes):
     return computation(x, weights)[0]
 
 
+@pytest.mark.skip_on_ie  # RuntimeError: Layer Y input port 1 is not connected to any data
 def test_2d_conv():
     # x should have shape N(batch) x C x H x W
     input_x = np.array([
@@ -124,6 +125,7 @@ def test_2d_conv():
                                    dtype=np.float32))
 
 
+@pytest.mark.skip_on_ie  # RuntimeError: Layer Y input port 1 is not connected to any data
 def test_3d_conv():
     # x should have shape N(batch) x C x H x W x D
     input_x = np.array([
@@ -168,6 +170,7 @@ def test_3d_conv():
                                    dtype=np.float32))
 
 
+@pytest.mark.skip_on_ie  # RuntimeError: Layer Y input port 1 is not connected to any data
 def test_2d_conv_transpose():
     # x should have shape N(batch) x C x H x W
     input_x = np.array(
@@ -254,6 +257,9 @@ def test_pad_opset_2():
         run_model(model, [x])
 
 
+# Error of validate layer: B with type: Pad. Cannot parse parameter pads_begin
+# from IR for layer B. Value -1,0 cannot be casted to int.
+@pytest.mark.skip_on_ie
 def test_pad_negative_values_begin():
     x = np.ones((2, 2), dtype=np.float32)
 
@@ -268,6 +274,9 @@ def test_pad_negative_values_begin():
     assert np.array_equal(ng_result, np.array([[1], [1]]))
 
 
+# Error of validate layer: B with type: Pad. Cannot parse parameter pads_begin
+# from IR for layer B. Value -1,0 cannot be casted to int.
+@pytest.mark.skip_on_ie
 def test_pad_negative_values_end():
     x = np.ones((2, 2), dtype=np.float32)
 
