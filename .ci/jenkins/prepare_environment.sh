@@ -21,10 +21,10 @@ set -e
 
 function build_ngraph() {
     set -x
-    local ngraph_directory="$1"
+    local directory="$1"
     local backends="$2"
-    CMAKE_ARGS="-DNGRAPH_TOOLS_ENABLE=FALSE -DNGRAPH_WARNINGS_AS_ERRORS=TRUE -DCMAKE_BUILD_TYPE=Release -DNGRAPH_UNIT_TEST_ENABLE=FALSE -DNGRAPH_USE_PREBUILT_LLVM=TRUE -DNGRAPH_ONNX_IMPORT_ENABLE=TRUE -DCMAKE_INSTALL_PREFIX=${ngraph_directory}/ngraph_dist"
-    cd "${ngraph_directory}/ngraph"
+    CMAKE_ARGS="-DNGRAPH_TOOLS_ENABLE=FALSE -DNGRAPH_WARNINGS_AS_ERRORS=TRUE -DCMAKE_BUILD_TYPE=Release -DNGRAPH_UNIT_TEST_ENABLE=FALSE -DNGRAPH_USE_PREBUILT_LLVM=TRUE -DNGRAPH_ONNX_IMPORT_ENABLE=TRUE -DCMAKE_INSTALL_PREFIX=${directory}/ngraph_dist"
+    cd "${directory}/ngraph"
 
     # CMAKE args for nGraph backends
     if [[ ${backends} == *"igpu"* ]]; then
@@ -36,24 +36,39 @@ function build_ngraph() {
         CMAKE_ARGS="${CMAKE_ARGS} -DNGRAPH_INTELGPU_ENABLE=TRUE"
     fi
 
-    cd "${ngraph_directory}/ngraph"
+    cd "${directory}/ngraph"
     mkdir -p ./build
     cd ./build
     cmake ${CMAKE_ARGS} ..  || return 1
     make -j $(lscpu --parse=CORE | grep -v '#' | sort | uniq | wc -l) || return 1
     make install || return 1
-    cd "${ngraph_directory}/ngraph/python"
+    cd "${directory}/ngraph/python"
     if [ ! -d ./pybind11 ]; then
         git clone --recursive https://github.com/pybind/pybind11.git
     fi
-    rm -f "${ngraph_directory}"/ngraph/python/dist/ngraph*.whl
-    rm -rf "${ngraph_directory}/ngraph/python/*.so ${ngraph_directory}/ngraph/python/build"
-    export PYBIND_HEADERS_PATH="${ngraph_directory}/ngraph/python/pybind11"
-    export NGRAPH_CPP_BUILD_PATH="${ngraph_directory}/ngraph_dist"
+    rm -f "${directory}"/ngraph/python/dist/ngraph*.whl
+    rm -rf "${directory}/ngraph/python/*.so ${directory}/ngraph/python/build"
+    export PYBIND_HEADERS_PATH="${directory}/ngraph/python/pybind11"
+    export NGRAPH_CPP_BUILD_PATH="${directory}/ngraph_dist"
     export NGRAPH_ONNX_IMPORT_ENABLE="TRUE"
     python3 setup.py bdist_wheel || return 1
     # Clean build artifacts
-    rm -rf "${ngraph_directory}/ngraph_dist"
+    rm -rf "${directory}/ngraph_dist"
+    return 0
+}
+
+function build_dldt() {
+    set -x
+    local directory="$1"
+    CMAKE_ARGS="-DCMAKE_BUILD_TYPE=Release -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DENABLE_PERFORMANCE_TESTS=ON -DENABLE_TESTS=ON -DNGRAPH_INTERPRETER_ENABLE=ON -DNGRAPH_DEBUG_ENABLE=OFF -DENABLE_SAMPLES=OFF -DENABLE_PYTHON=ON -DENABLE_FUNCTIONAL_TESTS=ON -DENABLE_MODELS=OFF -DENABLE_PRIVATE_MODELS=OFF -DENABLE_GNA=OFF -DENABLE_VPU=OFF -DENABLE_SANITIZER=OFF -DENABLE_MYRIAD=OFF -DENABLE_MKL_DNN=ON -DENABLE_CLDNN=OFF -DENABLE_VALIDATION_SET=OFF -DPYTHON_EXECUTABLE=`which python` -DNGRAPH_ONNX_IMPORT_ENABLE=ON -DNGRAPH_UNIT_TEST_OPENVINO_ENABLE=TRUE -DNGRAPH_IE_ENABLE=ON -DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX -DNGRAPH_DYNAMIC_COMPONENTS_ENABLE=ON"
+    cd "${directory}/dldt"
+
+    # CMAKE args for nGraph backends
+    mkdir -p ./build
+    cd ./build
+    cmake ${CMAKE_ARGS} ..  || return 1
+    make -j $(lscpu --parse=CORE | grep -v '#' | sort | uniq | wc -l) || return 1
+    make install || return 1
     return 0
 }
 
@@ -84,8 +99,12 @@ function main() {
         esac
     done
 
-    BUILD_CALL="build_ngraph \"${BUILD_DIR}\" \"${BACKENDS}\""
-    eval "${BUILD_CALL}"
+    BUILD_NGRAPH_CALL="build_ngraph \"${BUILD_DIR}\" \"${BACKENDS}\""
+    BUILD_DLDT_CALL="build_dldt \"${BUILD_DIR}\""
+
+    eval "${BUILD_NGRAPH_CALL}"
+    eval "${BUILD_DLDT_CALL}"
+
 }
 
 if [[ ${BASH_SOURCE[0]} == "${0}" ]]; then

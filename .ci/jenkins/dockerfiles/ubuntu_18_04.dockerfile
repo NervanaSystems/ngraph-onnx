@@ -1,4 +1,4 @@
-FROM ubuntu:16.04
+FROM ubuntu:18.04
 
 ARG HOME=/root
 ARG http_proxy
@@ -8,20 +8,20 @@ ENV https_proxy ${https_proxy}
 
 # nGraph dependencies
 RUN apt-get update && apt-get -y --no-install-recommends install \
-        build-essential=12.1ubuntu2 \
-        cmake=3.5.1-1ubuntu3 \
-        clang-3.9=1:3.9.1-4ubuntu3~16.04.2 \
-        git=1:2.7.4-0ubuntu1.6 \
-        curl=7.47.0-1ubuntu2.13 \
-        wget=1.17.1-1ubuntu1.5 \
-        zlib1g=1:1.2.8.dfsg-2ubuntu4.1 \
-        zlib1g-dev=1:1.2.8.dfsg-2ubuntu4.1 \
-        libtinfo-dev=6.0+20160213-1ubuntu1 \
-        unzip=6.0-20ubuntu1 \
-        autoconf=2.69-9 \
-        automake=1:1.15-4ubuntu1 \
+        build-essential \
+        cmake \
+        clang-3.9  \
+        git \
+        curl  \
+        wget  \
+        zlib1g \
+        zlib1g-dev \
+        libtinfo-dev  \
+        unzip \
+        autoconf \
+        automake \
         ocl-icd-opencl-dev \
-        libtool=2.4.6-0.1 && \
+        libtool  && \
   apt-get clean autoclean && \
   apt-get autoremove -y
 
@@ -30,7 +30,7 @@ ARG opencl_url="https://github.com/intel/compute-runtime/releases/download"
 ARG opencl_version="19.29.13530"
 ARG igc_version="1.0.10-2306"
 ARG gmmlib_version="19.2.3"
-WORKDIR ${HOME}/intel-opencl
+WORKDIR /tmp/intel-opencl
 RUN wget --no-check-certificate ${opencl_url}/${opencl_version}/intel-gmmlib_${gmmlib_version}_amd64.deb && \
     wget --no-check-certificate ${opencl_url}/${opencl_version}/intel-igc-core_${igc_version}_amd64.deb && \
     wget --no-check-certificate ${opencl_url}/${opencl_version}/intel-igc-opencl_${igc_version}_amd64.deb && \
@@ -40,24 +40,43 @@ RUN wget --no-check-certificate ${opencl_url}/${opencl_version}/intel-gmmlib_${g
 
 # Python dependencies
 RUN apt-get -y --no-install-recommends install \
-        python3=3.5.1-3 \
-        python3-pip=8.1.1-2ubuntu0.4 \
-        python3-dev=3.5.1-3 \
-        python-virtualenv=15.0.1+ds-3ubuntu1 && \
+        python3 \
+        python3-pip \
+        python3-dev  \
+        python-virtualenv && \
     apt-get clean autoclean && \
     apt-get autoremove -y
 
-RUN pip3 install --upgrade pip==19.0.3 \
-        setuptools==41.0.0 \
-        wheel==0.33.1
+RUN pip3 install --upgrade \
+        setuptools \
+        wheel 
 
 # ONNX dependencies
 RUN apt-get -y --no-install-recommends install \
-        protobuf-compiler=2.6.1-1.3 \
-        libprotobuf-dev=2.6.1-1.3 && \
+        protobuf-compiler \
+        libprotobuf-dev && \
     apt-get clean autoclean && \
     apt-get autoremove -y && \
     rm -rf /var/lib/apt/lists/*
+
+# Inference Engine dependencies
+RUN apt-get update && apt-get install -y \
+        libssl-dev \
+        ca-certificates \
+        libboost-regex-dev \
+        gcc-multilib \
+        g++-multilib \
+        libgtk2.0-dev \
+        pkg-config \
+        libcairo2-dev \
+        libpango1.0-dev \
+        libglib2.0-dev \
+        libgtk2.0-dev \
+        libswscale-dev \
+        libavcodec-dev \
+        libavformat-dev \
+        libusb-1.0-0-dev && \
+        apt-get clean autoclean && apt-get autoremove -y
 
 # Install tox
 RUN pip3 install tox

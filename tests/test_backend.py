@@ -591,4 +591,3 @@ if selected_backend_name == 'IE':
     # RuntimeError: Node Split contains empty child edge for index 0
     expect_fail('OnnxBackendPyTorchConvertedModelTest.test_GLU_cpu')
     expect_fail('OnnxBackendPyTorchConvertedModelTest.test_GLU_dim_cpu')
-

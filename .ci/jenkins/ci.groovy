@@ -118,17 +118,23 @@ def cloneRepository(String address, String branch, String credential_id=JENKINS_
             checkout([$class: 'GitSCM',
                 branches: [[name: "${branch}"]],
                 doGenerateSubmoduleConfigurations: false,
-                extensions: [[
-                    $class: 'CloneOption',
-                    depth: 1,
-                    noTags: true,
-                    shallow: true,
-                    timeout: 30
-                ]],
-                submoduleCfg: [[
-                    shallow: true,
-                    depth: 1
-                ]],
+                extensions: [
+                    [
+                        $class: 'CloneOption',
+                        depth: 1,
+                        noTags: true,
+                        shallow: true,
+                        timeout: 30
+                    ]
+                    // [
+                    //     $class: 'SubmoduleOption',
+                    //     depth: 1,
+                    //     disableSubmodules: true,
+                    //     shallow: true,
+                    //     timeout: 30
+                    // ]
+                ],
+                submoduleCfg: [],
                 userRemoteConfigs: [[credentialsId: "${credential_id}",
                 url: "${address}"]]])
         }
