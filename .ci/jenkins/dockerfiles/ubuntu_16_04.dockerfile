@@ -9,7 +9,6 @@ ENV https_proxy ${https_proxy}
 # nGraph dependencies
 RUN apt-get update && apt-get -y --no-install-recommends install \
         build-essential=12.1ubuntu2 \
-        cmake=3.5.1-1ubuntu3 \
         clang-3.9=1:3.9.1-4ubuntu3~16.04.2 \
         git=1:2.7.4-0ubuntu1.6 \
         curl=7.47.0-1ubuntu2.13 \
@@ -24,6 +23,11 @@ RUN apt-get update && apt-get -y --no-install-recommends install \
         libtool=2.4.6-0.1 && \
   apt-get clean autoclean && \
   apt-get autoremove -y
+
+RUN wget https://www.cmake.org/files/v3.13/cmake-3.13.3.tar.gz && \
+    tar xf cmake-3.13.3.tar.gz && \
+    (cd cmake-3.13.3 && ./bootstrap --parallel=$(nproc --all) && make --jobs=$(nproc --all) && make install) && \
+    rm -rf cmake-3.13.3 cmake-3.13.3.tar.gz
 
 # install the iGPU drivers copied into the container from the build context
 ARG opencl_url="https://github.com/intel/compute-runtime/releases/download"
