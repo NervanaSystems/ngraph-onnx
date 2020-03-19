@@ -39,7 +39,6 @@ function build_ngraph() {
     cd "${ngraph_directory}/ngraph"
     mkdir -p ./build
     cd ./build
-    ./bootstrap --system-curl
     cmake ${CMAKE_ARGS} ..  || return 1
     make -j $(lscpu --parse=CORE | grep -v '#' | sort | uniq | wc -l) || return 1
     make install || return 1
