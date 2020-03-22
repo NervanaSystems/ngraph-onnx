@@ -1,6 +1,5 @@
 FROM ubuntu:16.04
 
-ARG HOME=/root
 ARG http_proxy
 ARG https_proxy
 ENV http_proxy ${http_proxy}
@@ -8,8 +7,8 @@ ENV https_proxy ${https_proxy}
 
 # nGraph dependencies
 RUN apt-get update && apt-get -y --no-install-recommends install \
+        libcurl4-openssl-dev=7.47.0-1ubuntu2.14 \
         build-essential=12.1ubuntu2 \
-        cmake=3.5.1-1ubuntu3 \
         clang-3.9=1:3.9.1-4ubuntu3~16.04.2 \
         git=1:2.7.4-0ubuntu1.7 \
         curl=7.47.0-1ubuntu2.14 \
@@ -20,10 +19,15 @@ RUN apt-get update && apt-get -y --no-install-recommends install \
         unzip=6.0-20ubuntu1 \
         autoconf=2.69-9 \
         automake=1:1.15-4ubuntu1 \
-        ocl-icd-opencl-dev \
+        ocl-icd-opencl-dev=2.2.8-1 \
         libtool=2.4.6-0.1 && \
   apt-get clean autoclean && \
   apt-get autoremove -y
+
+RUN wget https://www.cmake.org/files/v3.13/cmake-3.13.3.tar.gz --no-check-certificate && \
+    tar xf cmake-3.13.3.tar.gz && \
+    (cd cmake-3.13.3 && ./bootstrap --system-curl --parallel=$(nproc --all) && make --jobs=$(nproc --all) && make install) && \
+    rm -rf cmake-3.13.3 cmake-3.13.3.tar.gz
 
 # install the iGPU drivers copied into the container from the build context
 ARG opencl_url="https://github.com/intel/compute-runtime/releases/download"
