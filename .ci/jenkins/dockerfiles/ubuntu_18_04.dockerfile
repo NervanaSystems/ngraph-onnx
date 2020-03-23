@@ -1,4 +1,4 @@
-FROM ubuntu:16.04
+FROM ubuntu:18.04
 
 ARG http_proxy
 ARG https_proxy
@@ -7,20 +7,20 @@ ENV https_proxy ${https_proxy}
 
 # nGraph dependencies
 RUN apt-get update && apt-get -y --no-install-recommends install \
-        libcurl4-openssl-dev=7.47.0-1ubuntu2.14 \
-        build-essential=12.1ubuntu2 \
-        clang-3.9=1:3.9.1-4ubuntu3~16.04.2 \
-        git=1:2.7.4-0ubuntu1.7 \
-        curl=7.47.0-1ubuntu2.14 \
-        wget=1.17.1-1ubuntu1.5 \
-        zlib1g=1:1.2.8.dfsg-2ubuntu4.3 \
-        zlib1g-dev=1:1.2.8.dfsg-2ubuntu4.3 \
-        libtinfo-dev=6.0+20160213-1ubuntu1 \
-        unzip=6.0-20ubuntu1 \
-        autoconf=2.69-9 \
-        automake=1:1.15-4ubuntu1 \
-        ocl-icd-opencl-dev=2.2.8-1 \
-        libtool=2.4.6-0.1 && \
+        libcurl4-openssl-dev \
+        build-essential \
+        clang-3.9 \
+        git \
+        curl \
+        wget \
+        zlib1g \
+        zlib1g-dev \
+        libtinfo-dev \
+        unzip \
+        autoconf \
+        automake \
+        ocl-icd-opencl-dev \
+        libtool && \
   apt-get clean autoclean && \
   apt-get autoremove -y
 
@@ -44,10 +44,10 @@ RUN wget --no-check-certificate ${opencl_url}/${opencl_version}/intel-gmmlib_${g
 
 # Python dependencies
 RUN apt-get -y --no-install-recommends install \
-        python3=3.5.1-3 \
-        python3-pip=8.1.1-2ubuntu0.4 \
-        python3-dev=3.5.1-3 \
-        python-virtualenv=15.0.1+ds-3ubuntu1 && \
+        python3 \
+        python3-pip \
+        python3-dev \
+        python-virtualenv && \
     apt-get clean autoclean && \
     apt-get autoremove -y
 
@@ -57,8 +57,8 @@ RUN pip3 install --upgrade pip==19.0.3 \
 
 # ONNX dependencies
 RUN apt-get -y --no-install-recommends install \
-        protobuf-compiler=2.6.1-1.3 \
-        libprotobuf-dev=2.6.1-1.3 && \
+        protobuf-compiler \
+        libprotobuf-dev && \
     apt-get clean autoclean && \
     apt-get autoremove -y && \
     rm -rf /var/lib/apt/lists/*

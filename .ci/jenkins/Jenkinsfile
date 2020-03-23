@@ -104,7 +104,8 @@ pipeline {
         CI_DIR = "ngraph-onnx/.ci/jenkins"
         NGRAPH_ONNX_REPO_ADDRESS = "git@github.com:NervanaSystems/ngraph-onnx.git"
         NGRAPH_ONNX_BRANCH="${CHANGE_BRANCH}"
-        NGRAPH_BRANCH="master"
+        NGRAPH_BRANCH="mozga-intel/onnx_dldt_backend"
+        DLDT_BRANCH = "master"
     }
     options {
         skipDefaultCheckout true
@@ -124,7 +125,7 @@ pipeline {
                     dir("${WORKDIR}/${CI_DIR}") {
                         CI_FUNCTIONS = load "ci.groovy"
                         dockerfilesDir = "./dockerfiles"
-                        parallelStagesMap = CI_FUNCTIONS.getConfigurationsMap(dockerfilesDir, NGRAPH_ONNX_BRANCH, NGRAPH_BRANCH)
+                        parallelStagesMap = CI_FUNCTIONS.getConfigurationsMap(dockerfilesDir, NGRAPH_ONNX_BRANCH, NGRAPH_BRANCH, DLDT_BRANCH)
                         parallel parallelStagesMap
                     }
                 }

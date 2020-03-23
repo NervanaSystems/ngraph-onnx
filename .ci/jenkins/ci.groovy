@@ -22,7 +22,7 @@ try {if(BACKEND_SKU_CONFIGURATION.trim() == "") {throw new Exception()}}
 catch (Exception e) {
     BACKEND_SKU_CONFIGURATIONS = [
         [ sku : "skx", backends : ["cpu", "interpreter"] ],
-        [ sku : "clx", backends : ["cpu", "interpreter"] ],
+        [ sku : "clx", backends : ["cpu", "interpreter", "ie"] ],
         [ sku : "bdw", backends : ["cpu", "interpreter"] ]
         // [ sku: "iris", backend : "igpu" ]
     ]
@@ -32,11 +32,16 @@ echo "BACKEND_SKU_CONFIGURATIONS=${BACKEND_SKU_CONFIGURATIONS}"
 // --- CI constants ---
 NGRAPH_ONNX_REPO_ADDRESS="git@github.com:NervanaSystems/ngraph-onnx.git"
 NGRAPH_REPO_ADDRESS="git@github.com:NervanaSystems/ngraph.git"
+DLDT_REPO_ADDRESS = "git@gitlab-icv.inn.intel.com:inference-engine/dldt.git"
+
 CI_LABELS = "ngraph_onnx && ci"
 CI_DIR = "ngraph-onnx/.ci/jenkins"
 DOCKER_CONTAINER_NAME = "jenkins_ngraph-onnx_ci"
+
 JENKINS_GITHUB_CREDENTIAL_ID = "7157091e-bc04-42f0-99fd-dc4da2922a55"
+JENKINS_GITLAB_CREDENTIAL_ID = "1caab8d7-1d0c-4b8a-9438-b65336862ead"
 JENKINS_HEADLESS_CREDENTIAL_ID = "19d4cefb-3ef3-4632-9553-10f5b9211bd5"
+
 BASE_IMAGE_TAG = "ci"
 POSTPROCESS_DOCKERFILE = "append_user.dockerfile"
 EXECUTE_IMAGE_TAG = "ci_run"
@@ -48,10 +53,23 @@ CONFIGURATION_WORKFLOW = { configuration ->
             DOCKER_HOME = "/home/${USER}"
             try {
                 stage("Clone repositories") {
-                    cloneRepository(NGRAPH_ONNX_REPO_ADDRESS, configuration.ngraphOnnxBranch)
-                    cloneRepository(NGRAPH_REPO_ADDRESS, configuration.ngraphBranch)
+                    dir (WORKDIR) {
+                        gitClone("Clone ngraph-onnx", NGRAPH_ONNX_REPO_ADDRESS, configuration.ngraphOnnxBranch)
+                    }
+                    dir (WORKDIR) {
+                        gitClone("Clone ngraph", NGRAPH_REPO_ADDRESS, configuration.ngraphBranch)
+                    }
+                    dir (WORKDIR) {
+                        gitClone("Clone dldt", DLDT_REPO_ADDRESS, configuration.dldtBranch)
+                    }
+                    gitSubmoduleUpdate("dldt")
+
+                    
+                    // cloneRepository(NGRAPH_ONNX_REPO_ADDRESS, configuration.ngraphOnnxBranch)
+                    // cloneRepository(NGRAPH_REPO_ADDRESS, configuration.ngraphBranch) 
+                    // cloneRepository(DLDT_REPO_ADDRESS, configuration.dldtBranch, JENKINS_GITLAB_CREDENTIAL_ID)
                 }
-                String imageName = "${DOCKER_REGISTRY}/aibt/aibt/ngraph_cpp/${configuration.os}/base"
+                String imageName = "${DOCKER_REGISTRY}/aibt/aibt/ngraph_cpp/${configuration.os}/ubuntu_18_04"
                 stage("Prepare Docker image") {
                     pullDockerImage(imageName)
                     appendUserToDockerImage(imageName)
@@ -95,18 +113,65 @@ CONFIGURATION_WORKFLOW = { configuration ->
     }
 }
 
-def cloneRepository(String address, String branch) {
+def cloneRepository(String address, String branch, String credential_id=JENKINS_GITHUB_CREDENTIAL_ID) {
     repositoryName = address.split("/").last().replace(".git","")
     dir ("${WORKDIR}/${repositoryName}") {
         retry(3) {
             checkout([$class: 'GitSCM',
-                branches: [[name: "${branch}"]],
-                doGenerateSubmoduleConfigurations: false,
-                extensions: [[$class: 'CloneOption', depth: 1, noTags: false, shallow: true, timeout: 30]],
+                branches: [[name: "refs/heads/${branch}"]],
+                doGenerateSubmoduleConfigurations: true,
+                extensions: [
+                    [
+                        $class: 'CloneOption',
+                        depth: 1,
+                        noTags: true,
+                        shallow: true,
+                        timeout: 30
+                    ],
+                    [
+                        $class: 'SubmoduleOption',
+                        recursiveSubmodules: true,
+                        depth: 1,
+                        disableSubmodules: false,
+                        shallow: true,
+                        timeout: 30
+                    ]
+                ],
                 submoduleCfg: [],
-                userRemoteConfigs: [[credentialsId: "${JENKINS_GITHUB_CREDENTIAL_ID}",
+                userRemoteConfigs: [[credentialsId: "${credential_id}",
                 url: "${address}"]]])
         }
+        }
+}
+
+
+def gitClone(String label, String address, String branch) {
+    repositoryName = address.split("/").last().replace(".git","")
+
+    sh  label: label,
+        script:
+    """
+        git clone \
+            -b ${branch} \
+            --single-branch \
+            --no-tags \
+            --dissociate \
+            --depth 1 \
+            --verbose \
+            ${address} \
+            ${WORKDIR}/${repositoryName}
+    """
+}
+def gitSubmoduleUpdate(String repository_name, String exception="") {
+    dir ("${WORKDIR}/${repository_name}") {
+        sh  label: "Init ${repository_name} submodules",
+            script:
+        """
+            git submodule init && git submodule update \
+                --init \
+                --no-fetch \
+                --recursive 
+        """
     }
 }
 
@@ -165,7 +230,7 @@ def runToxTests(String backend) {
     String toxEnvVar = "TOX_INSTALL_NGRAPH_FROM=\${NGRAPH_WHL}"
     String backendEnvVar = "NGRAPH_BACKEND=${backend.toUpperCase()}"
     sh """
-        NGRAPH_WHL=\$(docker exec ${DOCKER_CONTAINER_NAME} find ${DOCKER_HOME}/ngraph/python/dist/ -name 'ngraph*.whl')
+        NGRAPH_WHL=\$(docker exec ${DOCKER_CONTAINER_NAME} find ${DOCKER_HOME}/dldt/ngraph/python/dist/ -name 'ngraph*.whl')
         docker exec -e ${toxEnvVar} -e ${backendEnvVar} -w ${DOCKER_HOME}/ngraph-onnx ${DOCKER_CONTAINER_NAME} \
             tox -c .
     """
@@ -177,10 +242,10 @@ def cleanup() {
         docker rm -f \$(docker ps -a -q) || true
         printf 'y' | docker system prune
     """
-    deleteDir()
+    // deleteDir()
 }
 
-def getConfigurationsMap(String dockerfilesPath, String ngraphOnnxBranch, String ngraphBranch) {
+def getConfigurationsMap(String dockerfilesPath, String ngraphOnnxBranch, String ngraphBranch, String dldtBranch) {
     def configurationsMap = [:]
     def osImages = sh (script: "find ${dockerfilesPath} -maxdepth 1 -name '*.dockerfile' -printf '%f\n'",
                     returnStdout: true).trim().replaceAll(".dockerfile","").split("\n") as List
@@ -191,6 +256,7 @@ def getConfigurationsMap(String dockerfilesPath, String ngraphOnnxBranch, String
             configuration.os = os
             configuration.ngraphOnnxBranch = ngraphOnnxBranch
             configuration.ngraphBranch = ngraphBranch
+            configuration.dldtBranch = dldtBranch
             String backendLabels = configuration.backends.join(" && ")
             configuration.label = "${backendLabels} && ${configuration.sku} && ${CI_LABELS}"
             configuration.name = "${configuration.sku}-${configuration.os}"
