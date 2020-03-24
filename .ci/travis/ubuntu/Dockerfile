@@ -5,10 +5,10 @@ RUN apt-get -y update
 # nGraph dependencies
 RUN apt-get update && apt-get install -y \
   build-essential \
-  cmake \
   clang-3.9 \
   git \
   curl \
+  libcurl4-openssl-dev \
   zlib1g \
   zlib1g-dev \
   libtinfo-dev \
@@ -17,6 +17,11 @@ RUN apt-get update && apt-get install -y \
   automake \
   libtool && \
   apt-get clean autoclean && apt-get autoremove -y
+
+RUN wget https://www.cmake.org/files/v3.13/cmake-3.13.3.tar.gz --no-check-certificate && \
+    tar xf cmake-3.13.3.tar.gz && \
+    (cd cmake-3.13.3 && ./bootstrap --system-curl --parallel=$(nproc --all) && make --jobs=$(nproc --all) && make install) && \
+    rm -rf cmake-3.13.3 cmake-3.13.3.tar.gz
 
 # Python dependencies
 RUN apt-get update && apt-get install -y \
