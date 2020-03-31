@@ -104,7 +104,7 @@ pipeline {
         CI_DIR = "ngraph-onnx/.ci/jenkins"
         NGRAPH_ONNX_REPO_ADDRESS = "git@github.com:NervanaSystems/ngraph-onnx.git"
         NGRAPH_ONNX_BRANCH="${CHANGE_BRANCH}"
-        NGRAPH_BRANCH="mozga-intel/onnx_dldt_backend"
+        NGRAPH_BRANCH="master"
         DLDT_BRANCH = "master"
     }
     options {

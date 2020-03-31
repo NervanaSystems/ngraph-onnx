@@ -53,48 +53,35 @@ function build_ngraph() {
     export NGRAPH_ONNX_IMPORT_ENABLE="TRUE"
     python3 setup.py bdist_wheel || return 1
     # Clean build artifacts
-    # rm -rf "${directory}/ngraph_dist"
+    rm -rf "${directory}/ngraph_dist"
     return 0
 }
 
 function build_dldt() {
     set -x
     local directory="$1"
-    CMAKE_ARGS="-DNGRAPH_CPU_ENABLE=TRUE -DNGRAPH_LIBRARY_OUTPUT_DIRECTORY=${directory}/dldt_dist \
+    local ngraph_branch="$2"
+    CMAKE_ARGS="-DNGRAPH_LIBRARY_OUTPUT_DIRECTORY=${directory}/dldt_dist \
                 -DNGRAPH_COMPONENT_PREFIX=deployment_tools/ngraph/ -DNGRAPH_USE_PREBUILT_LLVM=TRUE \
                 -DNGRAPH_TOOLS_ENABLE=TRUE -DNGRAPH_WARNINGS_AS_ERRORS=TRUE -DNGRAPH_UNIT_TEST_ENABLE=FALSE \
                 -DCMAKE_BUILD_TYPE=Release -DENABLE_PYTHON=OFF -DENABLE_RPATH=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
-                -DENABLE_PERFORMANCE_TESTS=ON -DENABLE_TESTS=ON -DNGRAPH_INTERPRETER_ENABLE=ON -DNGRAPH_DEBUG_ENABLE=OFF \
+                -DENABLE_PERFORMANCE_TESTS=ON -DENABLE_TESTS=ON -DNGRAPH_DEBUG_ENABLE=OFF \
                 -DENABLE_SAMPLES=OFF -DENABLE_FUNCTIONAL_TESTS=ON -DENABLE_MODELS=OFF -DENABLE_PRIVATE_MODELS=OFF \
                 -DENABLE_GNA=OFF -DENABLE_VPU=OFF -DENABLE_SANITIZER=OFF -DENABLE_MYRIAD=OFF -DENABLE_MKL_DNN=ON \
                 -DENABLE_CLDNN=OFF -DENABLE_VALIDATION_SET=OFF -DPYTHON_EXECUTABLE=`which python` \
                 -DNGRAPH_ONNX_IMPORT_ENABLE=ON -DNGRAPH_UNIT_TEST_OPENVINO_ENABLE=TRUE -DNGRAPH_IE_ENABLE=ON \
                 -DCMAKE_INSTALL_PREFIX=${directory}/dldt_dist -DNGRAPH_DYNAMIC_COMPONENTS_ENABLE=ON"
     cd "${directory}/dldt/ngraph"
-    git checkout rblaczkowski/updated-ie-enabled
+    git checkout "${ngraph_branch}"
 
     cd "${directory}/dldt"
     
-    # CMAKE args for nGraph backends
     mkdir -p ./build
     cd ./build
+    git lfs install
     cmake ${CMAKE_ARGS} ..  || return 1
     make -j $(lscpu --parse=CORE | grep -v '#' | sort | uniq | wc -l) || return 1
-
     make install || return 1
-
-    cd "${directory}/dldt/ngraph/python"
-
-    if [ ! -d ./pybind11 ]; then
-        git clone --recursive https://github.com/pybind/pybind11.git
-    fi
-
-    rm -f "${directory}/dldt/ngraph/python/dist/ngraph*.whl"
-    rm -rf "${directory}/dldt/ngraph/python/*.so ${directory}/dldt/ngraph/python/build"
-    export PYBIND_HEADERS_PATH="${directory}/dldt/ngraph/python/pybind11"
-    export NGRAPH_CPP_BUILD_PATH="${directory}/deployment_tools/ngraph/"
-    export NGRAPH_ONNX_IMPORT_ENABLE="TRUE"
-    python3 setup.py bdist_wheel || return 1
     return 0
 }
 
@@ -102,7 +89,7 @@ function main() {
     # By default copy stored nGraph master and use it to build PR branch
     BACKENDS="cpu"
 
-    NUM_PARAMETERS="2"
+    NUM_PARAMETERS="3"
     if [ $# -lt "${NUM_PARAMETERS}" ]; then
         echo "ERROR: Expected at least ${NUM_PARAMETERS} parameter got $#"
         exit 1
@@ -118,6 +105,9 @@ function main() {
             --build-dir=*)
                 BUILD_DIR="${i//${PATTERN}/}"
                 ;;
+            --ngraph-branch=*)
+                NGRAPH_BRANCH="${i//${PATTERN}/}"
+                ;;
             *)
                 echo "Parameter $i not recognized."
                 exit 1
@@ -126,10 +116,10 @@ function main() {
     done
 
     BUILD_NGRAPH_CALL="build_ngraph \"${BUILD_DIR}\" \"${BACKENDS}\""
-    BUILD_DLDT_CALL="build_dldt \"${BUILD_DIR}\""
+    BUILD_DLDT_CALL="build_dldt \"${BUILD_DIR}\" \"${NGRAPH_BRANCH}\""
 
-    # eval "${BUILD_NGRAPH_CALL}"
-    eval "${BUILD_DLDT_CALL}"
+    eval "${BUILD_NGRAPH_CALL}"
+    # eval "${BUILD_DLDT_CALL}"
 
 }
 
