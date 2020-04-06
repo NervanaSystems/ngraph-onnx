@@ -38,11 +38,11 @@ zoo_models = [
     # BERT-Squad
     {
         'model_name': 'bert_squad_opset8',
-        'url': _GITHUB_ONNX_MASTER + 'text/machine_comprehension/bert-squad/model/download_sample_8.tar.gz',
+        'url': _GITHUB_ONNX_MASTER + 'text/machine_comprehension/bert-squad/model/bertsquad-8.tar.gz',
     },
     {
         'model_name': 'bert_squad_opset10',
-        'url': _GITHUB_ONNX_MASTER + 'text/machine_comprehension/bert-squad/model/download_sample_10.tar.gz',
+        'url': _GITHUB_ONNX_MASTER + 'text/machine_comprehension/bert-squad/model/bertsquad-10.tar.gz',
     },
 
     # BiDAF
