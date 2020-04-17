@@ -126,7 +126,7 @@ def gitClone(String label, String address, String branch) {
     """
 }
 
-def gitSubmoduleUpdate(String repository_name, String exception="") {
+def gitSubmoduleUpdate(String repository_name) {
     dir ("${WORKDIR}/${repository_name}") {
         sh  label: "Init ${repository_name} submodules",
             script:
