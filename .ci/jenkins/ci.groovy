@@ -59,10 +59,10 @@ CONFIGURATION_WORKFLOW = { configuration ->
                     dir (WORKDIR) {
                         gitClone("Clone ngraph", NGRAPH_REPO_ADDRESS, configuration.ngraphBranch)
                     }
-                    dir (WORKDIR) {
-                        gitClone("Clone dldt", DLDT_REPO_ADDRESS, configuration.dldtBranch)
-                    }
-                    gitSubmoduleUpdate("dldt")
+                    // dir (WORKDIR) {
+                    //     gitClone("Clone dldt", DLDT_REPO_ADDRESS, configuration.dldtBranch)
+                    // }
+                    // gitSubmoduleUpdate("dldt")
                 }
                 String imageName = "${DOCKER_REGISTRY}/aibt/aibt/ngraph_cpp/${configuration.os}/ubuntu_18_04"
                 stage("Prepare Docker image") {
@@ -219,7 +219,7 @@ def cleanup() {
     deleteDir()
 }
 
-def getConfigurationsMap(String dockerfilesPath, String ngraphOnnxBranch, String ngraphBranch, String dldtBranch) {
+def getConfigurationsMap(String dockerfilesPath, String ngraphOnnxBranch, String ngraphBranch) {
     def configurationsMap = [:]
     def osImages = sh (script: "find ${dockerfilesPath} -maxdepth 1 -name '*.dockerfile' -printf '%f\n'",
                     returnStdout: true).trim().replaceAll(".dockerfile","").split("\n") as List
@@ -230,7 +230,7 @@ def getConfigurationsMap(String dockerfilesPath, String ngraphOnnxBranch, String
             configuration.os = os
             configuration.ngraphOnnxBranch = ngraphOnnxBranch
             configuration.ngraphBranch = ngraphBranch
-            configuration.dldtBranch = dldtBranch
+            // configuration.dldtBranch = dldtBranch
             String backendLabels = configuration.backends.join(" && ")
             configuration.label = "${backendLabels} && ${configuration.sku} && ${CI_LABELS}"
             configuration.name = "${configuration.sku}-${configuration.os}"
