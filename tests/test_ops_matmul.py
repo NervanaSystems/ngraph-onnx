@@ -95,6 +95,8 @@ def import_and_compute_gemm(input_a, input_b, input_c, **kwargs):
     return computation(input_a, input_b, input_c)[0]
 
 
+# Error of validate layer: Z with type: Gemm. Gemm input shapes must have at least 2 dimensions
+@pytest.mark.skip_on_ie
 def test_op_matmul():
     # vector @ vector
     data = ([1, 2], [1, 3])

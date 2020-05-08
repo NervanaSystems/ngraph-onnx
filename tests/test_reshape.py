@@ -25,6 +25,7 @@ from onnx.helper import make_node, make_graph, make_tensor_value_info, make_mode
 from ngraph_onnx.onnx_importer.importer import import_onnx_model
 
 
+@pytest.mark.skip_on_ie  # [NOT_IMPLEMENTED] Input image format I64 is not supported yet...
 def test_reshape():
     input_data = np.arange(2560).reshape(16, 4, 4, 10)
     reshape_node = onnx.helper.make_node('Reshape', inputs=['x'], outputs=['y'], shape=(256, 10))
@@ -79,6 +80,7 @@ def test_reshape_opset5_param_err():
     assert ng_result[0].shape == output_shape
 
 
+@pytest.mark.skip_on_ie  # [NOT_IMPLEMENTED] Input image format I64 is not supported yet...
 @pytest.mark.parametrize('axis,expected_output', [
     (0, np.arange(120).reshape(1, 120)),
     (1, np.arange(120).reshape(2, 60)),
@@ -101,6 +103,7 @@ def test_flatten_exception():
         run_node(node, [data])
 
 
+@pytest.mark.skip_on_ie  # [NOT_IMPLEMENTED] Input image format I64 is not supported yet...
 def test_transpose():
     data = np.arange(120).reshape(2, 3, 4, 5)
 
@@ -115,6 +118,7 @@ def test_transpose():
     assert np.array_equal(ng_results, [expected_output])
 
 
+@pytest.mark.skip_on_ie  # RuntimeError: B has zero dimension that is not allowable
 def test_slice_opset1():
     data = np.array([[1, 2, 3, 4], [5, 6, 7, 8]])
 
@@ -163,6 +167,7 @@ def test_slice_opset1():
     assert np.array_equal(ng_results, [expected_output])
 
 
+@pytest.mark.skip_on_ie  # [NOT_IMPLEMENTED] Input image format I64 is not supported yet...
 def test_concat():
     a = np.array([[1, 2], [3, 4]])
     b = np.array([[5, 6]])
@@ -207,6 +212,7 @@ def test_concat():
             assert np.array_equal(ng_results, [expected_output])
 
 
+@pytest.mark.skip_on_ie  # [NOT_IMPLEMENTED] Input image format I64 is not supported yet...
 def test_squeeze():
     data = np.arange(6).reshape(1, 2, 3, 1)
     expected_output = data.reshape(2, 3)
@@ -240,6 +246,7 @@ def test_unsqueeze():
     assert np.array_equal(ng_results, [expected_output])
 
 
+@pytest.mark.skip_on_ie  # [NOT_IMPLEMENTED] Input image format I64 is not supported yet...
 @pytest.mark.parametrize('node, expected_output', [
     # Split into 2 equal parts along axis=0
     (onnx.helper.make_node('Split', inputs=['x'], outputs=['y', 'z'], axis=0),
