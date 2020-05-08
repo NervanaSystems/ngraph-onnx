@@ -41,6 +41,7 @@ def import_and_compute(op_type, input_data_left, input_data_right, opset=7, **no
     return run_model(model, inputs)[0]
 
 
+@pytest.mark.skip_on_ie  # RuntimeError: Can't convert dims 0 to Layout!
 def test_add_opset4():
     assert np.array_equal(import_and_compute('Add', 1, 2, opset=4),
                           np.array(3, dtype=np.float32))
@@ -106,6 +107,7 @@ def test_add_opset7(left_shape, right_shape):
                           left_input + right_input)
 
 
+@pytest.mark.skip_on_ie  # RuntimeError: Can't convert dims 0 to Layout!
 def test_sub():
     assert np.array_equal(import_and_compute('Sub', 20, 1),
                           np.array(19, dtype=np.float32))
@@ -120,6 +122,7 @@ def test_sub():
                           np.array([[-6, -6, -6], [-3, -3, -3]], dtype=np.float32))
 
 
+@pytest.mark.skip_on_ie  # RuntimeError: Can't convert dims 0 to Layout!
 def test_mul():
     assert np.array_equal(import_and_compute('Mul', 2, 3),
                           np.array(6, dtype=np.float32))
@@ -134,6 +137,7 @@ def test_mul():
                           np.array([[7, 16, 27], [28, 40, 54]], dtype=np.float32))
 
 
+@pytest.mark.skip_on_ie  # RuntimeError: Can't convert dims 0 to Layout!
 def test_div():
     assert np.array_equal(import_and_compute('Div', 6, 3),
                           np.array(2, dtype=np.float32))
