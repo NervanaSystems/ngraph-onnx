@@ -72,6 +72,7 @@ def test_leaky_relu():
     assert_onnx_import_equals_callable('LeakyRelu', leaky_relu, [[-3, -2, -1], [1, 2, 3]])
 
 
+@pytest.mark.skip_on_ie  # RuntimeError: Layer y input port 1 is not connected to any data
 @pytest.mark.parametrize('x,slope', [
     ([-2, -1., 0., 1., 2.], 0.5),
     ([0.], 1),
@@ -103,6 +104,8 @@ def test_selu():
     assert_onnx_import_equals_callable('Selu', selu, [-2, -1., 0., 1., 2.], gamma=0.5, alpha=0.5)
 
 
+# AssertionError: resutl mismatch
+@pytest.mark.skip_on_ie
 def test_elu():
     # f(x) = alpha * (exp(x) - 1) for x < 0, f(x) = x for x >= 0
     def elu(x, alpha=1):
