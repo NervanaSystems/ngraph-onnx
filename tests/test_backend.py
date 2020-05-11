@@ -318,9 +318,6 @@ expect_fail('OnnxBackendNodeModelTest.test_unique_sorted_with_axis_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_unique_sorted_with_negative_axis_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_unique_sorted_without_axis_cpu')
 
-# Round - NGONNX-760
-expect_fail('OnnxBackendNodeModelTest.test_round_cpu')
-
 # Operations not supported by nGraph Backends
 expect_fail('OnnxBackendNodeModelTest.test_top_k_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_top_k_negative_axis_cpu')
