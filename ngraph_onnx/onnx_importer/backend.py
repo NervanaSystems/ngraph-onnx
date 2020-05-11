@@ -156,7 +156,7 @@ class NgraphBackendRep(BackendRep):
         super(NgraphBackendRep, self).__init__()
         self.device = self._get_ngraph_device_name(device)
         self.ng_model_function = ng_model_function
-        if device == 'IE:CPU':
+        if 'IE' in device:
             self.runtime = ng.runtime(backend_name=self.device, mode=BackendMode.STATIC)
         else:
             self.runtime = ng.runtime(backend_name=self.device, mode=BackendMode.DYNAMIC)
