@@ -53,14 +53,6 @@ backend_test = onnx.backend.test.BackendTest(ng_backend, __name__)
 # MaxPool Indices -> NGRAPH-3131
 backend_test.exclude('test_maxpool_with_argmax')
 
-# RNN -> NC-323
-backend_test.exclude('test_simple_rnn')
-backend_test.exclude('test_rnn')
-backend_test.exclude('test_operator_rnn')
-
-# GRU -> NGONNX-325
-backend_test.exclude('test_gru')
-
 # Big model tests (see test_zoo_models.py):
 backend_test.exclude('test_bvlc_alexnet')
 backend_test.exclude('test_densenet121')
