@@ -23,7 +23,7 @@ catch (Exception e) {
     BACKEND_SKU_CONFIGURATIONS = [
         [ sku : "skx", backends : ["cpu", "interpreter"] ],
         [ sku : "clx", backends : ["cpu", "interpreter"] ],
-        // [ sku : "bdw", backends : ["cpu", "interpreter"] ]
+        [ sku : "bdw", backends : ["cpu", "interpreter"] ]
         // [ sku: "iris", backend : "igpu" ]
     ]
 }
