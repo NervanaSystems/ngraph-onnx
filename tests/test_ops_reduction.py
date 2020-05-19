@@ -20,7 +20,7 @@ import onnx
 import numpy as np
 import pytest
 
-from tests.utils import run_node
+from tests.utils import run_node, xfail_test
 
 
 def import_and_compute(op_type, input_data, **node_attrs):
@@ -217,7 +217,6 @@ def test_reduce_l1_default_axes():
     assert np.allclose(expected, ng_result)
 
 
-@pytest.mark.skip_on_ie  # RuntimeError: Unsupported primitive of type: Sqrt
 @pytest.mark.parametrize('reduction_axes', [
     (0,),
     (0, 2),
@@ -243,7 +242,6 @@ def test_reduce_l2(reduction_axes):
     assert np.allclose(expected, ng_result)
 
 
-@pytest.mark.skip_on_ie  # RuntimeError: Unsupported primitive of type: Sqrt
 def test_reduce_l2_default_axes():
     shape = [2, 4, 3, 2]
     np.random.seed(133391)
@@ -377,7 +375,7 @@ def test_reduce_sum_square_default_axes():
     assert np.allclose(expected, ng_result)
 
 
-@pytest.mark.skip_on_ie  # AssertionError: result mismatch
+@xfail_test('IE:CPU', reason="RuntimeError: data [y] doesn't exist")
 def test_reduce_argmin():
     def argmin(ndarray, axis, keepdims=False):
         res = np.argmin(ndarray, axis=axis)
@@ -401,7 +399,7 @@ def test_reduce_argmin():
                           argmin(data, keepdims=False, axis=2))
 
 
-@pytest.mark.skip_on_ie  # AssertionError: result mismatch
+@xfail_test('IE:CPU', reason="RuntimeError: data [y] doesn't exist")
 def test_reduce_argmax():
     def argmax(ndarray, axis, keepdims=False):
         res = np.argmax(ndarray, axis=axis)
