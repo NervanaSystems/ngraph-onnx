@@ -80,7 +80,7 @@ backend_test.exclude('test_sequence_model')
 backend_test.exclude('test_Conv3d_dilated')
 backend_test.exclude('test_Conv3d_dilated_strided')
 
-if selected_backend_name == 'IE':
+if selected_backend_name == 'IE:CPU':
     # segfaults
     backend_test.exclude('test_greater_cpu')
     backend_test.exclude('test_greater_bcast_cpu')
@@ -88,6 +88,7 @@ if selected_backend_name == 'IE':
     backend_test.exclude('test_less_cpu')
     backend_test.exclude('test_less_bcast_cpu')
     backend_test.exclude('test_log_cpu')
+    backend_test.exclude('test_basic_conv_with_padding_cpu')
 
 # NOTE: ALL backend_test.exclude CALLS MUST BE PERFORMED BEFORE THE CALL TO globals().update
 
@@ -317,9 +318,6 @@ expect_fail('OnnxBackendNodeModelTest.test_unique_sorted_with_axis_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_unique_sorted_with_negative_axis_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_unique_sorted_without_axis_cpu')
 
-# Round - NGONNX-760
-expect_fail('OnnxBackendNodeModelTest.test_round_cpu')
-
 # Operations not supported by nGraph Backends
 expect_fail('OnnxBackendNodeModelTest.test_top_k_cpu')
 expect_fail('OnnxBackendNodeModelTest.test_top_k_negative_axis_cpu')
@@ -391,16 +389,8 @@ if selected_backend_name == 'PlaidML':
     expect_fail('OnnxBackendNodeModelTest.test_reflect_pad_cpu')
     # Test which fail on PlaidML with INTELGPU
     expect_fail('OnnxBackendPyTorchOperatorModelTest.test_operator_pow_cpu')
-
-if selected_backend_name == 'IE':
+if selected_backend_name == 'IE:CPU':
     # Unsupported primitive of type: Sqrt
-    expect_fail('OnnxBackendNodeModelTest.test_acosh_cpu')
-    expect_fail('OnnxBackendNodeModelTest.test_acosh_example_cpu')
-    expect_fail('OnnxBackendNodeModelTest.test_asinh_cpu')
-    expect_fail('OnnxBackendNodeModelTest.test_asinh_example_cpu')
-    expect_fail('OnnxBackendNodeModelTest.test_instancenorm_epsilon_cpu')
-    expect_fail('OnnxBackendNodeModelTest.test_instancenorm_example_cpu')
-    expect_fail('OnnxBackendNodeModelTest.test_mvn_expanded_cpu')
     expect_fail('OnnxBackendNodeModelTest.test_reduce_l2_default_axes_keepdims_example_cpu')
     expect_fail('OnnxBackendNodeModelTest.test_reduce_l2_default_axes_keepdims_random_cpu')
     expect_fail('OnnxBackendNodeModelTest.test_reduce_l2_do_not_keepdims_example_cpu')
@@ -497,14 +487,6 @@ if selected_backend_name == 'IE':
     expect_fail('OnnxBackendNodeModelTest.test_ceil_example_cpu')
 
     # Can't convert dims 0 to Layout!
-    expect_fail('OnnxBackendNodeModelTest.test_clip_cpu')
-    expect_fail('OnnxBackendNodeModelTest.test_clip_default_max_cpu')
-    expect_fail('OnnxBackendNodeModelTest.test_clip_default_min_cpu')
-    expect_fail('OnnxBackendNodeModelTest.test_clip_example_cpu')
-    expect_fail('OnnxBackendNodeModelTest.test_clip_inbounds_cpu')
-    expect_fail('OnnxBackendNodeModelTest.test_clip_outbounds_cpu')
-    expect_fail('OnnxBackendNodeModelTest.test_clip_splitbounds_cpu')
-    expect_fail('OnnxBackendNodeModelTest.test_gemm_default_scalar_bias_cpu')
     expect_fail('OnnxBackendNodeModelTest.test_pow_bcast_scalar_cpu')
 
     # RuntimeError: data [<name>] doesn't exist
@@ -566,12 +548,6 @@ if selected_backend_name == 'IE':
     expect_fail('OnnxBackendNodeModelTest.test_argmin_no_keepdims_example_cpu')
     expect_fail('OnnxBackendNodeModelTest.test_argmin_no_keepdims_random_cpu')
     expect_fail('OnnxBackendNodeModelTest.test_elu_example_cpu')
-    expect_fail('OnnxBackendNodeModelTest.test_hardmax_axis_1_cpu')
-    expect_fail('OnnxBackendNodeModelTest.test_hardmax_axis_2_cpu')
-    expect_fail('OnnxBackendNodeModelTest.test_hardmax_default_axis_cpu')
-    expect_fail('OnnxBackendNodeModelTest.test_hardmax_example_cpu')
-    expect_fail('OnnxBackendNodeModelTest.test_hardmax_negative_axis_cpu')
-    expect_fail('OnnxBackendNodeModelTest.test_hardmax_one_hot_cpu')
     expect_fail('OnnxBackendNodeModelTest.test_logsoftmax_axis_0_cpu')
     expect_fail('OnnxBackendNodeModelTest.test_logsoftmax_axis_1_cpu')
     expect_fail('OnnxBackendNodeModelTest.test_logsoftmax_default_axis_cpu')
@@ -591,3 +567,6 @@ if selected_backend_name == 'IE':
     # RuntimeError: Node Split contains empty child edge for index 0
     expect_fail('OnnxBackendPyTorchConvertedModelTest.test_GLU_cpu')
     expect_fail('OnnxBackendPyTorchConvertedModelTest.test_GLU_dim_cpu')
+
+    # RuntimeError: invalid next size (fast)
+    expect_fail('OnnxBackendNodeModelTest.test_basic_conv_with_padding_cpu')
