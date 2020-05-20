@@ -29,6 +29,7 @@ import sys
 from Watchdog import Watchdog
 
 DEFAULT_SLACK_TOKEN_FILE = '/home/lab_nerval/tokens/slack_token'
+DEFAULT_MSTEAMS_URL_FILE = '/home/lab_nerval/tokens/msteams_url'
 DEFAULT_GITHUB_TOKEN_FILE = '/home/lab_nerval/tokens/github_token'
 DEFAULT_GITHUB_ORGANIZATION = 'NervanaSystems'
 DEFAULT_GITHUB_PROJECT = 'ngraph-onnx'
@@ -53,6 +54,7 @@ def main(args):
     jenkins_user = args.jenkins_user.strip()
     jenkins_token = open(args.jenkins_token).read().replace('\n', '').strip()
     slack_token = open(args.slack_token).read().replace('\n', '').strip()
+    msteams_url = open(args.msteams_url).read().replace('\n', '').strip()
     github_token = open(args.github_token).read().replace('\n', '').strip()
     github_org = args.github_org
     github_project = args.github_project
@@ -67,6 +69,7 @@ def main(args):
                   git_org=github_org,
                   git_project=github_project,
                   slack_token=slack_token,
+                  msteams_url=msteams_url,
                   ci_job_name=ci_job,
                   watchdog_job_name=watchdog_job)
     wd.run(quiet=quiet)
@@ -79,6 +82,9 @@ if __name__ == '__main__':
 
     parser.add_argument('--slack-token', help='Path to Slack user token to communicate messages.',
                         default=DEFAULT_SLACK_TOKEN_FILE, action='store', required=False)
+
+    parser.add_argument('--msteams-url', help='Path to MS Teams channel url to communicate messages.',
+                        default=DEFAULT_MSTEAMS_URL_FILE, action='store', required=False)
 
     parser.add_argument('--github-token', help='Path to GitHub user token to access repo.',
                         default=DEFAULT_GITHUB_TOKEN_FILE, action='store', required=False)

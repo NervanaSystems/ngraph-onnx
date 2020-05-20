@@ -54,6 +54,7 @@ timeout(30)
                             export PYTHONHTTPSVERIFY=0
                             python ${WATCHDOG_ROOT}/Main.py \
                                 --slack-token=${SLACK_TOKEN_FILE} \
+                                --msteams-url=${MSTEAMS_URL_FILE} \
                                 --github-token=${GITHUB_TOKEN_FILE} \
                                 --github-org=${GITHUB_ORG} \
                                 --github-project=${GITHUB_PROJECT} \
