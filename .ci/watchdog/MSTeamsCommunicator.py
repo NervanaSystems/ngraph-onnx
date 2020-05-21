@@ -96,7 +96,7 @@ class MSTeamsCommunicator:
                 [
                     {
                         "@type": "OpenUri",
-                        "name": "Open Log",
+                        "name": "Open PR",
                         "targets":
                             [
                                 {
