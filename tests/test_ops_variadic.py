@@ -23,9 +23,10 @@ import numpy as np
 import onnx
 
 
-from tests.utils import run_node
+from tests.utils import run_node, xfail_test
 
 
+@xfail_test('IE:CPU', reason='Input image format I64 is not supported yet')
 @pytest.mark.parametrize('onnx_op,numpy_func', [
     ('Sum', np.add),
     ('Min', np.minimum),
@@ -40,6 +41,7 @@ def test_variadic(onnx_op, numpy_func):
     assert np.array_equal(ng_results, [expected_output])
 
 
+@xfail_test('IE:CPU', reason='Input image format I64 is not supported yet')
 def test_mean():
     data = [np.array([1, 2, 3]), np.array([4, 5, 6]), np.array([7, 8, 9])]
     node = onnx.helper.make_node('Mean', inputs=['data_0', 'data_1', 'data_2'], outputs=['y'])

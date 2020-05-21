@@ -20,9 +20,11 @@ import numpy as np
 import onnx
 import pytest
 
-from tests.utils import run_node
+from tests.utils import run_node, xfail_test
 
 
+# [PARAMETER_MISMATCH] Failed to set Blob with precision FP32
+@xfail_test('IE:CPU', reason='Input image format BOOL is not supported yet')
 @pytest.mark.parametrize('onnx_op, numpy_func, data_type', [
     ('And', np.logical_and, np.bool),
     ('Or', np.logical_or, np.bool),
@@ -47,6 +49,7 @@ def test_logical(onnx_op, numpy_func, data_type):
     assert np.array_equal(ng_results, [expected_output])
 
 
+@xfail_test('IE:CPU', reason='Input image format BOOL is not supported yet')
 def test_logical_not():
     input_data = np.array([[False, True, True], [False, True, False], [False, False, True]])
     expected_output = np.logical_not(input_data)

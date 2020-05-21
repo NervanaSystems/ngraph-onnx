@@ -16,14 +16,14 @@
 
 from __future__ import print_function, division
 
-import pytest
-
 import onnx
+
+import pytest
 
 import numpy as np
 from onnx.helper import make_node, make_graph, make_tensor_value_info, make_model
 from ngraph_onnx.onnx_importer.importer import import_onnx_model
-from tests.utils import get_runtime
+from tests.utils import get_runtime, xfail_test
 
 
 def make_onnx_model_for_matmul_op(input_left, input_right):
@@ -95,6 +95,7 @@ def import_and_compute_gemm(input_a, input_b, input_c, **kwargs):
     return computation(input_a, input_b, input_c)[0]
 
 
+@xfail_test('IE:CPU', reason='Error: Z with type: Gemm. Gemm input shapes must have at least 2 dimensions')
 def test_op_matmul():
     # vector @ vector
     data = ([1, 2], [1, 3])
@@ -134,7 +135,8 @@ def test_op_matmul_3d():
     assert np.array_equal(import_and_compute_matmul(*data), np.matmul(*data))
 
 
-@pytest.mark.xfail(reason='NGONNX-494')
+@xfail_test('IE:CPU', reason='NGONNX-494, RuntimeError: Error of validate layer: \
+            MatMul_11405 with type: Gemm. Gemm input shapes must have at least 2 dimensions')
 def test_gemm():
     data = ([1, 2], [1, 3], [1, 4])
     assert np.array_equal(import_and_compute_gemm(*data), numpy_gemm(*data))
@@ -154,7 +156,8 @@ def test_gemm():
     assert np.array_equal(import_and_compute_gemm(*data, **kwargs), numpy_gemm(*data, **kwargs))
 
 
-@pytest.mark.xfail(reason='NGONNX-494')
+@xfail_test('IE:CPU', reason='NGONNX-494, RuntimeError: Error of validate layer: \
+                              MatMul_13893 with type: Gemm. Gemm input shapes must have at least 2 dimensions')
 def test_gemm_transpositions():
     data = ([1, 2], [1, 3], [1, 4])
     kwargs = {'trans_a': True, 'trans_b': True}
@@ -173,7 +176,8 @@ def test_gemm_transpositions():
     assert np.array_equal(import_and_compute_gemm(*data, **kwargs), numpy_gemm(*data, **kwargs))
 
 
-@pytest.mark.xfail(reason='NGONNX-494')
+@pytest.mark.xfail(reason='NGONNX-494, ValueError: shapes (4,1,1) and (4,) not aligned: 1 (dim 2) != 4 (dim 0)',
+                   strict=True)
 def test_gemm_flatten():
     # input_a.shape is (4,1,1)
     data = ([[[1]], [[2]], [[3]], [[4]]], [1, 3, 5, 7], [1, 4])

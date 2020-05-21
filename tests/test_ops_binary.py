@@ -22,7 +22,7 @@ import numpy as np
 import pytest
 from onnx.helper import make_tensor_value_info, make_graph, make_model
 
-from tests.utils import run_model
+from tests.utils import run_model, xfail_test
 
 
 def import_and_compute(op_type, input_data_left, input_data_right, opset=7, **node_attributes):
@@ -41,6 +41,7 @@ def import_and_compute(op_type, input_data_left, input_data_right, opset=7, **no
     return run_model(model, inputs)[0]
 
 
+@xfail_test("IE:CPU", reason="RuntimeError: Can't convert dims 0 to Layout")  # noqa: Q000 Remove bad quotes
 def test_add_opset4():
     assert np.array_equal(import_and_compute('Add', 1, 2, opset=4),
                           np.array(3, dtype=np.float32))
