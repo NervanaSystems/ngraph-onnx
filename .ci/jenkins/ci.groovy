@@ -36,7 +36,7 @@ DLDT_REPO_ADDRESS = "git@gitlab-icv.inn.intel.com:inference-engine/dldt.git"
 
 CI_LABELS = "ngraph_onnx && ci"
 CI_DIR = "ngraph-onnx/.ci/jenkins"
-DOCKER_CONTAINER_NAME = "jenkins_ngraph-onnx_ci"
+DOCKER_CONTAINER_PREFIX = "jenkins_ngraph-onnx_ci"
 
 JENKINS_GITHUB_CREDENTIAL_ID = "7157091e-bc04-42f0-99fd-dc4da2922a55"
 JENKINS_GITLAB_CREDENTIAL_ID = "1caab8d7-1d0c-4b8a-9438-b65336862ead"
@@ -51,6 +51,7 @@ CONFIGURATION_WORKFLOW = { configuration ->
         timeout(activity: true, time: 60) {
             WORKDIR = "${WORKSPACE}/${BUILD_NUMBER}"
             DOCKER_HOME = "/home/${USER}"
+            DOCKER_CONTAINER_NAME="${DOCKER_CONTAINER_PREFIX}_${EXECUTOR_NUMBER}"
             try {
                 stage("Clone repositories") {
                     dir (WORKDIR) {
@@ -172,7 +173,7 @@ def runDockerContainer(String imageName) {
         mkdir -p ${HOME}/ONNX_CI
         docker run -id --privileged \
                 --user ${USER} \
-                --name ${DOCKER_CONTAINER_NAME}  \
+                --name ${DOCKER_CONTAINER_NAME} \
                 --volume ${WORKDIR}:/logs \
                 --volume ${HOME}/ONNX_CI/onnx_models/.onnx:${dockerOnnxModels} \
                 --volume ${HOME}/ONNX_CI/cache:${dockerCache} \
