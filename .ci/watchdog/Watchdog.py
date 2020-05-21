@@ -379,7 +379,7 @@ class Watchdog:
                 self._check_in_progress(pr, build_number)
             else:
                 message = 'ONNX CI job for PR# {}: unrecognized status: {}'.format(pr.number, status.description)
-                self._queue_message(message, message_severity="error", pr=pr)
+                self._queue_message(message, message_severity='error', pr=pr)
         except Exception:
             # Log Watchdog internal error in case any status can't be properly verified
             message = 'Failed to verify status "{}" for PR# {}'.format(status.description, pr.number)

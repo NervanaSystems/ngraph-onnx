@@ -28,6 +28,7 @@ import requests
 
 class MSTeamsCommunicator:
     """Class communicating with MSTeams using Incoming Webhook.
+
     The purpose of this class is to use MSTeams API to send message.
     Docs for used API, including wrapped methods can be found at:
     https://docs.microsoft.com/en-us/outlook/actionable-messages/send-via-connectors
@@ -36,7 +37,7 @@ class MSTeamsCommunicator:
     def __init__(self, _ci_alerts_channel_url):
         self._ci_alerts_channel_url = _ci_alerts_channel_url
         self._queued_messages = {
-            self._ci_alerts_channel_url: []
+            self._ci_alerts_channel_url: [],
         }
 
     @property
@@ -65,13 +66,13 @@ class MSTeamsCommunicator:
             :param message:     Unparsed message content
             :type message:      String
         """
-        message_split = message.split("\n")
+        message_split = message.split('\n')
         title = message_split[2]
         log_url = message_split[-1]
         text = message_split[3]
-        header = message_split[0].split(" - ")
+        header = message_split[0].split(' - ')
         header_formatted = '{} - [Watchdog Log]({})'.format(header[0], header[1])
-        text_formatted = "{}: ***{}***".format(text.split(":", 1)[0], text.split(":", 1)[1])
+        text_formatted = '{}: ***{}***'.format(text.split(':', 1)[0], text.split(':', 1)[1])
 
         return title, log_url, '{}\n\n{}'.format(header_formatted, text_formatted)
 
@@ -87,25 +88,25 @@ class MSTeamsCommunicator:
             :type title:             String
         """
         data = {
-            "@context": "https://schema.org/extensions",
-            "@type": "MessageCard",
-            "themeColor": "0072C6",
-            "title": title,
-            "text": text_formatted,
-            "potentialAction":
+            '@context': 'https://schema.org/extensions',
+            '@type': 'MessageCard',
+            'themeColor': '0072C6',
+            'title': title,
+            'text': text_formatted,
+            'potentialAction':
                 [
                     {
-                        "@type": "OpenUri",
-                        "name": "Open PR",
-                        "targets":
+                        '@type': 'OpenUri',
+                        'name': 'Open PR',
+                        'targets':
                             [
                                 {
-                                    "os": "default",
-                                    "uri": log_url
-                                }
-                            ]
-                    }
-                ]
+                                    'os': 'default',
+                                    'uri': log_url,
+                                },
+                            ],
+                    },
+                ],
         }
         return data
 
