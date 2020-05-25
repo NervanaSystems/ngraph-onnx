@@ -13,7 +13,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ******************************************************************************
-
+# ## Prepare a list of models from the ONNX Model Zoo
+#
+# from pathlib import Path
+# from operator import itemgetter
+# import re
+#
+# MODELS_ROOT_DIR = '/path/to/onnx/models'
+# zoo_models = []
+# for path in Path(MODELS_ROOT_DIR).rglob('*.tar.gz'):
+#     match = re.search('.*onnx\/models\/(.*\/model\/(.+)-(\d+)\.tar\.gz)', str(path))
+#     url = match.group(1)
+#     model_name = match.group(2)
+#     opset = match.group(3)
+#     zoo_models.append({'model_name': '{}_opset{}'.format(model_name.replace('-', '_'), opset), 'url': url})
+#
+# sorted(zoo_models, key=itemgetter('model_name'))
 import pytest
 
 from ngraph_onnx.onnx_importer.backend import NgraphBackend
@@ -21,482 +36,521 @@ from ngraph_onnx.onnx_importer.backend import NgraphBackend
 import tests.utils
 from tests.utils.model_zoo_tester import ModelZooTestRunner
 
-_GITHUB_ONNX_MASTER = 'https://github.com/onnx/models/raw/master/'
-_S3_DOWNLOAD_ONNX = 'https://s3.amazonaws.com/download.onnx/models/'
-_S3_MODEL_ZOO = 'https://s3.amazonaws.com/onnx-model-zoo/'
-_WINDOWS_NET = 'https://onnxzoo.blob.core.windows.net/models/'
-
+_GITHUB_MODELS_LTS = 'https://media.githubusercontent.com/media/onnx/models/master/'
 
 zoo_models = [
-    # ArcFace
     {
-        'model_name': 'arcface_lresnet100e_opset8',
-        'rtol': 0.004,  # Change made after update to MKL-DNN v0.19 (2019.0.5.20190502)
-        'url': _S3_MODEL_ZOO + 'arcface/resnet100/resnet100.tar.gz',
-    },
-
-    # BERT-Squad
-    {
-        'model_name': 'bert_squad_opset8',
-        'url': _GITHUB_ONNX_MASTER + 'text/machine_comprehension/bert-squad/model/download_sample_8.tar.gz',
+        'model_name': 'FasterRCNN_opset10',
+        'url': _GITHUB_MODELS_LTS + 'vision/object_detection_segmentation/faster-rcnn/model/FasterRCNN-10.tar.gz',
     },
     {
-        'model_name': 'bert_squad_opset10',
-        'url': _GITHUB_ONNX_MASTER + 'text/machine_comprehension/bert-squad/model/download_sample_10.tar.gz',
+        'model_name': 'MaskRCNN_opset10',
+        'url': _GITHUB_MODELS_LTS + 'vision/object_detection_segmentation/mask-rcnn/model/MaskRCNN-10.tar.gz',
     },
-
-    # BiDAF
+    {
+        'model_name': 'ResNet101_DUC_opset7',
+        'url': _GITHUB_MODELS_LTS + 'vision/object_detection_segmentation/duc/model/ResNet101-DUC-7.tar.gz',
+    },
+    {
+        'model_name': 'arcfaceresnet100_opset8',
+        'url': _GITHUB_MODELS_LTS + 'vision/body_analysis/arcface/model/arcfaceresnet100-8.tar.gz',
+    },
+    {
+        'model_name': 'bertsquad_opset10',
+        'url': _GITHUB_MODELS_LTS + 'text/machine_comprehension/bert-squad/model/bertsquad-10.tar.gz',
+    },
+    {
+        'model_name': 'bertsquad_opset8',
+        'url': _GITHUB_MODELS_LTS + 'text/machine_comprehension/bert-squad/model/bertsquad-8.tar.gz',
+    },
     {
         'model_name': 'bidaf_opset9',
         'atol': 1e-07,
         'rtol': 0.001,
-        'url': _WINDOWS_NET + 'opset_9/bidaf/bidaf.tar.gz',
+        'url': _GITHUB_MODELS_LTS + 'text/machine_comprehension/bidirectional_attention_flow/model/bidaf-9.tar.gz',
     },
-
-    # BVLC AlexNet
     {
-        'model_name': 'bvlc_alexnet_opset3',
+        'model_name': 'bvlcalexnet_opset3',
         'atol': 1e-07,
         'rtol': 0.001,
-        'url': _S3_DOWNLOAD_ONNX + 'opset_3/bvlc_alexnet.tar.gz',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/alexnet/model/bvlcalexnet-3.tar.gz',
     },
     {
-        'model_name': 'bvlc_alexnet_opset6',
+        'model_name': 'bvlcalexnet_opset6',
         'atol': 1e-07,
         'rtol': 0.001,
-        'url': _S3_DOWNLOAD_ONNX + 'opset_6/bvlc_alexnet.tar.gz',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/alexnet/model/bvlcalexnet-6.tar.gz',
     },
     {
-        'model_name': 'bvlc_alexnet_opset7',
+        'model_name': 'bvlcalexnet_opset7',
         'atol': 1e-07,
         'rtol': 0.001,
-        'url': _S3_DOWNLOAD_ONNX + 'opset_7/bvlc_alexnet.tar.gz',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/alexnet/model/bvlcalexnet-7.tar.gz',
     },
     {
-        'model_name': 'bvlc_alexnet_opset8',
+        'model_name': 'bvlcalexnet_opset8',
         'atol': 1e-07,
         'rtol': 0.001,
-        'url': _S3_DOWNLOAD_ONNX + 'opset_8/bvlc_alexnet.tar.gz',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/alexnet/model/bvlcalexnet-8.tar.gz',
     },
     {
-        'model_name': 'bvlc_alexnet_opset9',
+        'model_name': 'bvlcalexnet_opset9',
         'atol': 1e-07,
         'rtol': 0.001,
-        'url': _S3_DOWNLOAD_ONNX + 'opset_9/bvlc_alexnet.tar.gz',
-    },
-
-    # BVLC GoogleNet
-    {
-        'model_name': 'bvlc_googlenet_opset3',
-        'url': _S3_DOWNLOAD_ONNX + 'opset_3/bvlc_googlenet.tar.gz',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/alexnet/model/bvlcalexnet-9.tar.gz',
     },
     {
-        'model_name': 'bvlc_googlenet_opset6',
-        'url': _S3_DOWNLOAD_ONNX + 'opset_6/bvlc_googlenet.tar.gz',
+        'model_name': 'caffenet_opset3',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/caffenet/model/caffenet-3.tar.gz',
     },
     {
-        'model_name': 'bvlc_googlenet_opset7',
-        'url': _S3_DOWNLOAD_ONNX + 'opset_7/bvlc_googlenet.tar.gz',
+        'model_name': 'caffenet_opset6',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/caffenet/model/caffenet-6.tar.gz',
     },
     {
-        'model_name': 'bvlc_googlenet_opset8',
-        'url': _S3_DOWNLOAD_ONNX + 'opset_8/bvlc_googlenet.tar.gz',
+        'model_name': 'caffenet_opset7',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/caffenet/model/caffenet-7.tar.gz',
     },
     {
-        'model_name': 'bvlc_googlenet_opset9',
-        'url': _S3_DOWNLOAD_ONNX + 'opset_9/bvlc_googlenet.tar.gz',
-    },
-
-    # BVLC CaffeNet
-    {
-        'model_name': 'bvlc_caffenet_opset3',
-        'url': _S3_DOWNLOAD_ONNX + 'opset_3/bvlc_reference_caffenet.tar.gz',
+        'model_name': 'caffenet_opset8',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/caffenet/model/caffenet-8.tar.gz',
     },
     {
-        'model_name': 'bvlc_caffenet_opset6',
-        'url': _S3_DOWNLOAD_ONNX + 'opset_6/bvlc_reference_caffenet.tar.gz',
+        'model_name': 'caffenet_opset9',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/caffenet/model/caffenet-9.tar.gz',
     },
     {
-        'model_name': 'bvlc_caffenet_opset7',
-        'url': _S3_DOWNLOAD_ONNX + 'opset_7/bvlc_reference_caffenet.tar.gz',
+        'model_name': 'candy_opset8',
+        'url': _GITHUB_MODELS_LTS + 'vision/style_transfer/fast_neural_style/model/candy-8.tar.gz',
     },
     {
-        'model_name': 'bvlc_caffenet_opset8',
-        'url': _S3_DOWNLOAD_ONNX + 'opset_8/bvlc_reference_caffenet.tar.gz',
+        'model_name': 'candy_opset9',
+        'url': _GITHUB_MODELS_LTS + 'vision/style_transfer/fast_neural_style/model/candy-9.tar.gz',
     },
     {
-        'model_name': 'bvlc_caffenet_opset9',
-        'url': _S3_DOWNLOAD_ONNX + 'opset_9/bvlc_reference_caffenet.tar.gz',
-    },
-
-    # BVLC R-CNN ILSVRC13
-    {
-        'model_name': 'bvlc_rcnn_ilsvrc13_opset3',
-        'url': _S3_DOWNLOAD_ONNX + 'opset_3/bvlc_reference_rcnn_ilsvrc13.tar.gz',
-    },
-    {
-        'model_name': 'bvlc_rcnn_ilsvrc13_opset6',
-        'url': _S3_DOWNLOAD_ONNX + 'opset_6/bvlc_reference_rcnn_ilsvrc13.tar.gz',
-    },
-    {
-        'model_name': 'bvlc_rcnn_ilsvrc13_opset7',
-        'url': _S3_DOWNLOAD_ONNX + 'opset_7/bvlc_reference_rcnn_ilsvrc13.tar.gz',
-    },
-    {
-        'model_name': 'bvlc_rcnn_ilsvrc13_opset8',
-        'url': _S3_DOWNLOAD_ONNX + 'opset_8/bvlc_reference_rcnn_ilsvrc13.tar.gz',
-    },
-    {
-        'model_name': 'bvlc_rcnn_ilsvrc13_opset9',
-        'url': _S3_DOWNLOAD_ONNX + 'opset_9/bvlc_reference_rcnn_ilsvrc13.tar.gz',
-    },
-
-    # DenseNet-121
-    {
-        'model_name': 'densenet121_opset3',
+        'model_name': 'densenet_opset3',
         'atol': 1e-07,
         'rtol': 0.002,
-        'url': _S3_DOWNLOAD_ONNX + 'opset_3/densenet121.tar.gz',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/densenet-121/model/densenet-3.tar.gz',
     },
     {
-        'model_name': 'densenet121_opset6',
+        'model_name': 'densenet_opset6',
         'atol': 1e-07,
         'rtol': 0.002,
-        'url': _S3_DOWNLOAD_ONNX + 'opset_6/densenet121.tar.gz',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/densenet-121/model/densenet-6.tar.gz',
     },
     {
-        'model_name': 'densenet121_opset7',
+        'model_name': 'densenet_opset7',
         'atol': 1e-07,
         'rtol': 0.002,
-        'url': _S3_DOWNLOAD_ONNX + 'opset_7/densenet121.tar.gz',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/densenet-121/model/densenet-7.tar.gz',
     },
     {
-        'model_name': 'densenet121_opset8',
+        'model_name': 'densenet_opset8',
         'atol': 1e-07,
         'rtol': 0.002,
-        'url': _S3_DOWNLOAD_ONNX + 'opset_8/densenet121.tar.gz',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/densenet-121/model/densenet-8.tar.gz',
     },
     {
-        'model_name': 'densenet121_opset9',
+        'model_name': 'densenet_opset9',
         'atol': 1e-07,
         'rtol': 0.002,
-        'url': _S3_DOWNLOAD_ONNX + 'opset_9/densenet121.tar.gz',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/densenet-121/model/densenet-9.tar.gz',
     },
-
-    # DUC
-    {
-        'model_name': 'duc_resnet101_hdc_opset7',
-        'url': _S3_MODEL_ZOO + 'duc/ResNet101_DUC_HDC.tar.gz',
-    },
-
-    # Emotion-FERPlus
     {
         'model_name': 'emotion_ferplus_opset2',
-        'url': _WINDOWS_NET + 'opset_2/emotion_ferplus/emotion_ferplus.tar.gz',
+        'url': _GITHUB_MODELS_LTS + 'vision/body_analysis/emotion_ferplus/model/emotion-ferplus-2.tar.gz',
     },
     {
         'model_name': 'emotion_ferplus_opset7',
-        'url': _WINDOWS_NET + 'opset_7/emotion_ferplus/emotion_ferplus.tar.gz',
+        'url': _GITHUB_MODELS_LTS + 'vision/body_analysis/emotion_ferplus/model/emotion-ferplus-7.tar.gz',
     },
     {
         'model_name': 'emotion_ferplus_opset8',
-        'url': _WINDOWS_NET + 'opset_8/emotion_ferplus/emotion_ferplus.tar.gz',
-    },
-
-    # Faster R-CNN
-    {
-        'model_name': 'faster_rcnn_r50_fpn_opset10',
-        'url': _WINDOWS_NET + 'opset_10/faster_rcnn/faster_rcnn_R_50_FPN_1x.tar.gz',
-    },
-
-    # Fast Neural Style Transfer
-    {
-        'model_name': 'style_transfer_mosaic_opset9',
-        'url': _GITHUB_ONNX_MASTER + 'vision/style_transfer/models/mosaic.tar.gz',
+        'url': _GITHUB_MODELS_LTS + 'vision/body_analysis/emotion_ferplus/model/emotion-ferplus-8.tar.gz',
     },
     {
-        'model_name': 'style_transfer_candy_opset9',
-        'url': _GITHUB_ONNX_MASTER + 'vision/style_transfer/models/candy.tar.gz',
+        'model_name': 'googlenet_opset3',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/inception_and_googlenet/googlenet/model/googlenet-3.tar.gz',
     },
     {
-        'model_name': 'style_transfer_princess_opset9',
-        'url': _GITHUB_ONNX_MASTER + 'vision/style_transfer/models/rain_princess.tar.gz',
+        'model_name': 'googlenet_opset6',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/inception_and_googlenet/googlenet/model/googlenet-6.tar.gz',
     },
     {
-        'model_name': 'style_transfer_udnie_opset9',
-        'url': _GITHUB_ONNX_MASTER + 'vision/style_transfer/models/udnie.tar.gz',
+        'model_name': 'googlenet_opset7',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/inception_and_googlenet/googlenet/model/googlenet-7.tar.gz',
     },
     {
-        'model_name': 'style_transfer_pointilism_opset9',
-        'url': _GITHUB_ONNX_MASTER + 'vision/style_transfer/models/pointilism.tar.gz',
+        'model_name': 'googlenet_opset8',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/inception_and_googlenet/googlenet/model/googlenet-8.tar.gz',
     },
-
-    # GPT-2
+    {
+        'model_name': 'googlenet_opset9',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/inception_and_googlenet/googlenet/model/googlenet-9.tar.gz',
+    },
     {
         'model_name': 'gpt2_opset10',
-        'url': _GITHUB_ONNX_MASTER + 'text/machine_comprehension/gpt-2/model/GPT-2.tar.gz',
+        'url': _GITHUB_MODELS_LTS + 'text/machine_comprehension/gpt-2/model/gpt2-10.tar.gz',
     },
-
-    # Inception-v1
     {
         'model_name': 'inception_v1_opset3',
         'atol': 1e-07,
         'rtol': 0.001,
-        'url': _S3_DOWNLOAD_ONNX + 'opset_3/inception_v1.tar.gz',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/inception_and_googlenet/inception_v1/model/inception-v1-3.tar.gz',
     },
     {
         'model_name': 'inception_v1_opset6',
         'atol': 1e-07,
         'rtol': 0.001,
-        'url': _S3_DOWNLOAD_ONNX + 'opset_6/inception_v1.tar.gz',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/inception_and_googlenet/inception_v1/model/inception-v1-6.tar.gz',
     },
     {
         'model_name': 'inception_v1_opset7',
         'atol': 1e-07,
         'rtol': 0.001,
-        'url': _S3_DOWNLOAD_ONNX + 'opset_7/inception_v1.tar.gz',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/inception_and_googlenet/inception_v1/model/inception-v1-7.tar.gz',
     },
     {
         'model_name': 'inception_v1_opset8',
         'atol': 1e-07,
         'rtol': 0.001,
-        'url': _S3_DOWNLOAD_ONNX + 'opset_8/inception_v1.tar.gz',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/inception_and_googlenet/inception_v1/model/inception-v1-8.tar.gz',
     },
     {
         'model_name': 'inception_v1_opset9',
         'atol': 1e-07,
         'rtol': 0.001,
-        'url': _S3_DOWNLOAD_ONNX + 'opset_9/inception_v1.tar.gz',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/inception_and_googlenet/inception_v1/model/inception-v1-9.tar.gz',
     },
-
-    # Inception-v2
     {
         'model_name': 'inception_v2_opset3',
         'atol': 1e-07,
         'rtol': 0.001,
-        'url': _S3_DOWNLOAD_ONNX + 'opset_3/inception_v2.tar.gz',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/inception_and_googlenet/inception_v2/model/inception-v2-3.tar.gz',
     },
     {
         'model_name': 'inception_v2_opset6',
         'atol': 1e-07,
         'rtol': 0.001,
-        'url': _S3_DOWNLOAD_ONNX + 'opset_6/inception_v2.tar.gz',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/inception_and_googlenet/inception_v2/model/inception-v2-6.tar.gz',
     },
     {
         'model_name': 'inception_v2_opset7',
         'atol': 1e-07,
         'rtol': 0.001,
-        'url': _S3_DOWNLOAD_ONNX + 'opset_7/inception_v2.tar.gz',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/inception_and_googlenet/inception_v2/model/inception-v2-7.tar.gz',
     },
     {
         'model_name': 'inception_v2_opset8',
         'atol': 1e-07,
         'rtol': 0.001,
-        'url': _S3_DOWNLOAD_ONNX + 'opset_8/inception_v2.tar.gz',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/inception_and_googlenet/inception_v2/model/inception-v2-8.tar.gz',
     },
     {
         'model_name': 'inception_v2_opset9',
         'atol': 1e-07,
         'rtol': 0.001,
-        'url': _S3_DOWNLOAD_ONNX + 'opset_9/inception_v2.tar.gz',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/inception_and_googlenet/inception_v2/model/inception-v2-9.tar.gz',
     },
-
-    # Mask R-CNN
-    {'model_name': 'mask_rcnn_opset10', 'url': _WINDOWS_NET + 'opset_10/mask_rcnn/mask_rcnn_R_50_FPN_1x.tar.gz'},
-
-    # MNIST
-    {'model_name': 'mnist_opset1', 'url': _WINDOWS_NET + 'opset_1/mnist/mnist.tar.gz'},
-    {'model_name': 'mnist_opset7', 'url': _WINDOWS_NET + 'opset_7/mnist/mnist.tar.gz'},
-    {'model_name': 'mnist_opset8', 'url': _WINDOWS_NET + 'opset_8/mnist/mnist.tar.gz'},
-
-    # Mobile Net
     {
-        'model_name': 'mobilenet_opset7',
+        'model_name': 'mnist_opset1',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/mnist/model/mnist-1.tar.gz',
+    },
+    {
+        'model_name': 'mnist_opset7',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/mnist/model/mnist-7.tar.gz',
+    },
+    {
+        'model_name': 'mnist_opset8',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/mnist/model/mnist-8.tar.gz',
+    },
+    {
+        'model_name': 'mobilenetv2_opset7',
         'atol': 1e-07,
         'rtol': 0.002,
-        'url': _S3_MODEL_ZOO + 'mobilenet/mobilenetv2-1.0/mobilenetv2-1.0.tar.gz',
-    },
-
-    # ResNet-50
-    {
-        'model_name': 'resnet50_opset3',
-        'atol': 1e-07,
-        'rtol': 0.001,
-        'url': _S3_DOWNLOAD_ONNX + 'opset_3/resnet50.tar.gz',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/mobilenet/model/mobilenetv2-7.tar.gz',
     },
     {
-        'model_name': 'resnet50_opset6',
-        'atol': 1e-07,
-        'rtol': 0.001,
-        'url': _S3_DOWNLOAD_ONNX + 'opset_6/resnet50.tar.gz',
+        'model_name': 'mosaic_opset8',
+        'url': _GITHUB_MODELS_LTS + 'vision/style_transfer/fast_neural_style/model/mosaic-8.tar.gz',
     },
     {
-        'model_name': 'resnet50_opset7',
-        'atol': 1e-07,
-        'rtol': 0.001,
-        'url': _S3_DOWNLOAD_ONNX + 'opset_7/resnet50.tar.gz',
+        'model_name': 'mosaic_opset9',
+        'url': _GITHUB_MODELS_LTS + 'vision/style_transfer/fast_neural_style/model/mosaic-9.tar.gz',
     },
     {
-        'model_name': 'resnet50_opset8',
-        'atol': 1e-07,
-        'rtol': 0.001,
-        'url': _S3_DOWNLOAD_ONNX + 'opset_8/resnet50.tar.gz',
+        'model_name': 'pointilism_opset8',
+        'url': _GITHUB_MODELS_LTS + 'vision/style_transfer/fast_neural_style/model/pointilism-8.tar.gz',
     },
     {
-        'model_name': 'resnet50_opset9',
+        'model_name': 'pointilism_opset9',
+        'url': _GITHUB_MODELS_LTS + 'vision/style_transfer/fast_neural_style/model/pointilism-9.tar.gz',
+    },
+    {
+        'model_name': 'rain_princess_opset8',
+        'url': _GITHUB_MODELS_LTS + 'vision/style_transfer/fast_neural_style/model/rain-princess-8.tar.gz',
+    },
+    {
+        'model_name': 'rain_princess_opset9',
+        'url': _GITHUB_MODELS_LTS + 'vision/style_transfer/fast_neural_style/model/rain-princess-9.tar.gz',
+    },
+    {
+        'model_name': 'rcnn_ilsvrc13_opset3',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/rcnn_ilsvrc13/model/rcnn-ilsvrc13-3.tar.gz',
+    },
+    {
+        'model_name': 'rcnn_ilsvrc13_opset6',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/rcnn_ilsvrc13/model/rcnn-ilsvrc13-6.tar.gz',
+    },
+    {
+        'model_name': 'rcnn_ilsvrc13_opset7',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/rcnn_ilsvrc13/model/rcnn-ilsvrc13-7.tar.gz',
+    },
+    {
+        'model_name': 'rcnn_ilsvrc13_opset8',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/rcnn_ilsvrc13/model/rcnn-ilsvrc13-8.tar.gz',
+    },
+    {
+        'model_name': 'rcnn_ilsvrc13_opset9',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/rcnn_ilsvrc13/model/rcnn-ilsvrc13-9.tar.gz',
+    },
+    {
+        'model_name': 'resnet101_v1_opset7',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/resnet/model/resnet101-v1-7.tar.gz',
+    },
+    {
+        'model_name': 'resnet101_v2_opset7',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/resnet/model/resnet101-v2-7.tar.gz',
+    },
+    {
+        'model_name': 'resnet152_v1_opset7',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/resnet/model/resnet152-v1-7.tar.gz',
+    },
+    {
+        'model_name': 'resnet152_v2_opset7',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/resnet/model/resnet152-v2-7.tar.gz',
+    },
+    {
+        'model_name': 'resnet18_v1_opset7',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/resnet/model/resnet18-v1-7.tar.gz',
+    },
+    {
+        'model_name': 'resnet18_v2_opset7',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/resnet/model/resnet18-v2-7.tar.gz',
+    },
+    {
+        'model_name': 'resnet34_v1_opset7',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/resnet/model/resnet34-v1-7.tar.gz',
+    },
+    {
+        'model_name': 'resnet34_v2_opset7',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/resnet/model/resnet34-v2-7.tar.gz',
+    },
+    {
+        'model_name': 'resnet50_caffe2_v1_opset3',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/resnet/model/resnet50-caffe2-v1-3.tar.gz',
+    },
+    {
+        'model_name': 'resnet50_caffe2_v1_opset6',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/resnet/model/resnet50-caffe2-v1-6.tar.gz',
+    },
+    {
+        'model_name': 'resnet50_caffe2_v1_opset7',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/resnet/model/resnet50-caffe2-v1-7.tar.gz',
+    },
+    {
+        'model_name': 'resnet50_caffe2_v1_opset8',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/resnet/model/resnet50-caffe2-v1-8.tar.gz',
+    },
+    {
+        'model_name': 'resnet50_caffe2_v1_opset9',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/resnet/model/resnet50-caffe2-v1-9.tar.gz',
+    },
+    {
+        'model_name': 'resnet50_v1_opset7',
         'atol': 1e-07,
         'rtol': 0.001,
-        'url': _S3_DOWNLOAD_ONNX + 'opset_9/resnet50.tar.gz',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/resnet/model/resnet50-v1-7.tar.gz',
     },
     {
         'model_name': 'resnet50_v2_opset7',
         'atol': 1e-07,
-        'rtol': 0.002,
-        'url': _S3_MODEL_ZOO + 'resnet/resnet50v2/resnet50v2.tar.gz',
+        'rtol': 0.001,
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/resnet/model/resnet50-v2-7.tar.gz',
     },
-
-    # ShuffleNet
     {
         'model_name': 'shufflenet_opset3',
-        'atol': 1e-07,
-        'rtol': 0.001,
-        'url': _S3_DOWNLOAD_ONNX + 'opset_3/shufflenet.tar.gz',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/shufflenet/model/shufflenet-3.tar.gz',
     },
     {
         'model_name': 'shufflenet_opset6',
         'atol': 1e-07,
         'rtol': 0.001,
-        'url': _S3_DOWNLOAD_ONNX + 'opset_6/shufflenet.tar.gz',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/shufflenet/model/shufflenet-6.tar.gz',
     },
     {
         'model_name': 'shufflenet_opset7',
         'atol': 1e-07,
         'rtol': 0.001,
-        'url': _S3_DOWNLOAD_ONNX + 'opset_7/shufflenet.tar.gz',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/shufflenet/model/shufflenet-7.tar.gz',
     },
     {
         'model_name': 'shufflenet_opset8',
         'atol': 1e-07,
         'rtol': 0.001,
-        'url': _S3_DOWNLOAD_ONNX + 'opset_8/shufflenet.tar.gz',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/shufflenet/model/shufflenet-8.tar.gz',
     },
     {
         'model_name': 'shufflenet_opset9',
         'atol': 1e-07,
         'rtol': 0.001,
-        'url': _S3_DOWNLOAD_ONNX + 'opset_9/shufflenet.tar.gz',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/shufflenet/model/shufflenet-9.tar.gz',
     },
-
-    # ShuffleNet-V2
     {
         'model_name': 'shufflenet_v2_opset10',
-        'url': _GITHUB_ONNX_MASTER + 'vision/classification/shufflenet_v2/model/model.tar.gz',
-    },
-
-    # SqueezeNet
-    {
-        'model_name': 'squeezenet_opset3',
-        'atol': 1e-07,
-        'rtol': 0.001,
-        'url': _S3_DOWNLOAD_ONNX + 'opset_3/squeezenet.tar.gz',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/shufflenet/model/shufflenet-v2-10.tar.gz',
     },
     {
-        'model_name': 'squeezenet_opset6',
+        'model_name': 'squeezenet1.0_opset3',
         'atol': 1e-07,
         'rtol': 0.001,
-        'url': _S3_DOWNLOAD_ONNX + 'opset_6/squeezenet.tar.gz',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/squeezenet/model/squeezenet1.0-3.tar.gz',
     },
     {
-        'model_name': 'squeezenet_opset7',
+        'model_name': 'squeezenet1.0_opset6',
         'atol': 1e-07,
         'rtol': 0.001,
-        'url': _S3_DOWNLOAD_ONNX + 'opset_7/squeezenet.tar.gz',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/squeezenet/model/squeezenet1.0-6.tar.gz',
     },
     {
-        'model_name': 'squeezenet_opset8',
+        'model_name': 'squeezenet1.0_opset7',
         'atol': 1e-07,
         'rtol': 0.001,
-        'url': _S3_DOWNLOAD_ONNX + 'opset_8/squeezenet.tar.gz',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/squeezenet/model/squeezenet1.0-7.tar.gz',
     },
     {
-        'model_name': 'squeezenet_opset9',
+        'model_name': 'squeezenet1.0_opset8',
         'atol': 1e-07,
         'rtol': 0.001,
-        'url': _S3_DOWNLOAD_ONNX + 'opset_9/squeezenet.tar.gz',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/squeezenet/model/squeezenet1.0-8.tar.gz',
+    },
+    {
+        'model_name': 'squeezenet1.0_opset9',
+        'atol': 1e-07,
+        'rtol': 0.001,
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/squeezenet/model/squeezenet1.0-9.tar.gz',
     },
     {
         'model_name': 'squeezenet1.1_opset7',
         'atol': 1e-07,
         'rtol': 0.001,
-        'url': _S3_MODEL_ZOO + 'squeezenet/squeezenet1.1/squeezenet1.1.tar.gz',
-
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/squeezenet/model/squeezenet1.1-7.tar.gz',
     },
-
-    # SSD
     {
         'model_name': 'ssd_opset10',
         'atol': 1e-07,
         'rtol': 0.001,
-        'url': _WINDOWS_NET + 'opset_10/ssd/ssd.tar.gz',
-    },
-
-    # Tiny-YOLOv2
-    {
-        'model_name': 'tiny_yolov2_opset1',
-        'url': _WINDOWS_NET + 'opset_1/tiny_yolov2/tiny_yolov2.tar.gz',
+        'url': _GITHUB_MODELS_LTS + 'vision/object_detection_segmentation/ssd/model/ssd-10.tar.gz',
     },
     {
-        'model_name': 'tiny_yolov2_opset7',
-        'url': _WINDOWS_NET + 'opset_7/tiny_yolov2/tiny_yolov2.tar.gz',
+        'model_name': 'super_resolution_opset10',
+        'url': _GITHUB_MODELS_LTS + 'vision/super_resolution/sub_pixel_cnn_2016/model/super-resolution-10.tar.gz',
     },
-    {
-        'model_name': 'tiny_yolov2_opset8',
-        'url': _WINDOWS_NET + 'opset_8/tiny_yolov2/tiny_yolov2.tar.gz',
-    },
-
-    # Tiny-YOLOv3
     {
         'model_name': 'tiny_yolov3_opset11',
-        'url': _GITHUB_ONNX_MASTER + 'vision/object_detection_segmentation/tiny_yolov3/model/yolov3-tiny.tar.gz',
+        'url': _GITHUB_MODELS_LTS + 'vision/object_detection_segmentation/tiny-yolov3/model/tiny-yolov3-11.tar.gz',
     },
-
-    # VGG-19
-    {'model_name': 'vgg19_opset3', 'url': _S3_DOWNLOAD_ONNX + 'opset_3/vgg19.tar.gz'},
-    {'model_name': 'vgg19_opset6', 'url': _S3_DOWNLOAD_ONNX + 'opset_6/vgg19.tar.gz'},
-    {'model_name': 'vgg19_opset7', 'url': _S3_DOWNLOAD_ONNX + 'opset_7/vgg19.tar.gz'},
-    {'model_name': 'vgg19_opset8', 'url': _S3_DOWNLOAD_ONNX + 'opset_8/vgg19.tar.gz'},
-    {'model_name': 'vgg19_opset9', 'url': _S3_DOWNLOAD_ONNX + 'opset_9/vgg19.tar.gz'},
-
-    # YOLOv3
+    {
+        'model_name': 'tinyyolov2_opset1',
+        'url': _GITHUB_MODELS_LTS + 'vision/object_detection_segmentation/tiny-yolov2/model/tinyyolov2-1.tar.gz',
+    },
+    {
+        'model_name': 'tinyyolov2_opset7',
+        'url': _GITHUB_MODELS_LTS + 'vision/object_detection_segmentation/tiny-yolov2/model/tinyyolov2-7.tar.gz',
+    },
+    {
+        'model_name': 'tinyyolov2_opset8',
+        'url': _GITHUB_MODELS_LTS + 'vision/object_detection_segmentation/tiny-yolov2/model/tinyyolov2-8.tar.gz',
+    },
+    {
+        'model_name': 'udnie_opset8',
+        'url': _GITHUB_MODELS_LTS + 'vision/style_transfer/fast_neural_style/model/udnie-8.tar.gz',
+    },
+    {
+        'model_name': 'udnie_opset9',
+        'url': _GITHUB_MODELS_LTS + 'vision/style_transfer/fast_neural_style/model/udnie-9.tar.gz',
+    },
+    {
+        'model_name': 'vgg16_bn_opset7',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/vgg/model/vgg16-bn-7.tar.gz',
+    },
+    {
+        'model_name': 'vgg16_opset7',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/vgg/model/vgg16-7.tar.gz',
+    },
+    {
+        'model_name': 'vgg19_bn_opset7',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/vgg/model/vgg19-bn-7.tar.gz',
+    },
+    {
+        'model_name': 'vgg19_caffe2_opset3',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/vgg/model/vgg19-caffe2-3.tar.gz',
+    },
+    {
+        'model_name': 'vgg19_caffe2_opset6',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/vgg/model/vgg19-caffe2-6.tar.gz',
+    },
+    {
+        'model_name': 'vgg19_caffe2_opset7',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/vgg/model/vgg19-caffe2-7.tar.gz',
+    },
+    {
+        'model_name': 'vgg19_caffe2_opset8',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/vgg/model/vgg19-caffe2-8.tar.gz',
+    },
+    {
+        'model_name': 'vgg19_caffe2_opset9',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/vgg/model/vgg19-caffe2-9.tar.gz',
+    },
+    {
+        'model_name': 'vgg19_opset7',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/vgg/model/vgg19-7.tar.gz',
+    },
     {
         'model_name': 'yolov3_opset10',
         'atol': 1e-07,
         'rtol': 0.001,
-        'url': _WINDOWS_NET + 'opset_10/yolov3/yolov3.tar.gz',
+        'url': _GITHUB_MODELS_LTS + 'vision/object_detection_segmentation/yolov3/model/yolov3-10.tar.gz',
     },
-
-    # ZFNet-512
     {
         'model_name': 'zfnet512_opset3',
-        'url': _S3_DOWNLOAD_ONNX + 'opset_3/zfnet512.tar.gz',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/zfnet-512/model/zfnet512-3.tar.gz',
     },
     {
         'model_name': 'zfnet512_opset6',
-        'url': _S3_DOWNLOAD_ONNX + 'opset_6/zfnet512.tar.gz',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/zfnet-512/model/zfnet512-6.tar.gz',
     },
     {
         'model_name': 'zfnet512_opset7',
-        'url': _S3_DOWNLOAD_ONNX + 'opset_7/zfnet512.tar.gz',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/zfnet-512/model/zfnet512-7.tar.gz',
     },
     {
         'model_name': 'zfnet512_opset8',
-        'url': _S3_DOWNLOAD_ONNX + 'opset_8/zfnet512.tar.gz',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/zfnet-512/model/zfnet512-8.tar.gz',
     },
     {
         'model_name': 'zfnet512_opset9',
-        'url': _S3_DOWNLOAD_ONNX + 'opset_9/zfnet512.tar.gz',
+        'url': _GITHUB_MODELS_LTS + 'vision/classification/zfnet-512/model/zfnet512-9.tar.gz',
     },
 ]
+
+# Set backend device name to be used instead of hardcoded by ONNX BackendTest class ones.
+NgraphBackend.backend_name = tests.utils.BACKEND_NAME
+
+# import all test cases at global scope to make them visible to python.unittest
+backend_test = ModelZooTestRunner(NgraphBackend, zoo_models, __name__)
+test_cases = backend_test.test_cases['OnnxBackendZooModelTest']
 
 if tests.utils.BACKEND_NAME != 'INTERPRETER':
     # Set backend device name to be used instead of hardcoded by ONNX BackendTest class ones.
@@ -507,84 +561,64 @@ if tests.utils.BACKEND_NAME != 'INTERPRETER':
     test_cases = backend_test.test_cases['OnnxBackendZooModelTest']
 
     # Exclude failing tests...
-    # Temporarily disabled tests
-    pytest.mark.xfail(test_cases.test_resnet50_v2_opset7_cpu)
-    pytest.mark.xfail(test_cases.test_mobilenet_opset7_cpu)
+    # Error: Cannot decompose
+    pytest.mark.xfail(test_cases.test_FasterRCNN_opset10_cpu)
+    pytest.mark.xfail(test_cases.test_MaskRCNN_opset10_cpu)
+    pytest.mark.xfail(test_cases.test_bertsquad_opset10_cpu)
+    pytest.mark.xfail(test_cases.test_bertsquad_opset8_cpu)
+    pytest.mark.xfail(test_cases.test_gpt2_opset10_cpu)
+    pytest.mark.xfail(test_cases.test_ssd_opset10_cpu)
 
-    # Too long execution time.
-    pytest.mark.skip(test_cases.test_duc_resnet101_hdc_opset7_cpu)
+    # Result mismatch
+    pytest.mark.xfail(test_cases.test_ResNet101_DUC_opset7_cpu)
+    pytest.mark.xfail(test_cases.test_arcfaceresnet100_opset8_cpu)
+    pytest.mark.xfail(test_cases.test_resnet18_v1_opset7_cpu)
+    pytest.mark.xfail(test_cases.test_vgg19_bn_opset7_cpu)
+    pytest.mark.xfail(test_cases.test_vgg19_opset7_cpu)
 
-    # RuntimeError: unknown operation: ImageScaler
-    backend_test.exclude('test_tiny_yolov2_opset7')
-    backend_test.exclude('test_tiny_yolov2_opset8')
+    # Unsupported element type: STRING
+    pytest.mark.xfail(test_cases.test_bidaf_opset9_cpu)
 
-    # RuntimeError: unsupported data type: BOOL
-    backend_test.exclude('test_tiny_yolov3_opset11')
+    # Missing ONNX operations: Upsample
+    pytest.mark.xfail(test_cases.test_candy_opset8_cpu)
+    pytest.mark.xfail(test_cases.test_candy_opset9_cpu)
+    pytest.mark.xfail(test_cases.test_mosaic_opset8_cpu)
+    pytest.mark.xfail(test_cases.test_mosaic_opset9_cpu)
+    pytest.mark.xfail(test_cases.test_pointilism_opset8_cpu)
+    pytest.mark.xfail(test_cases.test_pointilism_opset9_cpu)
+    pytest.mark.xfail(test_cases.test_rain_princess_opset8_cpu)
+    pytest.mark.xfail(test_cases.test_rain_princess_opset9_cpu)
+    pytest.mark.xfail(test_cases.test_udnie_opset8_cpu)
+    pytest.mark.xfail(test_cases.test_udnie_opset9_cpu)
 
     # ONNX ValidationError
-    backend_test.exclude('test_mnist_opset1')
-    backend_test.exclude('test_tiny_yolov2_opset1')
-    backend_test.exclude('test_yolov3_opset10')
+    pytest.mark.skip(test_cases.test_mnist_opset1_cpu)
+    pytest.mark.skip(test_cases.test_tinyyolov2_opset1_cpu)
 
-    # Use of unsupported domain: ai.onnx.ml
-    backend_test.exclude('test_bidaf_opset9')
+    # Malformed file in ONNX Model Zoo https://github.com/onnx/models/issues/309
+    pytest.mark.skip(test_cases.test_resnet101_v1_opset7_cpu)
+    pytest.mark.skip(test_cases.test_resnet101_v2_opset7_cpu)
+    pytest.mark.skip(test_cases.test_resnet152_v1_opset7_cpu)
+    pytest.mark.skip(test_cases.test_resnet152_v2_opset7_cpu)
+    pytest.mark.skip(test_cases.test_resnet18_v2_opset7_cpu)
+    pytest.mark.skip(test_cases.test_resnet34_v1_opset7_cpu)
+    pytest.mark.skip(test_cases.test_resnet34_v2_opset7_cpu)
+    pytest.mark.skip(test_cases.test_resnet50_v1_opset7_cpu)
+    pytest.mark.skip(test_cases.test_resnet50_v2_opset7_cpu)
 
-    # UserInputError: Provided tensor's shape does not match the expected
-    backend_test.exclude('test_shufflenet_v2_opset10')
+    # Provided tensor's shape does not match expected
+    pytest.mark.xfail(test_cases.test_shufflenet_v2_opset10_cpu)
 
-    # Unsupported ops: ConstantOfShape, NonMaxSuppression
-    backend_test.exclude('test_ssd_opset10')
+    # Unable to convert Reshape:v1 with dynamic shape
+    pytest.mark.xfail(test_cases.test_super_resolution_opset10_cpu)
 
-    # Unsupported ops: ConstantOfShape (opset 10), Tile (8)
-    backend_test.exclude('test_bert_squad_opset8_cpu')
-    backend_test.exclude('test_bert_squad_opset10_cpu')
+    # Missing ONNX operations: Loop
+    pytest.mark.xfail(test_cases.test_yolov3_opset10_cpu)
+    pytest.mark.xfail(test_cases.test_tiny_yolov3_opset11_cpu)
 
-    # Unsupported ops: Upsample
-    backend_test.exclude('test_style_transfer')
-
-    # Unsupported ops: ConstantOfShape, Expand, NonMaxSuppression, NonZero, Resize, RoiAlign, Scatter
-    backend_test.exclude('test_mask_rcnn_opset10')
-
-    # Unsupported ops: ConstantOfShape, NonZero
-    backend_test.exclude('gpt2_opset10')
-
-    # Unsupported ops: ConstantOfShape, NonZero, Resize, RoiAlign, Scatter
-    backend_test.exclude('test_faster_rcnn_r50_fpn_opset10')
-
-    # Tests which fail on the INTELGPU backend
-    if tests.utils.BACKEND_NAME == 'INTELGPU':
-        pytest.mark.xfail(test_cases.test_arcface_lresnet100e_opset8_cpu)
-        pytest.mark.xfail(test_cases.test_densenet121_opset3_cpu)
-        pytest.mark.xfail(test_cases.test_densenet121_opset6_cpu)
-        pytest.mark.xfail(test_cases.test_densenet121_opset7_cpu)
-        pytest.mark.xfail(test_cases.test_densenet121_opset8_cpu)
-        pytest.mark.xfail(test_cases.test_densenet121_opset9_cpu)
-        pytest.mark.xfail(test_cases.test_inception_v2_opset3_cpu)
-        pytest.mark.xfail(test_cases.test_inception_v2_opset6_cpu)
-        pytest.mark.xfail(test_cases.test_inception_v2_opset7_cpu)
-        pytest.mark.xfail(test_cases.test_inception_v2_opset8_cpu)
-        pytest.mark.xfail(test_cases.test_inception_v2_opset9_cpu)
-        pytest.mark.xfail(test_cases.test_resnet50_opset3_cpu)
-        pytest.mark.xfail(test_cases.test_resnet50_opset6_cpu)
-        pytest.mark.xfail(test_cases.test_resnet50_opset7_cpu)
-        pytest.mark.xfail(test_cases.test_resnet50_opset8_cpu)
-        pytest.mark.xfail(test_cases.test_resnet50_opset9_cpu)
-        pytest.mark.xfail(test_cases.test_vgg19_opset8_cpu)
-        pytest.mark.xfail(test_cases.test_vgg19_opset9_cpu)
-
-    if tests.utils.BACKEND_NAME == 'PlaidML':
-        pytest.mark.xfail(test_cases.test_densenet121_opset3_cpu)
-        pytest.mark.xfail(test_cases.test_densenet121_opset6_cpu)
-        pytest.mark.xfail(test_cases.test_densenet121_opset7_cpu)
-        pytest.mark.xfail(test_cases.test_densenet121_opset8_cpu)
-        pytest.mark.xfail(test_cases.test_densenet121_opset9_cpu)
-        # Computation time takes too long on iGPU and PlaidML
-        pytest.mark.skip(test_cases.test_mobilenet_opset7_cpu)
-        pytest.mark.skip(test_cases.test_shufflenet_opset3_cpu)
-        pytest.mark.skip(test_cases.test_shufflenet_opset6_cpu)
-        pytest.mark.skip(test_cases.test_shufflenet_opset7_cpu)
-        pytest.mark.skip(test_cases.test_shufflenet_opset8_cpu)
-        pytest.mark.skip(test_cases.test_shufflenet_opset9_cpu)
+    # If 'dilations' is not provided data rank must be static.
+    pytest.mark.xfail(test_cases.test_tinyyolov2_opset7_cpu)
+    pytest.mark.xfail(test_cases.test_tinyyolov2_opset8_cpu)
 
     del test_cases
     globals().update(backend_test.enable_report().test_cases)
