@@ -41,15 +41,18 @@ _GITHUB_MODELS_LTS = 'https://media.githubusercontent.com/media/onnx/models/mast
 zoo_models = [
     {
         'model_name': 'FasterRCNN_opset10',
-        'url': _GITHUB_MODELS_LTS + 'vision/object_detection_segmentation/faster-rcnn/model/FasterRCNN-10.tar.gz',
+        'url': _GITHUB_MODELS_LTS
+        + 'vision/object_detection_segmentation/faster-rcnn/model/FasterRCNN-10.tar.gz',
     },
     {
         'model_name': 'MaskRCNN_opset10',
-        'url': _GITHUB_MODELS_LTS + 'vision/object_detection_segmentation/mask-rcnn/model/MaskRCNN-10.tar.gz',
+        'url': _GITHUB_MODELS_LTS
+        + 'vision/object_detection_segmentation/mask-rcnn/model/MaskRCNN-10.tar.gz',
     },
     {
         'model_name': 'ResNet101_DUC_opset7',
-        'url': _GITHUB_MODELS_LTS + 'vision/object_detection_segmentation/duc/model/ResNet101-DUC-7.tar.gz',
+        'url': _GITHUB_MODELS_LTS
+        + 'vision/object_detection_segmentation/duc/model/ResNet101-DUC-7.tar.gz',
     },
     {
         'model_name': 'arcfaceresnet100_opset8',
@@ -57,17 +60,20 @@ zoo_models = [
     },
     {
         'model_name': 'bertsquad_opset10',
-        'url': _GITHUB_MODELS_LTS + 'text/machine_comprehension/bert-squad/model/bertsquad-10.tar.gz',
+        'url': _GITHUB_MODELS_LTS
+        + 'text/machine_comprehension/bert-squad/model/bertsquad-10.tar.gz',
     },
     {
         'model_name': 'bertsquad_opset8',
-        'url': _GITHUB_MODELS_LTS + 'text/machine_comprehension/bert-squad/model/bertsquad-8.tar.gz',
+        'url': _GITHUB_MODELS_LTS
+        + 'text/machine_comprehension/bert-squad/model/bertsquad-8.tar.gz',
     },
     {
         'model_name': 'bidaf_opset9',
         'atol': 1e-07,
         'rtol': 0.001,
-        'url': _GITHUB_MODELS_LTS + 'text/machine_comprehension/bidirectional_attention_flow/model/bidaf-9.tar.gz',
+        'url': _GITHUB_MODELS_LTS
+        + 'text/machine_comprehension/bidirectional_attention_flow/model/bidaf-9.tar.gz',
     },
     {
         'model_name': 'bvlcalexnet_opset3',
@@ -159,35 +165,43 @@ zoo_models = [
     },
     {
         'model_name': 'emotion_ferplus_opset2',
-        'url': _GITHUB_MODELS_LTS + 'vision/body_analysis/emotion_ferplus/model/emotion-ferplus-2.tar.gz',
+        'url': _GITHUB_MODELS_LTS
+        + 'vision/body_analysis/emotion_ferplus/model/emotion-ferplus-2.tar.gz',
     },
     {
         'model_name': 'emotion_ferplus_opset7',
-        'url': _GITHUB_MODELS_LTS + 'vision/body_analysis/emotion_ferplus/model/emotion-ferplus-7.tar.gz',
+        'url': _GITHUB_MODELS_LTS
+        + 'vision/body_analysis/emotion_ferplus/model/emotion-ferplus-7.tar.gz',
     },
     {
         'model_name': 'emotion_ferplus_opset8',
-        'url': _GITHUB_MODELS_LTS + 'vision/body_analysis/emotion_ferplus/model/emotion-ferplus-8.tar.gz',
+        'url': _GITHUB_MODELS_LTS
+        + 'vision/body_analysis/emotion_ferplus/model/emotion-ferplus-8.tar.gz',
     },
     {
         'model_name': 'googlenet_opset3',
-        'url': _GITHUB_MODELS_LTS + 'vision/classification/inception_and_googlenet/googlenet/model/googlenet-3.tar.gz',
+        'url': _GITHUB_MODELS_LTS
+        + 'vision/classification/inception_and_googlenet/googlenet/model/googlenet-3.tar.gz',
     },
     {
         'model_name': 'googlenet_opset6',
-        'url': _GITHUB_MODELS_LTS + 'vision/classification/inception_and_googlenet/googlenet/model/googlenet-6.tar.gz',
+        'url': _GITHUB_MODELS_LTS
+        + 'vision/classification/inception_and_googlenet/googlenet/model/googlenet-6.tar.gz',
     },
     {
         'model_name': 'googlenet_opset7',
-        'url': _GITHUB_MODELS_LTS + 'vision/classification/inception_and_googlenet/googlenet/model/googlenet-7.tar.gz',
+        'url': _GITHUB_MODELS_LTS
+        + 'vision/classification/inception_and_googlenet/googlenet/model/googlenet-7.tar.gz',
     },
     {
         'model_name': 'googlenet_opset8',
-        'url': _GITHUB_MODELS_LTS + 'vision/classification/inception_and_googlenet/googlenet/model/googlenet-8.tar.gz',
+        'url': _GITHUB_MODELS_LTS
+        + 'vision/classification/inception_and_googlenet/googlenet/model/googlenet-8.tar.gz',
     },
     {
         'model_name': 'googlenet_opset9',
-        'url': _GITHUB_MODELS_LTS + 'vision/classification/inception_and_googlenet/googlenet/model/googlenet-9.tar.gz',
+        'url': _GITHUB_MODELS_LTS
+        + 'vision/classification/inception_and_googlenet/googlenet/model/googlenet-9.tar.gz',
     },
     {
         'model_name': 'gpt2_opset10',
@@ -197,61 +211,71 @@ zoo_models = [
         'model_name': 'inception_v1_opset3',
         'atol': 1e-07,
         'rtol': 0.001,
-        'url': _GITHUB_MODELS_LTS + 'vision/classification/inception_and_googlenet/inception_v1/model/inception-v1-3.tar.gz',
+        'url': _GITHUB_MODELS_LTS
+        + 'vision/classification/inception_and_googlenet/inception_v1/model/inception-v1-3.tar.gz',
     },
     {
         'model_name': 'inception_v1_opset6',
         'atol': 1e-07,
         'rtol': 0.001,
-        'url': _GITHUB_MODELS_LTS + 'vision/classification/inception_and_googlenet/inception_v1/model/inception-v1-6.tar.gz',
+        'url': _GITHUB_MODELS_LTS
+        + 'vision/classification/inception_and_googlenet/inception_v1/model/inception-v1-6.tar.gz',
     },
     {
         'model_name': 'inception_v1_opset7',
         'atol': 1e-07,
         'rtol': 0.001,
-        'url': _GITHUB_MODELS_LTS + 'vision/classification/inception_and_googlenet/inception_v1/model/inception-v1-7.tar.gz',
+        'url': _GITHUB_MODELS_LTS
+        + 'vision/classification/inception_and_googlenet/inception_v1/model/inception-v1-7.tar.gz',
     },
     {
         'model_name': 'inception_v1_opset8',
         'atol': 1e-07,
         'rtol': 0.001,
-        'url': _GITHUB_MODELS_LTS + 'vision/classification/inception_and_googlenet/inception_v1/model/inception-v1-8.tar.gz',
+        'url': _GITHUB_MODELS_LTS
+        + 'vision/classification/inception_and_googlenet/inception_v1/model/inception-v1-8.tar.gz',
     },
     {
         'model_name': 'inception_v1_opset9',
         'atol': 1e-07,
         'rtol': 0.001,
-        'url': _GITHUB_MODELS_LTS + 'vision/classification/inception_and_googlenet/inception_v1/model/inception-v1-9.tar.gz',
+        'url': _GITHUB_MODELS_LTS
+        + 'vision/classification/inception_and_googlenet/inception_v1/model/inception-v1-9.tar.gz',
     },
     {
         'model_name': 'inception_v2_opset3',
         'atol': 1e-07,
         'rtol': 0.001,
-        'url': _GITHUB_MODELS_LTS + 'vision/classification/inception_and_googlenet/inception_v2/model/inception-v2-3.tar.gz',
+        'url': _GITHUB_MODELS_LTS
+        + 'vision/classification/inception_and_googlenet/inception_v2/model/inception-v2-3.tar.gz',
     },
     {
         'model_name': 'inception_v2_opset6',
         'atol': 1e-07,
         'rtol': 0.001,
-        'url': _GITHUB_MODELS_LTS + 'vision/classification/inception_and_googlenet/inception_v2/model/inception-v2-6.tar.gz',
+        'url': _GITHUB_MODELS_LTS
+        + 'vision/classification/inception_and_googlenet/inception_v2/model/inception-v2-6.tar.gz',
     },
     {
         'model_name': 'inception_v2_opset7',
         'atol': 1e-07,
         'rtol': 0.001,
-        'url': _GITHUB_MODELS_LTS + 'vision/classification/inception_and_googlenet/inception_v2/model/inception-v2-7.tar.gz',
+        'url': _GITHUB_MODELS_LTS
+        + 'vision/classification/inception_and_googlenet/inception_v2/model/inception-v2-7.tar.gz',
     },
     {
         'model_name': 'inception_v2_opset8',
         'atol': 1e-07,
         'rtol': 0.001,
-        'url': _GITHUB_MODELS_LTS + 'vision/classification/inception_and_googlenet/inception_v2/model/inception-v2-8.tar.gz',
+        'url': _GITHUB_MODELS_LTS
+        + 'vision/classification/inception_and_googlenet/inception_v2/model/inception-v2-8.tar.gz',
     },
     {
         'model_name': 'inception_v2_opset9',
         'atol': 1e-07,
         'rtol': 0.001,
-        'url': _GITHUB_MODELS_LTS + 'vision/classification/inception_and_googlenet/inception_v2/model/inception-v2-9.tar.gz',
+        'url': _GITHUB_MODELS_LTS
+        + 'vision/classification/inception_and_googlenet/inception_v2/model/inception-v2-9.tar.gz',
     },
     {
         'model_name': 'mnist_opset1',
@@ -281,39 +305,48 @@ zoo_models = [
     },
     {
         'model_name': 'pointilism_opset8',
-        'url': _GITHUB_MODELS_LTS + 'vision/style_transfer/fast_neural_style/model/pointilism-8.tar.gz',
+        'url': _GITHUB_MODELS_LTS
+        + 'vision/style_transfer/fast_neural_style/model/pointilism-8.tar.gz',
     },
     {
         'model_name': 'pointilism_opset9',
-        'url': _GITHUB_MODELS_LTS + 'vision/style_transfer/fast_neural_style/model/pointilism-9.tar.gz',
+        'url': _GITHUB_MODELS_LTS
+        + 'vision/style_transfer/fast_neural_style/model/pointilism-9.tar.gz',
     },
     {
         'model_name': 'rain_princess_opset8',
-        'url': _GITHUB_MODELS_LTS + 'vision/style_transfer/fast_neural_style/model/rain-princess-8.tar.gz',
+        'url': _GITHUB_MODELS_LTS
+        + 'vision/style_transfer/fast_neural_style/model/rain-princess-8.tar.gz',
     },
     {
         'model_name': 'rain_princess_opset9',
-        'url': _GITHUB_MODELS_LTS + 'vision/style_transfer/fast_neural_style/model/rain-princess-9.tar.gz',
+        'url': _GITHUB_MODELS_LTS
+        + 'vision/style_transfer/fast_neural_style/model/rain-princess-9.tar.gz',
     },
     {
         'model_name': 'rcnn_ilsvrc13_opset3',
-        'url': _GITHUB_MODELS_LTS + 'vision/classification/rcnn_ilsvrc13/model/rcnn-ilsvrc13-3.tar.gz',
+        'url': _GITHUB_MODELS_LTS
+        + 'vision/classification/rcnn_ilsvrc13/model/rcnn-ilsvrc13-3.tar.gz',
     },
     {
         'model_name': 'rcnn_ilsvrc13_opset6',
-        'url': _GITHUB_MODELS_LTS + 'vision/classification/rcnn_ilsvrc13/model/rcnn-ilsvrc13-6.tar.gz',
+        'url': _GITHUB_MODELS_LTS
+        + 'vision/classification/rcnn_ilsvrc13/model/rcnn-ilsvrc13-6.tar.gz',
     },
     {
         'model_name': 'rcnn_ilsvrc13_opset7',
-        'url': _GITHUB_MODELS_LTS + 'vision/classification/rcnn_ilsvrc13/model/rcnn-ilsvrc13-7.tar.gz',
+        'url': _GITHUB_MODELS_LTS
+        + 'vision/classification/rcnn_ilsvrc13/model/rcnn-ilsvrc13-7.tar.gz',
     },
     {
         'model_name': 'rcnn_ilsvrc13_opset8',
-        'url': _GITHUB_MODELS_LTS + 'vision/classification/rcnn_ilsvrc13/model/rcnn-ilsvrc13-8.tar.gz',
+        'url': _GITHUB_MODELS_LTS
+        + 'vision/classification/rcnn_ilsvrc13/model/rcnn-ilsvrc13-8.tar.gz',
     },
     {
         'model_name': 'rcnn_ilsvrc13_opset9',
-        'url': _GITHUB_MODELS_LTS + 'vision/classification/rcnn_ilsvrc13/model/rcnn-ilsvrc13-9.tar.gz',
+        'url': _GITHUB_MODELS_LTS
+        + 'vision/classification/rcnn_ilsvrc13/model/rcnn-ilsvrc13-9.tar.gz',
     },
     {
         'model_name': 'resnet101_v1_opset7',
@@ -349,23 +382,28 @@ zoo_models = [
     },
     {
         'model_name': 'resnet50_caffe2_v1_opset3',
-        'url': _GITHUB_MODELS_LTS + 'vision/classification/resnet/model/resnet50-caffe2-v1-3.tar.gz',
+        'url': _GITHUB_MODELS_LTS
+        + 'vision/classification/resnet/model/resnet50-caffe2-v1-3.tar.gz',
     },
     {
         'model_name': 'resnet50_caffe2_v1_opset6',
-        'url': _GITHUB_MODELS_LTS + 'vision/classification/resnet/model/resnet50-caffe2-v1-6.tar.gz',
+        'url': _GITHUB_MODELS_LTS
+        + 'vision/classification/resnet/model/resnet50-caffe2-v1-6.tar.gz',
     },
     {
         'model_name': 'resnet50_caffe2_v1_opset7',
-        'url': _GITHUB_MODELS_LTS + 'vision/classification/resnet/model/resnet50-caffe2-v1-7.tar.gz',
+        'url': _GITHUB_MODELS_LTS
+        + 'vision/classification/resnet/model/resnet50-caffe2-v1-7.tar.gz',
     },
     {
         'model_name': 'resnet50_caffe2_v1_opset8',
-        'url': _GITHUB_MODELS_LTS + 'vision/classification/resnet/model/resnet50-caffe2-v1-8.tar.gz',
+        'url': _GITHUB_MODELS_LTS
+        + 'vision/classification/resnet/model/resnet50-caffe2-v1-8.tar.gz',
     },
     {
         'model_name': 'resnet50_caffe2_v1_opset9',
-        'url': _GITHUB_MODELS_LTS + 'vision/classification/resnet/model/resnet50-caffe2-v1-9.tar.gz',
+        'url': _GITHUB_MODELS_LTS
+        + 'vision/classification/resnet/model/resnet50-caffe2-v1-9.tar.gz',
     },
     {
         'model_name': 'resnet50_v1_opset7',
@@ -409,7 +447,8 @@ zoo_models = [
     },
     {
         'model_name': 'shufflenet_v2_opset10',
-        'url': _GITHUB_MODELS_LTS + 'vision/classification/shufflenet/model/shufflenet-v2-10.tar.gz',
+        'url': _GITHUB_MODELS_LTS
+        + 'vision/classification/shufflenet/model/shufflenet-v2-10.tar.gz',
     },
     {
         'model_name': 'squeezenet1.0_opset3',
@@ -455,23 +494,28 @@ zoo_models = [
     },
     {
         'model_name': 'super_resolution_opset10',
-        'url': _GITHUB_MODELS_LTS + 'vision/super_resolution/sub_pixel_cnn_2016/model/super-resolution-10.tar.gz',
+        'url': _GITHUB_MODELS_LTS
+        + 'vision/super_resolution/sub_pixel_cnn_2016/model/super-resolution-10.tar.gz',
     },
     {
         'model_name': 'tiny_yolov3_opset11',
-        'url': _GITHUB_MODELS_LTS + 'vision/object_detection_segmentation/tiny-yolov3/model/tiny-yolov3-11.tar.gz',
+        'url': _GITHUB_MODELS_LTS
+        + 'vision/object_detection_segmentation/tiny-yolov3/model/tiny-yolov3-11.tar.gz',
     },
     {
         'model_name': 'tinyyolov2_opset1',
-        'url': _GITHUB_MODELS_LTS + 'vision/object_detection_segmentation/tiny-yolov2/model/tinyyolov2-1.tar.gz',
+        'url': _GITHUB_MODELS_LTS
+        + 'vision/object_detection_segmentation/tiny-yolov2/model/tinyyolov2-1.tar.gz',
     },
     {
         'model_name': 'tinyyolov2_opset7',
-        'url': _GITHUB_MODELS_LTS + 'vision/object_detection_segmentation/tiny-yolov2/model/tinyyolov2-7.tar.gz',
+        'url': _GITHUB_MODELS_LTS
+        + 'vision/object_detection_segmentation/tiny-yolov2/model/tinyyolov2-7.tar.gz',
     },
     {
         'model_name': 'tinyyolov2_opset8',
-        'url': _GITHUB_MODELS_LTS + 'vision/object_detection_segmentation/tiny-yolov2/model/tinyyolov2-8.tar.gz',
+        'url': _GITHUB_MODELS_LTS
+        + 'vision/object_detection_segmentation/tiny-yolov2/model/tinyyolov2-8.tar.gz',
     },
     {
         'model_name': 'udnie_opset8',
@@ -521,7 +565,8 @@ zoo_models = [
         'model_name': 'yolov3_opset10',
         'atol': 1e-07,
         'rtol': 0.001,
-        'url': _GITHUB_MODELS_LTS + 'vision/object_detection_segmentation/yolov3/model/yolov3-10.tar.gz',
+        'url': _GITHUB_MODELS_LTS
+        + 'vision/object_detection_segmentation/yolov3/model/yolov3-10.tar.gz',
     },
     {
         'model_name': 'zfnet512_opset3',
