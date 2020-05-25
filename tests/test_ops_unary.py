@@ -21,13 +21,13 @@ import onnx
 import onnx.mapping
 import numpy as np
 
-from tests.utils import run_model, run_node, get_node_model, get_runtime
+from tests.utils import run_model, run_node, get_node_model, get_runtime, xfail_test
 from onnx.helper import make_node, make_graph, make_tensor_value_info, make_model
 from ngraph_onnx.onnx_importer.importer import import_onnx_model
 from ngraph.exceptions import NgraphTypeError
 
 
-@pytest.mark.skip_on_ie  # [NOT_IMPLEMENTED] Input image format I64 is not supported yet...
+@xfail_test('IE:CPU', reason='Input image format I64 is not supported yet')
 @pytest.mark.parametrize('input_data', [
     np.array([-4, 0, 5, -10]),
     np.array([[-4, 0, 5, -10], [-4, 0, 5, -10]]),
@@ -40,7 +40,6 @@ def test_abs(input_data):
     assert np.array_equal(ng_results, [expected_output])
 
 
-@pytest.mark.skip_on_ie  # Unsupported primitive of type: Sqrt
 @pytest.mark.parametrize('input_data', [
     np.array([4, 0, 5, 10]),
     np.array([[4, 0, 5, 10], [4, 0, 5, 10]]),
@@ -80,7 +79,7 @@ def test_log(input_data):
     assert np.allclose(ng_results, [expected_output])
 
 
-@pytest.mark.skip_on_ie  # [NOT_IMPLEMENTED] Input image format I64 is not supported yet...
+@xfail_test('IE:CPU', reason='Input image format I64 is not supported yet')
 @pytest.mark.parametrize('input_data', [
     np.array([-4, 0, 5, -10]),
     np.array([[-4, 0, 5, -10], [-4, 0, 5, -10]]),
@@ -93,7 +92,7 @@ def test_neg(input_data):
     assert np.array_equal(ng_results, [expected_output])
 
 
-@pytest.mark.skip_on_ie  # Incorrect precision f64!
+@xfail_test('IE:CPU', reason='RuntimeError: Incorrect precision f64')
 @pytest.mark.parametrize('input_data', [
     np.array([-4.2, 0.43, 5.99, -10.01]),
     np.array([[-4.5, 0.99, 5.01, -10.00], [-4.5, 0.5, 5.1, 10.01]]),
@@ -106,7 +105,7 @@ def test_floor(input_data):
     assert np.array_equal(ng_results, [expected_output])
 
 
-@pytest.mark.skip_on_ie  # Incorrect precision f64!
+@xfail_test('IE:CPU', reason='RuntimeError: Incorrect precision f64')
 @pytest.mark.parametrize('input_data', [
     np.array([-4.2, 0, 5.99, -10.01]),
     np.array([[-4.5, 0.99, 5.01, -10.00], [-4.5, 0.5, 5.1, 10.01]]),
@@ -149,7 +148,7 @@ def test_clip_default():
     assert np.allclose(result, [expected])
 
 
-@pytest.mark.skip_on_ie  # Incorrect precision f64!
+@xfail_test('IE:CPU', reason='RuntimeError: Incorrect precision f64')
 @pytest.mark.parametrize('input_data', [
     np.array([-4.2, 1, 5.99, -10.01]),
     np.array([[-4.5, 0.99, 5.01, -10.00], [-4.5, 0.5, 5.1, 10.01]]),
@@ -162,7 +161,6 @@ def test_reciprocal(input_data):
     assert np.allclose(ng_results, [expected_output])
 
 
-@pytest.mark.skip_on_ie  # Result mismatch
 @pytest.mark.skip_on_intelgpu
 @pytest.mark.skip_on_plaidml
 @pytest.mark.parametrize('axis, dim1, dim2', [
@@ -182,7 +180,6 @@ def test_hardmax(axis, dim1, dim2):
     assert np.allclose(ng_results, [expected])
 
 
-@pytest.mark.skip_on_ie  # Result mismatch
 @pytest.mark.skip_on_intelgpu
 @pytest.mark.skip_on_plaidml
 def test_hardmax_special_cases():
@@ -237,7 +234,7 @@ def test_hardsigmoid():
     assert np.allclose(ng_results, [expected])
 
 
-@pytest.mark.skip_on_ie  # Result mismatch
+@xfail_test('IE:CPU', reason='Assertion Error: Result mismatch')
 def test_softmax():
     def softmax_2d(x):
         max_x = np.max(x, axis=1).reshape((-1, 1))
@@ -277,7 +274,7 @@ def test_softmax():
         ng_results = run_node(node, [data])
 
 
-@pytest.mark.skip_on_ie  # Result mismatch
+@xfail_test('IE:CPU', reason='Assertion Error: Result mismatch')
 def test_logsoftmax():
     def logsoftmax_2d(x):
         max_x = np.max(x, axis=1).reshape((-1, 1))
@@ -338,7 +335,7 @@ def test_softsign():
     assert np.allclose(ng_results, [expected])
 
 
-@pytest.mark.skip_on_ie  # RuntimeError: data [y] doesn't exist
+@xfail_test('IE:CPU', reason="RuntimeError: data [y] doesn't exist")
 def test_identity():
     np.random.seed(133391)
     shape = [2, 4]
@@ -366,7 +363,7 @@ def test_identity():
     assert np.array_equal(ng_results[0], expected_result)
 
 
-@pytest.mark.skip_on_ie  # RuntimeError: data [B] doesn't exist
+@xfail_test('IE:CPU', reason="RuntimeError: data [B] doesn't exist")
 @pytest.mark.parametrize('val_type, input_data', [
     (np.dtype(bool), np.zeros((2, 2), dtype=int)),
 ])
@@ -379,10 +376,13 @@ def test_cast_to_bool(val_type, input_data):
     assert np.allclose(result, expected)
 
 
-@pytest.mark.skip_on_ie  # data [B] doesn't exist, Incorrect precision f64!
 @pytest.mark.parametrize('val_type, range_start, range_end, in_dtype', [
-    (np.dtype(np.float32), -8, 8, np.dtype(np.int32)),
-    (np.dtype(np.float64), -16383, 16383, np.dtype(np.int64)),
+    pytest.param(np.dtype(np.float32), -8, 8, np.dtype(np.int32),
+                 marks=xfail_test('IE:CPU',
+                 reason="RuntimeError: data [values] doesn't exist")),
+    pytest.param(np.dtype(np.float64), -16383, 16383, np.dtype(np.int64),
+                 marks=xfail_test('IE:CPU',
+                 reason='RuntimeError: Incorrect precision f64')),
 ])
 def test_cast_to_float(val_type, range_start, range_end, in_dtype):
     np.random.seed(133391)
@@ -395,12 +395,14 @@ def test_cast_to_float(val_type, range_start, range_end, in_dtype):
     assert np.allclose(result, expected)
 
 
-@pytest.mark.skip_on_ie  # RuntimeError: data [B] doesn't exist
 @pytest.mark.parametrize('val_type', [
-    np.dtype(np.int8),
-    np.dtype(np.int16),
+    pytest.param(np.dtype(np.int8),
+                 marks=xfail_test('IE:CPU', reason="RuntimeError: data [B] doesn't exist")),
+    pytest.param(np.dtype(np.int16),
+                 marks=xfail_test('IE:CPU', reason="RuntimeError: data [B] doesn't exist")),
     np.dtype(np.int32),
-    np.dtype(np.int64),
+    pytest.param(np.dtype(np.int64),
+                 marks=xfail_test('IE:CPU', reason="RuntimeError: Check 'm_data.size() <= bytes'")),
 ])
 def test_cast_to_int(val_type):
     np.random.seed(133391)
@@ -413,12 +415,19 @@ def test_cast_to_int(val_type):
     assert np.allclose(result, expected)
 
 
-@pytest.mark.skip_on_ie  # RuntimeError: data [B] doesn't exist
 @pytest.mark.parametrize('val_type', [
-    np.dtype(np.uint8),
-    np.dtype(np.uint16),
-    np.dtype(np.uint32),
-    np.dtype(np.uint64),
+    pytest.param(np.dtype(np.uint8),
+                 marks=xfail_test('IE:CPU',
+                                  reason="RuntimeError: data [values] doesn't exist")),
+    pytest.param(np.dtype(np.uint16),
+                 marks=xfail_test('IE:CPU',
+                                  reason="RuntimeError: data [values] doesn't exist")),
+    pytest.param(np.dtype(np.uint32),
+                 marks=xfail_test('IE:CPU',
+                 reason='RuntimeError: Incorrect precision u32')),
+    pytest.param(np.dtype(np.uint64),
+                 marks=xfail_test('IE:CPU',
+                                  reason="RuntimeError: data [values] doesn't exist")),
 ])
 def test_cast_to_uint(val_type):
     np.random.seed(133391)
@@ -485,10 +494,13 @@ def test_cast_errors():
         import_onnx_model(model)
 
 
-@pytest.mark.skip_on_ie  # RuntimeError: data [values] doesn't exist, Incorrect precision f64!
 @pytest.mark.parametrize('value_type', [
-    np.float32,
-    np.float64,
+    pytest.param(np.float32,
+                 marks=xfail_test('IE:CPU',
+                                  reason="RuntimeError: data [values] doesn't exist")),
+    pytest.param(np.float64,
+                 marks=xfail_test('IE:CPU',
+                                  reason='RuntimeError: Incorrect precision f64')),
 ])
 def test_constant(value_type):
     values = np.random.randn(5, 5).astype(value_type)
@@ -507,7 +519,7 @@ def test_constant(value_type):
 
 
 # See https://github.com/onnx/onnx/issues/1190
-@pytest.mark.xfail(reason='ONNX#1190 numpy.float16 not supported by ONNX make_node.')
+@pytest.mark.xfail(reason='ONNX#1190 numpy.float16 not supported by ONNX make_node', strict=True)
 def test_constant_err():
     values = np.random.randn(5, 5).astype(np.float16)
     node = onnx.helper.make_node(

@@ -20,6 +20,7 @@ import onnx
 import numpy as np
 
 import ngraph as ng
+import pytest
 
 from onnx.helper import make_node, make_graph, make_tensor_value_info, make_model
 from typing import List, Dict, Text, Any, Optional, Iterable
@@ -33,6 +34,10 @@ from string import ascii_uppercase
 # nGraph backend tests will use. It's set during pytest configuration time.
 # See `pytest_configure` in `conftest.py` for more details.
 BACKEND_NAME = None
+
+
+def xfail_test(*backends, reason='Mark the test as expected to fail'):
+    return pytest.mark.xfail(condition=BACKEND_NAME in backends, reason=reason, strict=True)
 
 
 def get_runtime():
