@@ -79,8 +79,8 @@ class Watchdog:
     :type msteams_url:          String
     :type ci_job_name:          String
     :type watchdog_job_name:    String
-    :type slack_enabled:        Boolean
-    :type ms_teams_enabled:     Boolean
+    :type slack_enabled:        Integer
+    :type ms_teams_enabled:     Integer
 
     .. note::
         Watchdog and nGraph-ONNX CI job must be placed on the same Jenkins server.
@@ -109,6 +109,7 @@ class Watchdog:
         self._current_prs = {}
         self._slack_enabled = slack_enabled
         self._ms_teams_enabled = ms_teams_enabled
+        log.info('init variable: {}, type variable: {}'.format(self._slack_enabled, type(self._slack_enabled)))
 
     def run(self, quiet=False):
         """Run main watchdog logic.
@@ -439,7 +440,9 @@ class Watchdog:
             message = message + '\n' + pr.html_url
 
         send = message_header + '\n' + message
+        log.info('queue variable: {}, type variable: {}'.format(self._slack_enabled, type(self._slack_enabled)))
         if self._slack_enabled:
+            log.info('past queue variable: {}, type variable: {}'.format(self._slack_enabled, type(self._slack_enabled)))
             self._slack_app.queue_message(send, internal_error=internal)
         if self._ms_teams_enabled:
             self._msteams_hook.queue_message(send)
