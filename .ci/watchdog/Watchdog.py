@@ -481,8 +481,10 @@ class Watchdog:
                 watchdog_build_link = self._jenkins.jenkins_server
             send = self._watchdog_job_name + '- build ' + str(
                 watchdog_build_number) + ' - ' + watchdog_build_link
+            log.info('variable: {}, type variable: {}'.format(self._slack_enabled, type(self._slack_enabled)))
+
             if self._slack_enabled:
-                log.info('variable: {}, type variable: {}'.format(self._slack_enabled, type(self._slack_enabled)))
+                log.info('send variable: {}, type variable: {}'.format(self._slack_enabled, type(self._slack_enabled)))
                 self._slack_app.send_message(send, quiet=quiet)
             if self._ms_teams_enabled:
                 self._msteams_hook.send_message(send, quiet=quiet)
