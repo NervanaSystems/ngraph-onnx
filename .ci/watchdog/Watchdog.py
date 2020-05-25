@@ -439,8 +439,10 @@ class Watchdog:
             message = message + '\n' + pr.html_url
 
         send = message_header + '\n' + message
-        if self._slack_enabled: self._slack_app.queue_message(send, internal_error=internal)
-        if self._ms_teams_enabled: self._msteams_hook.queue_message(send)
+        if self._slack_enabled:
+            self._slack_app.queue_message(send, internal_error=internal)
+        if self._ms_teams_enabled:
+            self._msteams_hook.queue_message(send)
 
     def _check_finished(self, pr, build_number):
         """Verify if finished build output contains expected string for either fail or success.
@@ -479,8 +481,10 @@ class Watchdog:
                 watchdog_build_link = self._jenkins.jenkins_server
             send = self._watchdog_job_name + '- build ' + str(
                 watchdog_build_number) + ' - ' + watchdog_build_link
-            if self._slack_enabled: self._slack_app.send_message(send, quiet=quiet)
-            if self._ms_teams_enabled: self._msteams_hook.send_message(send, quiet=quiet)
+            if self._slack_enabled:
+                self._slack_app.send_message(send, quiet=quiet)
+            if self._ms_teams_enabled:
+                self._msteams_hook.send_message(send, quiet=quiet)
         else:
             log.info('Nothing to report.')
 
