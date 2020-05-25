@@ -482,7 +482,6 @@ class Watchdog:
             send = self._watchdog_job_name + '- build ' + str(
                 watchdog_build_number) + ' - ' + watchdog_build_link
             if self._slack_enabled:
-                log.info('variable: {}, type variable: {}'.format(self._slack_enabled, type(self._slack_enabled)))
                 self._slack_app.send_message(send, quiet=quiet)
             if self._ms_teams_enabled:
                 self._msteams_hook.send_message(send, quiet=quiet)
