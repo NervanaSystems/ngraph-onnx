@@ -69,6 +69,8 @@ class Watchdog:
     :param msteams_url:         URL used to connect to MS Teams channel
     :param ci_job_name:         nGraph-ONNX CI job name used in Jenkins
     :param watchdog_job_name:   Watchdog job name used in Jenkins
+    :param slack_enabled:       Enable watchdog on Slack
+    :param ms_teams_enabled:    Enable watchdog on MS Teams
     :type jenkins_token:        String
     :type jenkins_server:       String
     :type jenkins_user:         String
@@ -77,13 +79,16 @@ class Watchdog:
     :type msteams_url:          String
     :type ci_job_name:          String
     :type watchdog_job_name:    String
+    :type slack_enabled:        Boolean
+    :type ms_teams_enabled:     Boolean
 
     .. note::
         Watchdog and nGraph-ONNX CI job must be placed on the same Jenkins server.
     """
 
     def __init__(self, jenkins_token, jenkins_server, jenkins_user, git_token, git_org,
-                 git_project, slack_token, msteams_url, ci_job_name, watchdog_job_name):
+                 git_project, slack_token, msteams_url, ci_job_name, watchdog_job_name,
+                 slack_enabled, ms_teams_enabled):
         self._config_path = os.path.join(_WATCHDOG_DIR, '{}/.{}_ci_watchdog.json'.format(_WATCHDOG_DIR, git_project))
         # Jenkins Wrapper object for CI job
         self._jenkins = JenkinsWrapper(jenkins_token,
@@ -102,6 +107,8 @@ class Watchdog:
         # Time at Watchdog initiation
         self._now_time = datetime.datetime.now()
         self._current_prs = {}
+        self._slack_enabled = slack_enabled
+        self._ms_teams_enabled = ms_teams_enabled
 
     def run(self, quiet=False):
         """Run main watchdog logic.
@@ -432,8 +439,8 @@ class Watchdog:
             message = message + '\n' + pr.html_url
 
         send = message_header + '\n' + message
-        self._slack_app.queue_message(send, internal_error=internal)
-        self._msteams_hook.queue_message(send)
+        if self._slack_enabled: self._slack_app.queue_message(send, internal_error=internal)
+        if self._ms_teams_enabled: self._msteams_hook.queue_message(send)
 
     def _check_finished(self, pr, build_number):
         """Verify if finished build output contains expected string for either fail or success.
@@ -472,8 +479,8 @@ class Watchdog:
                 watchdog_build_link = self._jenkins.jenkins_server
             send = self._watchdog_job_name + '- build ' + str(
                 watchdog_build_number) + ' - ' + watchdog_build_link
-            self._slack_app.send_message(send, quiet=quiet)
-            self._msteams_hook.send_message(send, quiet=quiet)
+            if self._slack_enabled: self._slack_app.send_message(send, quiet=quiet)
+            if self._ms_teams_enabled: self._msteams_hook.send_message(send, quiet=quiet)
         else:
             log.info('Nothing to report.')
 

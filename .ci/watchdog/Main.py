@@ -112,6 +112,10 @@ if __name__ == '__main__':
 
     parser.add_argument('--quiet', help="Quiet mode - doesn\'t send message to slack channel.",
                         action='store_true', required=False)
+    parser.add_argument('--slack-enabled', help="Enable watchdog on Slack",
+                        default=False, action='store', required=False)
+    parser.add_argument('--ms-teams-enabled', help="Enable watchdog on MS Teams",
+                        default=True, action='store', required=False)
 
     args = parser.parse_args()
     sys.exit(main(args))
