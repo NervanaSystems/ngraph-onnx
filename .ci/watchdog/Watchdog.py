@@ -110,7 +110,7 @@ class Watchdog:
         self._slack_enabled = slack_enabled
         self._ms_teams_enabled = ms_teams_enabled
         log.info('init variable: {}, type variable: {}'.format(self._slack_enabled, type(self._slack_enabled)))
-        log.info('init variable ms_teams_enabled: {}, type variable: {}'.format(self.ms_teams_enabled, type(self.ms_teams_enabled)))
+        log.info('init variable ms_teams_enabled: {}, type variable: {}'.format(self._ms_teams_enabled, type(self._ms_teams_enabled)))
 
     def run(self, quiet=False):
         """Run main watchdog logic.
