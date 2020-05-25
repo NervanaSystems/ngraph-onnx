@@ -109,8 +109,6 @@ class Watchdog:
         self._current_prs = {}
         self._slack_enabled = slack_enabled
         self._ms_teams_enabled = ms_teams_enabled
-        log.info('init variable: {}, type variable: {}'.format(self._slack_enabled, type(self._slack_enabled)))
-        log.info('init variable ms_teams_enabled: {}, type variable: {}'.format(self._ms_teams_enabled, type(self._ms_teams_enabled)))
 
     def run(self, quiet=False):
         """Run main watchdog logic.
@@ -441,12 +439,9 @@ class Watchdog:
             message = message + '\n' + pr.html_url
 
         send = message_header + '\n' + message
-        log.info('queue variable: {}, type variable: {}'.format(self._slack_enabled, type(self._slack_enabled)))
         if self._slack_enabled:
-            log.info('past queue variable: {}, type variable: {}'.format(self._slack_enabled, type(self._slack_enabled)))
             self._slack_app.queue_message(send, internal_error=internal)
         if self._ms_teams_enabled:
-            log.info('past queue variable _ms_teams_enabled: {}, type variable: {}'.format(self._ms_teams_enabled, type(self._ms_teams_enabled)))
             self._msteams_hook.queue_message(send)
 
     def _check_finished(self, pr, build_number):
@@ -476,7 +471,8 @@ class Watchdog:
         :param quiet:   Flag for disabling sending report through communicator
         :type quiet:    Boolean
         """
-        if any(messages for messages in self._slack_app.messages):
+        if any(messages for messages in self._slack_app.messages) or \
+                any(messages for messages in self._msteams_hook.messages):
             try:
                 watchdog_build = self._jenkins.get_job_info(self._watchdog_job_name)['lastBuild']
                 watchdog_build_number = watchdog_build['number']
@@ -486,14 +482,10 @@ class Watchdog:
                 watchdog_build_link = self._jenkins.jenkins_server
             send = self._watchdog_job_name + '- build ' + str(
                 watchdog_build_number) + ' - ' + watchdog_build_link
-            log.info('variable: {}, type variable: {}'.format(self._slack_enabled, type(self._slack_enabled)))
-            log.info('_send_message : {}, type variable: {}'.format(self._ms_teams_enabled, type(self._ms_teams_enabled)))
 
             if self._slack_enabled:
-                log.info('send variable: {}, type variable: {}'.format(self._slack_enabled, type(self._slack_enabled)))
                 self._slack_app.send_message(send, quiet=quiet)
             if self._ms_teams_enabled:
-                log.info("MS Teams send message")
                 self._msteams_hook.send_message(send, quiet=quiet)
         else:
             log.info('Nothing to report.')
