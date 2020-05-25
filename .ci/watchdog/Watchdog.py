@@ -110,6 +110,7 @@ class Watchdog:
         self._slack_enabled = slack_enabled
         self._ms_teams_enabled = ms_teams_enabled
         log.info('init variable: {}, type variable: {}'.format(self._slack_enabled, type(self._slack_enabled)))
+        log.info('init variable ms_teams_enabled: {}, type variable: {}'.format(self.ms_teams_enabled, type(self.ms_teams_enabled)))
 
     def run(self, quiet=False):
         """Run main watchdog logic.
@@ -445,6 +446,7 @@ class Watchdog:
             log.info('past queue variable: {}, type variable: {}'.format(self._slack_enabled, type(self._slack_enabled)))
             self._slack_app.queue_message(send, internal_error=internal)
         if self._ms_teams_enabled:
+            log.info('past queue variable _ms_teams_enabled: {}, type variable: {}'.format(self._ms_teams_enabled, type(self._ms_teams_enabled)))
             self._msteams_hook.queue_message(send)
 
     def _check_finished(self, pr, build_number):
@@ -462,7 +464,7 @@ class Watchdog:
         build_output = self._jenkins.get_build_console_output(project_name_full, build_number)
         if _CI_BUILD_FAIL_MESSAGE not in build_output \
                 and _CI_BUILD_SUCCESS_MESSAGE not in build_output:
-            message = ('ONNX CI job for PR #{} finished but no tests success or fail '
+            message = ('ONNX CI job for PR #{}: finished but no tests success or fail '
                        'confirmation is present in console output!'.format(pr_number))
             self._queue_message(message, message_severity='error', pr=pr)
 
