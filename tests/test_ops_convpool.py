@@ -22,7 +22,7 @@ import pytest
 import numpy as np
 from onnx.helper import make_node, make_graph, make_tensor_value_info, make_model
 from ngraph_onnx.onnx_importer.importer import import_onnx_model
-from tests.utils import run_model, run_node, get_node_model, get_runtime
+from tests.utils import run_model, run_node, get_node_model, get_runtime, xfail_test
 
 
 @pytest.fixture
@@ -59,7 +59,6 @@ def import_and_compute_conv(x, weights, transpose=False, **attributes):
     return computation(x, weights)[0]
 
 
-@pytest.mark.skip_on_ie  # RuntimeError: Layer Y input port 1 is not connected to any data
 def test_2d_conv():
     # x should have shape N(batch) x C x H x W
     input_x = np.array([
@@ -125,7 +124,6 @@ def test_2d_conv():
                                    dtype=np.float32))
 
 
-@pytest.mark.skip_on_ie  # RuntimeError: Layer Y input port 1 is not connected to any data
 def test_3d_conv():
     # x should have shape N(batch) x C x H x W x D
     input_x = np.array([
@@ -170,7 +168,7 @@ def test_3d_conv():
                                    dtype=np.float32))
 
 
-@pytest.mark.skip_on_ie  # RuntimeError: Layer Y input port 1 is not connected to any data
+@xfail_test('IE:CPU', reason='RuntimeError: Layer Y input port 1 is not connected to any data')
 def test_2d_conv_transpose():
     # x should have shape N(batch) x C x H x W
     input_x = np.array(
@@ -207,7 +205,7 @@ def test_2d_conv_transpose():
                                    dtype=np.float32))
 
 
-@pytest.mark.xfail(reason='NGONNX-498')
+@pytest.mark.xfail(reason='NGONNX-498', strict=True)
 def test_pad_opset_1():
     x = np.ones((2, 2), dtype=np.float32)
     y = np.pad(x, pad_width=1, mode='constant')
@@ -259,7 +257,7 @@ def test_pad_opset_2():
 
 # Error of validate layer: B with type: Pad. Cannot parse parameter pads_begin
 # from IR for layer B. Value -1,0 cannot be casted to int.
-@pytest.mark.skip_on_ie
+@xfail_test('IE:CPU', reason='RuntimeError: Layer Y input port 1 is not connected to any data')
 def test_pad_negative_values_begin():
     x = np.ones((2, 2), dtype=np.float32)
 
@@ -276,7 +274,7 @@ def test_pad_negative_values_begin():
 
 # Error of validate layer: B with type: Pad. Cannot parse parameter pads_begin
 # from IR for layer B. Value -1,0 cannot be casted to int.
-@pytest.mark.skip_on_ie
+@xfail_test('IE:CPU', reason='RuntimeError: Layer Y input port 1 is not connected to any data')
 def test_pad_negative_values_end():
     x = np.ones((2, 2), dtype=np.float32)
 
