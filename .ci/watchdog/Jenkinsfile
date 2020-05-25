@@ -62,7 +62,9 @@ timeout(30)
                                 --jenkins-server=${JENKINS_SERVER} \
                                 --jenkins-user=${JENKINS_USER} \
                                 --ci-job=${CI_JOB_NAME} \
-                                --watchdog-job=${WATCHDOG_JOB_NAME}
+                                --watchdog-job=${WATCHDOG_JOB_NAME} \
+                                --slack-enabled=${SLACK_ENABLED} \
+                                --ms-teams-enabled=${MS_TEAMS_ENABLED}
                         """
                     }
                 }

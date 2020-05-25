@@ -61,6 +61,8 @@ def main(args):
     ci_job = args.ci_job.strip()
     watchdog_job = args.watchdog_job.strip()
     quiet = args.quiet
+    slack_enabled = args.slack_enabled
+    ms_teams_enabled = args.ms_teams_enabled
 
     wd = Watchdog(jenkins_token=jenkins_token,
                   jenkins_server=jenkins_server,
@@ -71,7 +73,9 @@ def main(args):
                   slack_token=slack_token,
                   msteams_url=msteams_url,
                   ci_job_name=ci_job,
-                  watchdog_job_name=watchdog_job)
+                  watchdog_job_name=watchdog_job,
+                  slack_enabled=slack_enabled,
+                  ms_teams_enabled=ms_teams_enabled)
     wd.run(quiet=quiet)
 
     return 0
