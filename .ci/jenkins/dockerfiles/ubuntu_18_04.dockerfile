@@ -11,7 +11,7 @@ RUN apt-get update && apt-get -y --no-install-recommends install \
         pkg-config=0.29.1-0ubuntu2 \
         build-essential=12.4ubuntu1 \
         clang-3.9=1:3.9.1-19ubuntu1 \
-        git=1:2.17.1-1ubuntu0.6 \
+        git=1:2.17.1-1ubuntu0.7 \
         curl=7.58.0-2ubuntu3.8 \
         wget=1.19.4-1ubuntu2.2 \
         zlib1g-dev=1:1.2.11.dfsg-0ubuntu2 \
