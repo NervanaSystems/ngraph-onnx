@@ -29,6 +29,7 @@ import time
 import re
 import logging
 from SlackCommunicator import SlackCommunicator
+from MSTeamsCommunicator import MSTeamsCommunicator
 from JenkinsWrapper import JenkinsWrapper
 from jenkins import NotFoundException
 from GitWrapper import GitWrapper, GitWrapperError
@@ -58,29 +59,36 @@ class Watchdog:
     NervanaSystems/ngraph-onnx repository. Then it connects to specified Jenkins server to
     check CI jobs associated with every PR. Watchdog verifies time durations for Jenkins
     initial response, job queue and execution against time treshold constants. Every fail
-    is logged and reported through Slack App on channel **ngraph-onnx-ci-alerts**.
+    is logged and reported through Slack and MS Teams communicators.
 
     :param jenkins_token:       Token used for Jenkins
     :param jenkins_server:      Jenkins server address
     :param jenkins_user:        Username used to connect to Jenkins
     :param git_token:           Token used to connect to GitHub
     :param slack_token:         Token used to connect to Slack App
+    :param msteams_url:         URL used to connect to MS Teams channel
     :param ci_job_name:         nGraph-ONNX CI job name used in Jenkins
     :param watchdog_job_name:   Watchdog job name used in Jenkins
+    :param slack_enabled:       Enable watchdog on Slack
+    :param ms_teams_enabled:    Enable watchdog on MS Teams
     :type jenkins_token:        String
     :type jenkins_server:       String
     :type jenkins_user:         String
     :type git_token:            String
     :type slack_token:          String
+    :type msteams_url:          String
     :type ci_job_name:          String
     :type watchdog_job_name:    String
+    :type slack_enabled:        Integer
+    :type ms_teams_enabled:     Integer
 
     .. note::
         Watchdog and nGraph-ONNX CI job must be placed on the same Jenkins server.
     """
 
     def __init__(self, jenkins_token, jenkins_server, jenkins_user, git_token, git_org,
-                 git_project, slack_token, ci_job_name, watchdog_job_name):
+                 git_project, slack_token, msteams_url, ci_job_name, watchdog_job_name,
+                 slack_enabled, ms_teams_enabled):
         self._config_path = os.path.join(_WATCHDOG_DIR, '{}/.{}_ci_watchdog.json'.format(_WATCHDOG_DIR, git_project))
         # Jenkins Wrapper object for CI job
         self._jenkins = JenkinsWrapper(jenkins_token,
@@ -90,6 +98,8 @@ class Watchdog:
         self._git = GitWrapper(git_token, repository=git_org, project=git_project)
         # Create Slack api object
         self._slack_app = SlackCommunicator(slack_token=slack_token)
+        # Create MS Teams api object
+        self._msteams_hook = MSTeamsCommunicator(msteams_url)
         self._ci_job_name = ci_job_name
         self._watchdog_job_name = watchdog_job_name
         # Read config file
@@ -97,13 +107,15 @@ class Watchdog:
         # Time at Watchdog initiation
         self._now_time = datetime.datetime.now()
         self._current_prs = {}
+        self._slack_enabled = slack_enabled
+        self._ms_teams_enabled = ms_teams_enabled
 
     def run(self, quiet=False):
         """Run main watchdog logic.
 
         Retrieve list of pull requests and pass it to the method responsible for checking them.
 
-        :param quiet:   Flag for disabling sending report through Slack
+        :param quiet:   Flag for disabling sending report through communicator
         :type quiet:    Boolean
         """
         try:
@@ -372,6 +384,9 @@ class Watchdog:
             # CI build in progress - verify timeouts for build queue and duration
             elif any(phrase in status.description for phrase in pending_statuses):
                 self._check_in_progress(pr, build_number)
+            else:
+                message = 'ONNX CI job for PR# {}: unrecognized status: {}'.format(pr.number, status.description)
+                self._queue_message(message, message_severity='error', pr=pr)
         except Exception:
             # Log Watchdog internal error in case any status can't be properly verified
             message = 'Failed to verify status "{}" for PR# {}'.format(status.description, pr.number)
@@ -397,7 +412,7 @@ class Watchdog:
             raise
 
     def _queue_message(self, message, message_severity='info', pr=None):
-        """Add a message to message queue in Slack App object.
+        """Add a message to message queue in communicator object.
 
         The queued message is constructed based on message string passed as
         a method argument and message header. Message header is mapped to message severity
@@ -424,7 +439,10 @@ class Watchdog:
             message = message + '\n' + pr.html_url
 
         send = message_header + '\n' + message
-        self._slack_app.queue_message(send, internal_error=internal)
+        if self._slack_enabled:
+            self._slack_app.queue_message(send, internal_error=internal)
+        if self._ms_teams_enabled:
+            self._msteams_hook.queue_message(send)
 
     def _check_finished(self, pr, build_number):
         """Verify if finished build output contains expected string for either fail or success.
@@ -441,19 +459,20 @@ class Watchdog:
         build_output = self._jenkins.get_build_console_output(project_name_full, build_number)
         if _CI_BUILD_FAIL_MESSAGE not in build_output \
                 and _CI_BUILD_SUCCESS_MESSAGE not in build_output:
-            message = ('ONNX CI job for PR #{} finished but no tests success or fail '
+            message = ('ONNX CI job for PR #{}: finished but no tests success or fail '
                        'confirmation is present in console output!'.format(pr_number))
             self._queue_message(message, message_severity='error', pr=pr)
 
     def _send_message(self, quiet=False):
-        """Send messages queued in Slack App object to designated Slack channel.
+        """Send messages queued in Slack and MS Teams objects to designated channel.
 
         Queued messages are being sent as a single communication.
 
-        :param quiet:   Flag for disabling sending report through Slack
+        :param quiet:   Flag for disabling sending report through communicator
         :type quiet:    Boolean
         """
-        if any(messages for messages in self._slack_app.messages):
+        if any(messages for messages in self._slack_app.messages) or \
+                any(messages for messages in self._msteams_hook.messages):
             try:
                 watchdog_build = self._jenkins.get_job_info(self._watchdog_job_name)['lastBuild']
                 watchdog_build_number = watchdog_build['number']
@@ -463,7 +482,11 @@ class Watchdog:
                 watchdog_build_link = self._jenkins.jenkins_server
             send = self._watchdog_job_name + '- build ' + str(
                 watchdog_build_number) + ' - ' + watchdog_build_link
-            self._slack_app.send_message(send, quiet=quiet)
+
+            if self._slack_enabled:
+                self._slack_app.send_message(send, quiet=quiet)
+            if self._ms_teams_enabled:
+                self._msteams_hook.send_message(send, quiet=quiet)
         else:
             log.info('Nothing to report.')
 
