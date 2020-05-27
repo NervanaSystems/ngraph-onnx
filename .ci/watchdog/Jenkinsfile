@@ -54,6 +54,7 @@ timeout(30)
                             export PYTHONHTTPSVERIFY=0
                             python ${WATCHDOG_ROOT}/Main.py \
                                 --slack-token=${SLACK_TOKEN_FILE} \
+                                --msteams-url=${MSTEAMS_URL_FILE} \
                                 --github-token=${GITHUB_TOKEN_FILE} \
                                 --github-org=${GITHUB_ORG} \
                                 --github-project=${GITHUB_PROJECT} \
@@ -61,7 +62,9 @@ timeout(30)
                                 --jenkins-server=${JENKINS_SERVER} \
                                 --jenkins-user=${JENKINS_USER} \
                                 --ci-job=${CI_JOB_NAME} \
-                                --watchdog-job=${WATCHDOG_JOB_NAME}
+                                --watchdog-job=${WATCHDOG_JOB_NAME} \
+                                --slack-enabled=${SLACK_ENABLED} \
+                                --ms-teams-enabled=${MS_TEAMS_ENABLED}
                         """
                     }
                 }

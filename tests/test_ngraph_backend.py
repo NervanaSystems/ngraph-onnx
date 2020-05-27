@@ -24,10 +24,10 @@ import numpy as np
 from onnx.helper import make_node, make_graph, make_tensor_value_info, make_model
 from ngraph_onnx.onnx_importer.backend import NgraphBackend
 
-import tests.utils
+from tests.utils import BACKEND_NAME
 
 # Set backend device name to be used instead of hardcoded by ONNX BackendTest class ones.
-selected_backend_name = tests.utils.BACKEND_NAME
+selected_backend_name = BACKEND_NAME
 
 
 @pytest.fixture()
