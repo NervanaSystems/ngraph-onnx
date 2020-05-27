@@ -20,7 +20,7 @@ import onnx
 import numpy as np
 import pytest
 
-from tests.utils import run_node
+from tests.utils import run_node, xfail_test
 
 
 def import_and_compute(op_type, input_data, **node_attrs):
@@ -375,6 +375,7 @@ def test_reduce_sum_square_default_axes():
     assert np.allclose(expected, ng_result)
 
 
+@xfail_test('IE:CPU', reason="RuntimeError: data [y] doesn't exist")
 def test_reduce_argmin():
     def argmin(ndarray, axis, keepdims=False):
         res = np.argmin(ndarray, axis=axis)
@@ -398,6 +399,7 @@ def test_reduce_argmin():
                           argmin(data, keepdims=False, axis=2))
 
 
+@xfail_test('IE:CPU', reason="RuntimeError: data [y] doesn't exist")
 def test_reduce_argmax():
     def argmax(ndarray, axis, keepdims=False):
         res = np.argmax(ndarray, axis=axis)

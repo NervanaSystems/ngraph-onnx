@@ -202,7 +202,7 @@ function run_ci() {
             docker rm -f "${docker_container_name}" >/dev/null 2>&1
             build_docker_image "${operating_system}" "${docker_image_name}"
             run_docker_container "${docker_image_name}" "${docker_container_name}"
-            prepare_environment "${docker_container_name}"
+            prepare_environment "${docker_container_name}" "${NGRAPH_REPO_BRANCH}"
         elif [[ "$(check_container_status)"==*"Exited"* ]]; then
             docker start "${docker_container_name}"
         fi
@@ -231,7 +231,7 @@ function build_docker_image() {
         --build-arg http_proxy="${HTTP_PROXY}" \
         --build-arg https_proxy="${HTTPS_PROXY}" \
         -f "${dockerfiles_dir}/${operating_system}.dockerfile" \
-        -t "${docker_image_name}:${DOCKER_BASE_IMAGE_TAG}" .
+        -t "${docker_image_name}:${DOCKER_BASE_IMAGE_TAG}" ${dockerfiles_dir}
     echo "[INFO] Building CI execution image with appended user"
     docker build \
         --build-arg base_image="${docker_image_name}:${DOCKER_BASE_IMAGE_TAG}" \
@@ -239,7 +239,7 @@ function build_docker_image() {
         --build-arg GID="$(id -g)" \
         --build-arg USERNAME="${USER}" \
         -f "${dockerfiles_dir}/${postprocess_dockerfile_subpath}" \
-        -t "${docker_image_name}:${DOCKER_EXEC_IMAGE_TAG}" .
+        -t "${docker_image_name}:${DOCKER_EXEC_IMAGE_TAG}" ${dockerfiles_dir}
 
     return 0
 }
@@ -262,10 +262,12 @@ function run_docker_container() {
 function prepare_environment() {
     # Prepares environment - builds nGraph
     local docker_container_name="${1}"
+    local ngraph_branch="${2}"
     echo "[INFO] Building nGraph in Docker container ${docker_container_name}"
     docker exec ${docker_container_name} bash -c "${DOCKER_HOME}/"${NGRAPH_ONNX_CI_ABS_PATH#*$WORKSPACE/}"/prepare_environment.sh \
-                                                    --build-dir=${WORKSPACE} \
-                                                    --backends=${BACKENDS// /,}"
+                                                    --build-dir=${DOCKER_HOME} \
+                                                    --backends=${BACKENDS// /,} \
+						    --ngraph-branch=${ngraph_branch}"
 
     return 0
 }
