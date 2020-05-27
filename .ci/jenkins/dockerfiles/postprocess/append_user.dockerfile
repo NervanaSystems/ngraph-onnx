@@ -7,6 +7,6 @@ ARG UID
 ARG GID
 
 # Add user and group
-RUN groupadd -g $GID -o $USERNAME
-RUN useradd -m -u $UID -g $GID -o -s /bin/bash $USERNAME
+RUN groupadd -g $GID -o $USERNAME || true
+RUN useradd -m -u $UID -g $GID -o -s /bin/bash $USERNAME || true
 USER $USERNAME
