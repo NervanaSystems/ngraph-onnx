@@ -40,7 +40,7 @@ DEFAULT_NGRAPH_REPO_SHA=""
 
 # "<OPERATING_SYSTEM>" will be replaced by particular OS during script execution
 DOCKER_CONTAINER_NAME_PATTERN="ngraph-onnx_ci_reproduction_<OPERATING_SYSTEM>"
-DOCKER_IMAGE_NAME_PATTERN="ngraph_onnx_<OPERATING_SYSTEM>_ci_base"
+DOCKER_IMAGE_NAME_PATTERN="aibt/aibt/ngraph/<OPERATING_SYSTEM>/base"
 DOCKER_BASE_IMAGE_TAG="ci"
 DOCKER_EXEC_IMAGE_TAG="ci_run"
 DOCKER_HOME="/home/${USER}"
