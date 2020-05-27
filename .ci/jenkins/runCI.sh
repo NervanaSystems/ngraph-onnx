@@ -106,7 +106,7 @@ function parse_arguments {
     for i in "${@}"; do
         case $i in
             "--help")
-                printf ${HELP_MESSAGE}
+                printf "${HELP_MESSAGE}"
                 exit 0
                 ;;
             "--cleanup")
@@ -131,7 +131,7 @@ function parse_arguments {
                 ;;
             *)
                 echo "[ERROR] Unrecognized argument: ${i}"
-                printf ${HELP_MESSAGE}
+                printf "${HELP_MESSAGE}"
                 exit -1
                 ;;
         esac
