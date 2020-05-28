@@ -34,6 +34,7 @@ from onnx.helper import make_tensor_value_info, make_graph, make_model
 from onnx.backend.base import Backend, BackendRep
 from typing import Any, Dict, List, Optional, Sequence, Text, Tuple, Union
 
+from ngraph.runtime import BackendMode
 from ngraph.impl import Function
 from ngraph_onnx.onnx_importer.importer import import_onnx_model
 from ngraph_onnx.onnx_importer.utils.types import np_dtype_to_tensor_type
@@ -155,7 +156,11 @@ class NgraphBackendRep(BackendRep):
         super(NgraphBackendRep, self).__init__()
         self.device = self._get_ngraph_device_name(device)
         self.ng_model_function = ng_model_function
-        self.runtime = ng.runtime(backend_name=self.device)
+        if 'IE' in device:
+            self.runtime = ng.runtime(backend_name=self.device, mode=BackendMode.STATIC)
+        else:
+            self.runtime = ng.runtime(backend_name=self.device, mode=BackendMode.DYNAMIC)
+
         self.computation = self.runtime.computation(ng_model_function)
 
     def run(self, inputs, **kwargs):  # type: (List[np.ndarray], Dict) -> List[Any]
