@@ -24,7 +24,6 @@ catch (Exception e) {
         [ sku : "skx", backends : ["cpu", "interpreter"] ],
         [ sku : "clx", backends : ["cpu", "interpreter"] ],
         [ sku : "bdw", backends : ["cpu", "interpreter"] ]
-        // [ sku: "iris", backend : "igpu" ]
     ]
 }
 echo "BACKEND_SKU_CONFIGURATIONS=${BACKEND_SKU_CONFIGURATIONS}"
@@ -32,7 +31,7 @@ echo "BACKEND_SKU_CONFIGURATIONS=${BACKEND_SKU_CONFIGURATIONS}"
 // --- CI constants ---
 NGRAPH_ONNX_REPO_ADDRESS="git@github.com:NervanaSystems/ngraph-onnx.git"
 NGRAPH_REPO_ADDRESS="git@github.com:NervanaSystems/ngraph.git"
-DLDT_REPO_ADDRESS = "git@gitlab-icv.inn.intel.com:inference-engine/dldt.git"
+OPENVINO_REPO_ADDRESS = "git@github.com:openvinotoolkit/openvino.git"
 
 CI_LABELS = "ngraph_onnx && ci"
 CI_DIR = "ngraph-onnx/.ci/jenkins"
@@ -60,12 +59,12 @@ CONFIGURATION_WORKFLOW = { configuration ->
                     dir (WORKDIR) {
                         gitClone("Clone ngraph", NGRAPH_REPO_ADDRESS, configuration.ngraphBranch)
                     }
-                    // dir (WORKDIR) {
-                    //     gitClone("Clone dldt", DLDT_REPO_ADDRESS, configuration.dldtBranch)
-                    // }
-                    // gitSubmoduleUpdate("dldt")
+                    dir (WORKDIR) {
+                        gitClone("Clone openvino", OPENVINO_REPO_ADDRESS, configuration.openvinoBranch)
+                    }
+                    gitSubmoduleUpdate("openvino")
                 }
-                String imageName = "${DOCKER_REGISTRY}/aibt/aibt/ngraph_cpp/${configuration.os}/ubuntu_18_04"
+                String imageName = "${DOCKER_REGISTRY}/aibt/aibt/ngraph_cpp/${configuration.os}/ubuntu_18_04_test"
                 stage("Prepare Docker image") {
                     pullDockerImage(imageName)
                     appendUserToDockerImage(imageName)
@@ -74,22 +73,7 @@ CONFIGURATION_WORKFLOW = { configuration ->
                     runDockerContainer(imageName)
                 }
                 stage("Prepare environment") {
-                    prepareEnvironment(configuration.backends, configuration.ngraphBranch)
-                }
-                for (backend in configuration.backends) {
-                    try {
-                        stage("Run ${backend} tests") {
-                            runToxTests(backend)
-                        }
-                    }
-                    catch(e) {
-                        // If cause of exception was job abortion - throw exception
-                        if ("$e".contains("143")) {
-                            throw e
-                        } else {
-                            currentBuild.result = "FAILURE"
-                        }
-                    }
+                    prepareEnvironment()
                 }
             }
             catch(e) {
@@ -182,20 +166,17 @@ def runDockerContainer(String imageName) {
     """
 }
 
-def prepareEnvironment(List<String> backends, String ngraph_branch) {
-    String backendsString = backends.join(",")
+def prepareEnvironment() {
     sh """
         docker exec ${DOCKER_CONTAINER_NAME} bash -c "${DOCKER_HOME}/${CI_DIR}/prepare_environment.sh \
-                                                                            --build-dir=${DOCKER_HOME} \
-                                                                            --backends=${backendsString} \
-                                                                            --ngraph-branch=${ngraph_branch}"
+                                                                            --build-dir=${DOCKER_HOME}"
     """
 }
 
 def runToxTests(String backend) {
     String toxEnvVar = "TOX_INSTALL_NGRAPH_FROM=\${NGRAPH_WHL}"
     String backendEnvVar = "NGRAPH_BACKEND=${backend.toUpperCase()}"
-    String libraryVar = (backend == "ie") ? "LD_LIBRARY_PATH=${DOCKER_HOME}/dldt_dist/deployment_tools/inference_engine/external/tbb/lib:${DOCKER_HOME}/dldt_dist/deployment_tools/inference_engine/lib/intel64:${DOCKER_HOME}/dldt_dist/deployment_tools/inference_engine/external/mkltiny_lnx/lib:${DOCKER_HOME}/dldt_dist/deployment_tools/ngraph/lib" : "LD_LIBRARY_PATH="
+    String libraryVar = (backend == "ie") ? "LD_LIBRARY_PATH=${DOCKER_HOME}/openvino_dist/deployment_tools/inference_engine/external/tbb/lib:${DOCKER_HOME}/openvino_dist/deployment_tools/inference_engine/lib/intel64:${DOCKER_HOME}/openvino_dist/deployment_tools/inference_engine/external/mkltiny_lnx/lib:${DOCKER_HOME}/openvino_dist/deployment_tools/ngraph/lib" : "LD_LIBRARY_PATH="
    
 
     if (backend == "ie") {
@@ -220,7 +201,7 @@ def cleanup() {
     deleteDir()
 }
 
-def getConfigurationsMap(String dockerfilesPath, String ngraphOnnxBranch, String ngraphBranch) {
+def getConfigurationsMap(String dockerfilesPath, String ngraphOnnxBranch, String ngraphBranch, String openvinoBranch) {
     def configurationsMap = [:]
     def osImages = sh (script: "find ${dockerfilesPath} -maxdepth 1 -name '*.dockerfile' -printf '%f\n'",
                     returnStdout: true).trim().replaceAll(".dockerfile","").split("\n") as List
@@ -231,7 +212,7 @@ def getConfigurationsMap(String dockerfilesPath, String ngraphOnnxBranch, String
             configuration.os = os
             configuration.ngraphOnnxBranch = ngraphOnnxBranch
             configuration.ngraphBranch = ngraphBranch
-            // configuration.dldtBranch = dldtBranch
+            configuration.openvinoBranch = openvinoBranch
             String backendLabels = configuration.backends.join(" && ")
             configuration.label = "${backendLabels} && ${configuration.sku} && ${CI_LABELS}"
             configuration.name = "${configuration.sku}-${configuration.os}"
