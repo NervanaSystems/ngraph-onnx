@@ -29,6 +29,7 @@ import sys
 from Watchdog import Watchdog
 
 DEFAULT_SLACK_TOKEN_FILE = '/home/lab_nerval/tokens/slack_token'
+DEFAULT_MSTEAMS_URL_FILE = '/home/lab_nerval/tokens/msteams_url'
 DEFAULT_GITHUB_TOKEN_FILE = '/home/lab_nerval/tokens/github_token'
 DEFAULT_GITHUB_ORGANIZATION = 'NervanaSystems'
 DEFAULT_GITHUB_PROJECT = 'ngraph-onnx'
@@ -53,12 +54,15 @@ def main(args):
     jenkins_user = args.jenkins_user.strip()
     jenkins_token = open(args.jenkins_token).read().replace('\n', '').strip()
     slack_token = open(args.slack_token).read().replace('\n', '').strip()
+    msteams_url = open(args.msteams_url).read().replace('\n', '').strip()
     github_token = open(args.github_token).read().replace('\n', '').strip()
     github_org = args.github_org
     github_project = args.github_project
     ci_job = args.ci_job.strip()
     watchdog_job = args.watchdog_job.strip()
     quiet = args.quiet
+    slack_enabled = args.slack_enabled
+    ms_teams_enabled = args.ms_teams_enabled
 
     wd = Watchdog(jenkins_token=jenkins_token,
                   jenkins_server=jenkins_server,
@@ -67,8 +71,11 @@ def main(args):
                   git_org=github_org,
                   git_project=github_project,
                   slack_token=slack_token,
+                  msteams_url=msteams_url,
                   ci_job_name=ci_job,
-                  watchdog_job_name=watchdog_job)
+                  watchdog_job_name=watchdog_job,
+                  slack_enabled=slack_enabled,
+                  ms_teams_enabled=ms_teams_enabled)
     wd.run(quiet=quiet)
 
     return 0
@@ -79,6 +86,9 @@ if __name__ == '__main__':
 
     parser.add_argument('--slack-token', help='Path to Slack user token to communicate messages.',
                         default=DEFAULT_SLACK_TOKEN_FILE, action='store', required=False)
+
+    parser.add_argument('--msteams-url', help='Path to MS Teams channel url to communicate messages.',
+                        default=DEFAULT_MSTEAMS_URL_FILE, action='store', required=False)
 
     parser.add_argument('--github-token', help='Path to GitHub user token to access repo.',
                         default=DEFAULT_GITHUB_TOKEN_FILE, action='store', required=False)
@@ -106,6 +116,10 @@ if __name__ == '__main__':
 
     parser.add_argument('--quiet', help="Quiet mode - doesn\'t send message to slack channel.",
                         action='store_true', required=False)
+    parser.add_argument('--slack-enabled', type=int, help='Enable watchdog on Slack',
+                        default=0, action='store', required=False)
+    parser.add_argument('--ms-teams-enabled', type=int, help='Enable watchdog on MS Teams',
+                        default=1, action='store', required=False)
 
     args = parser.parse_args()
     sys.exit(main(args))

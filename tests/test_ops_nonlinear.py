@@ -19,7 +19,7 @@ import numpy as np
 import onnx
 import pytest
 
-from tests.utils import run_node
+from tests.utils import run_node, xfail_test
 
 
 def import_and_compute(op_type, input_data, **node_attrs):
@@ -72,7 +72,8 @@ def test_leaky_relu():
     assert_onnx_import_equals_callable('LeakyRelu', leaky_relu, [[-3, -2, -1], [1, 2, 3]])
 
 
-@pytest.mark.skip_on_ie  # RuntimeError: Layer y input port 1 is not connected to any data
+@xfail_test('IE:CPU', reason='RuntimeError: Error of validate layer: y with type: PReLU. \
+                              Number of inputs (2) is not equal to expected ones: 1')
 @pytest.mark.parametrize('x,slope', [
     ([-2, -1., 0., 1., 2.], 0.5),
     ([0.], 1),
@@ -104,8 +105,7 @@ def test_selu():
     assert_onnx_import_equals_callable('Selu', selu, [-2, -1., 0., 1., 2.], gamma=0.5, alpha=0.5)
 
 
-# AssertionError: resutl mismatch
-@pytest.mark.skip_on_ie
+@xfail_test('IE:CPU', reason='AssertionError: Results mismatch')
 def test_elu():
     # f(x) = alpha * (exp(x) - 1) for x < 0, f(x) = x for x >= 0
     def elu(x, alpha=1):
