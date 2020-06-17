@@ -372,14 +372,6 @@ general_tests_xfail = [
     'OnnxBackendNodeModelTest.test_edge_pad_cpu',
     'OnnxBackendNodeModelTest.test_reflect_pad_cpu',
 
-    # DynamicQuantizeLinear - NGONNX-786
-    'OnnxBackendNodeModelTest.test_dynamicquantizelinear_cpu',
-    'OnnxBackendNodeModelTest.test_dynamicquantizelinear_expanded_cpu',
-    'OnnxBackendNodeModelTest.test_dynamicquantizelinear_max_adjusted_cpu',
-    'OnnxBackendNodeModelTest.test_dynamicquantizelinear_max_adjusted_expanded_cpu',
-    'OnnxBackendNodeModelTest.test_dynamicquantizelinear_min_adjusted_cpu',
-    'OnnxBackendNodeModelTest.test_dynamicquantizelinear_min_adjusted_expanded_cpu',
-
     # Range op - NGONNX-787
     'OnnxBackendNodeModelTest.test_range_float_type_positive_delta_cpu',
     'OnnxBackendNodeModelTest.test_range_float_type_positive_delta_expanded_cpu',
