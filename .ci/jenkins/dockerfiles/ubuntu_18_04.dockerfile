@@ -55,7 +55,8 @@ RUN curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.d
 
 RUN pip3 install --upgrade pip==19.0.3 \
         setuptools==41.0.0 \
-        wheel==0.33.1
+        wheel==0.33.1 \
+        cython
 
 # ONNX dependencies
 RUN apt-get -y --no-install-recommends install \
